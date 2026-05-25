@@ -1,0 +1,10 @@
+{
+  "name": "lms-portal",
+  "version": "1.0.0",
+  "description": "LMS Secure Document Upload Portal",
+  "dependencies": {
+    "formidable": "^3.5.1",
+    "pdf-lib": "^1.17.1",
+    "@anthropic-ai/sdk": "^0.20.0"
+  }
+}
