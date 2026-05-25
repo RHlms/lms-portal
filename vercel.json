@@ -1,4 +1,14 @@
 {
+  "version": 2,
+  "installCommand": "npm install",
+  "functions": {
+    "api/checklist.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/upload.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     { "source": "/file/:opp_id", "destination": "/index.html" }
   ]
