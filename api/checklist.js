@@ -26,10 +26,9 @@ export default async function handler(req, res) {
     }
 
     const data = await ghlRes.json();
-    console.log('GHL response sample:', JSON.stringify(data).slice(0, 500));
-
     const opp = data.opportunity || data;
     const customFields = opp.customFields || [];
+    const contactEmail = opp.contact?.email || '';
 
     const getField = (key) => {
       const f = customFields.find(f => f.key === key || f.fieldKey === key);
@@ -38,13 +37,41 @@ export default async function handler(req, res) {
     };
 
     return res.status(200).json({
-      address: opp.name || 'File ' + opp_id,
-      items: {
-        sa:       getField('portal_sa_received'),
-        sif:      getField('portal_sif_received'),
-        threepa:  getField('portal_3pa_received'),
-        mortgage: getField('portal_mortgage_statement_received')
-      }
+      fileReference: opp.name || 'File ' + opp_id,
+      contactId: opp.contactId || opp.contact?.id || '',
+      items: [
+        {
+          id: 'sa',
+          label: 'Service Agreement',
+          complete: getField('portal_sa_received'),
+          type: 'esign',
+          pendingMessage: 'Your Service Agreement has been sent to your email for electronic signature. Please check your inbox and complete the signature to proceed.'
+        },
+        {
+          id: 'sif',
+          label: 'Seller Intake Form',
+          complete: getField('portal_sif_received'),
+          type: 'form',
+          pendingMessage: 'Please complete the Seller Intake Form so we can gather everything needed to process your file.',
+          formUrl: `https://api.leadconnectorhq.com/widget/form/${process.env.GHL_SIF_FORM_ID}?email=${contactEmail}`
+        },
+        {
+          id: 'mortgage',
+          label: 'Mortgage Statement',
+          complete: getField('portal_mortgage_statement_received'),
+          type: 'upload',
+          instruction: 'Upload your most recent mortgage statement (within the last 30 days). PDF, JPG, or PNG accepted.',
+          accept: '.pdf,.jpg,.jpeg,.png'
+        },
+        {
+          id: 'threepa',
+          label: 'Third-Party Authorization (3PA)',
+          complete: getField('portal_3pa_received'),
+          type: 'upload',
+          instruction: 'Upload your signed Third-Party Authorization form. This allows LMS to communicate with your lender on your behalf.',
+          accept: '.pdf,.jpg,.jpeg,.png'
+        }
+      ]
     });
 
   } catch (err) {
