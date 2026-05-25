@@ -1,16 +1,5 @@
 {
   "version": 2,
-  "installCommand": "npm install",
-  "functions": {
-    "api/checklist.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    },
-    "api/upload.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     { "source": "/file/:opp_id", "destination": "/index.html" }
   ]
