@@ -1,107 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LMS — Secure Document Upload</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --teal:    #00A8C6;
-      --teal-dim: rgba(0,168,198,0.12);
-      --teal-border: rgba(0,168,198,0.25);
-      --navy:    #0B1F3A;
-      --navy-2:  #132d4a;
-      --navy-3:  #1a3a5c;
-      --white:   #ffffff;
-      --muted:   #7a9ab5;
-      --dim:     #4a6a85;
-      --success: #22c55e;
-      --success-dim: rgba(34,197,94,0.12);
-      --danger:  #ef4444;
-      --radius:  14px;
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const { opp_id } = req.query;
+  if (!opp_id) return res.status(400).json({ error: 'Missing opp_id' });
+
+  try {
+    const ghlRes = await fetch(
+      `https://services.leadconnectorhq.com/opportunities/${opp_id}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
+          'Version': '2021-07-28'
+        }
+      }
+    );
+
+    if (!ghlRes.ok) {
+      const text = await ghlRes.text();
+      console.error('GHL error:', ghlRes.status, text);
+      return res.status(404).json({ error: 'Opportunity not found' });
     }
- 
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
- 
-    body {
-      background: var(--navy);
-      font-family: 'Open Sans', sans-serif;
-      color: var(--white);
-      min-height: 100vh;
-      padding: 0 0 60px;
-    }
- 
-    /* ── HEADER ── */
-    .header {
-      background: rgba(11,31,58,0.95);
-      border-bottom: 1px solid var(--navy-3);
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(12px);
-    }
- 
-    .logo img {
-      height: 40px;
-      width: auto;
-      border-radius: 6px;
-      display: block;
-    }
- 
-    .secure-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--teal);
-      font-family: 'Montserrat', sans-serif;
-    }
- 
-    .secure-badge svg { opacity: 0.9; }
- 
-    /* ── MAIN ── */
-    .main {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 36px 20px 0;
-    }
- 
-    /* ── FILE BANNER ── */
-    .file-banner {
-      background: var(--navy-2);
-      border: 1px solid var(--navy-3);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
- 
-    .file-icon {
-      width: 44px;
-      height: 44px;
-      background: var(--teal-dim);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
- 
-    .file-info { flex: 1; }
- 
-    .file-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      font-family: 'Montserrat', sans-serif;
-      margin-bottom: 4px;
+
+    const data = await ghlRes.json();
+    console.log('GHL response sample:', JSON.stringify(data).slice(0, 500));
+
+    const opp = data.opportunity || data;
+    const customFields = opp.customFields || [];
+
+    const getField = (key) => {
+      const f = customFields.find(f => f.key === key || f.fieldKey === key);
+      if (!f) return false;
+      return f.value === true || f.value === 'true' || f.value === '1' || f.value === 1;
+    };
+
+    return res.status(200).json({
+      address: opp.name || 'File ' + opp_id,
+      items: {
+        sa:       getField('portal_sa_received'),
+        sif:      getField('portal_sif_received'),
+        threepa:  getField('portal_3pa_received'),
+        mortgage: getField('portal_mortgage_statement_received')
+      }
+    });
+
+  } catch (err) {
+    console.error('Handler error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
