@@ -141,18 +141,22 @@
     }
 
     .progress-bar-track {
-      height: 6px;
-      background: var(--navy-3);
-      border-radius: 99px;
-      overflow: hidden;
-    }
+  display: flex;
+  gap: 6px;
+}
 
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--teal), #00d4ff);
-      border-radius: 99px;
-      transition: width 0.6s ease;
-    }
+.progress-segment {
+  flex: 1;
+  height: 12px;
+  background: var(--navy-3);
+  border-radius: 99px;
+  transition: background 0.5s ease;
+}
+
+.progress-segment.filled {
+  background: linear-gradient(90deg, var(--teal), #00d4ff);
+  box-shadow: 0 2px 8px rgba(0,168,198,0.35);
+}
 
     /* ── CHECKLIST ── */
     .checklist {
@@ -486,9 +490,11 @@
         <span class="progress-count" id="progress-count">0 of 4</span>
       </div>
       <div class="progress-bar-track">
-        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
-      </div>
-    </div>
+  <div class="progress-segment" id="seg-0"></div>
+  <div class="progress-segment" id="seg-1"></div>
+  <div class="progress-segment" id="seg-2"></div>
+  <div class="progress-segment" id="seg-3"></div>
+</div>
 
     <!-- Checklist -->
     <div class="checklist" id="checklist"></div>
@@ -533,7 +539,10 @@ function updateProgress() {
   const total = checklistData.items.length;
   const done  = checklistData.items.filter(i => completionState[i.id]).length;
   document.getElementById('progress-count').textContent = `${done} of ${total}`;
-  document.getElementById('progress-bar').style.width = `${(done / total) * 100}%`;
+  for (let i = 0; i < total; i++) {
+  const seg = document.getElementById(`seg-${i}`);
+  if (seg) seg.classList.toggle('filled', i < done);
+}
   if (done === total) {
     document.getElementById('all-done').classList.add('visible');
     document.getElementById('checklist').style.display = 'none';
