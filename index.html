@@ -32,7 +32,6 @@
       padding: 0 0 100px;
     }
 
-    /* ── HEADER ── */
     .header {
       background: rgba(255,255,255,0.95);
       border-bottom: 1px solid var(--navy-3);
@@ -52,16 +51,14 @@
       display: block;
     }
 
-    /* ── MAIN ── */
     .main {
       max-width: 640px;
       margin: 0 auto;
       padding: 36px 20px 0;
     }
 
-    /* ── FILE BANNER ── */
     .file-banner {
-      background: var(--navy-2);
+      background: #ffffff;
       border: 1px solid var(--navy-3);
       border-radius: var(--radius);
       padding: 20px 24px;
@@ -97,11 +94,10 @@
     .file-address {
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
-      font-size: 20px;
+      font-size: 17px;
       color: var(--white);
     }
 
-    /* ── PROGRESS ── */
     .progress-section { margin-bottom: 28px; }
 
     .progress-header {
@@ -125,10 +121,7 @@
       color: var(--teal);
     }
 
-    .progress-bar-track {
-      display: flex;
-      gap: 6px;
-    }
+    .progress-bar-track { display: flex; gap: 6px; }
 
     .progress-segment {
       flex: 1;
@@ -143,12 +136,36 @@
       box-shadow: 0 2px 8px rgba(0,168,198,0.35);
     }
 
-    /* ── CHECKLIST ── */
-    .checklist {
+    .tos-bar {
       display: flex;
-      flex-direction: column;
+      align-items: flex-start;
       gap: 12px;
+      background: #fff;
+      border: 2px solid var(--teal-border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,168,198,0.10);
     }
+
+    .tos-bar input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--teal);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .tos-label {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .checklist { display: flex; flex-direction: column; gap: 12px; }
 
     .item-card {
       background: #ffffff;
@@ -182,15 +199,8 @@
       flex-shrink: 0;
     }
 
-    .item-status.done {
-      background: var(--success-dim);
-      border: 1.5px solid rgba(34,197,94,0.4);
-    }
-
-    .item-status.pending {
-      background: var(--teal-dim);
-      border: 1.5px solid var(--teal-border);
-    }
+    .item-status.done { background: var(--success-dim); border: 1.5px solid rgba(34,197,94,0.4); }
+    .item-status.pending { background: var(--teal-dim); border: 1.5px solid var(--teal-border); }
 
     .item-title {
       flex: 1;
@@ -213,11 +223,7 @@
     .item-tag.done { background: var(--success-dim); color: var(--success); }
     .item-tag.pending { background: var(--teal-dim); color: var(--teal); }
 
-    /* ── ITEM BODY ── */
-    .item-body {
-      padding: 0 20px 20px;
-      border-top: 1px solid var(--navy-3);
-    }
+    .item-body { padding: 0 20px 20px; border-top: 1px solid var(--navy-3); }
 
     .item-instruction {
       font-size: 13px;
@@ -226,7 +232,6 @@
       padding: 14px 0 16px;
     }
 
-    /* ── BUTTONS ── */
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -246,8 +251,8 @@
     }
 
     .btn-primary:hover { opacity: 0.88; }
+    .btn-primary.disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
 
-    /* ── UPLOAD ZONE ── */
     .upload-zone {
       border: 2px dashed var(--teal-border);
       border-radius: 10px;
@@ -263,6 +268,8 @@
       border-color: var(--teal);
       background: rgba(0,168,198,0.18);
     }
+
+    .upload-zone.disabled { opacity: 0.4; pointer-events: none; }
 
     .upload-zone input[type="file"] {
       position: absolute;
@@ -285,7 +292,6 @@
 
     .upload-sub { font-size: 12px; color: var(--muted); }
 
-    /* ── UPLOAD STATE ── */
     .upload-state { margin-top: 14px; display: none; }
     .upload-state.visible { display: block; }
 
@@ -312,7 +318,6 @@
       font-weight: 600;
     }
 
-    /* ── CONFIRMATION ── */
     .confirmation {
       display: none;
       background: var(--success-dim);
@@ -332,7 +337,6 @@
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* ── ALL DONE ── */
     .all-done {
       display: none;
       text-align: center;
@@ -356,7 +360,6 @@
 
     .all-done p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
-    /* ── LOADING / ERROR ── */
     .state-screen { text-align: center; padding: 80px 20px; }
 
     .spinner {
@@ -380,7 +383,6 @@
 
     .state-screen p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── FOOTER ── */
     .footer {
       text-align: center;
       margin-top: 48px;
@@ -389,7 +391,6 @@
       line-height: 1.7;
     }
 
-    /* ── STICKY BAR ── */
     .sticky-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -434,56 +435,16 @@
       .item-header { padding: 14px 16px; }
       .item-body { padding: 0 16px 16px; }
     }
-  .tos-bar {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: #fff;
-  border: 2px solid var(--teal-border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 16px rgba(0,168,198,0.10);
-}
-
-.tos-bar input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  accent-color: var(--teal);
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.tos-label {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  cursor: pointer;
-  font-family: 'Open Sans', sans-serif;
-}
-
-.upload-zone.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.btn-primary.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-  cursor: not-allowed;
-}</style>
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
   <div class="logo">
     <img src="/logo.png" alt="LMS — Loan Mitigation Services"/>
   </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <main class="main" id="app">
   <div class="state-screen" id="loading-state">
     <div class="spinner"></div>
@@ -497,7 +458,6 @@
   </div>
 
   <div id="portal-content" style="display:none">
-    <!-- File Banner -->
     <div class="file-banner">
       <div class="file-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2">
@@ -511,7 +471,6 @@
       </div>
     </div>
 
-    <!-- Progress -->
     <div class="progress-section">
       <div class="progress-header">
         <span class="progress-label">Documents Submitted</span>
@@ -525,17 +484,19 @@
       </div>
     </div>
 
-    <!-- Checklist -->
+    <div class="tos-bar">
+      <input type="checkbox" id="tos-check" onchange="toggleTos(this.checked)"/>
+      <label for="tos-check" class="tos-label">I confirm that the documents I am submitting are accurate and authorize Loan Mitigation Services LLC to use them in processing my short sale file.</label>
+    </div>
+
     <div class="checklist" id="checklist"></div>
 
-    <!-- All Done -->
     <div class="all-done" id="all-done">
       <div class="all-done-icon">🎉</div>
       <h2>All Documents Received!</h2>
       <p>Your file is complete. Our team is reviewing everything and will be in touch shortly with next steps. Thank you for trusting LMS to handle your short sale.</p>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
       &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
       Your documents are encrypted and stored securely.<br/>
@@ -544,10 +505,9 @@
   </div>
 </main>
 
-<!-- STICKY BAR -->
 <div class="sticky-bar hidden" id="sticky-bar">
   <button class="sticky-bar-btn" onclick="scrollToFirstPending()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
     Submit Your Documents
   </button>
 </div>
@@ -603,11 +563,11 @@ function markComplete(itemId) {
 
 function buildUploadZone(item, oppId, contactId) {
   return `
-    <div class="upload-zone" id="zone-${item.id}"
+    <div class="upload-zone disabled" id="zone-${item.id}"
          ondragover="handleDragOver(event,'${item.id}')"
          ondragleave="handleDragLeave(event,'${item.id}')"
          ondrop="handleDrop(event,'${item.id}','${oppId}','${contactId}')">
-      <input type="file" accept="${item.accept}"
+      <input type="file" accept="${item.accept}" disabled
              onchange="handleFileSelect(event,'${item.id}','${oppId}','${contactId}')"/>
       <div class="upload-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -642,7 +602,7 @@ function buildItemCard(item, oppId, contactId) {
     } else if (item.type === 'form') {
       actionHtml = `
         <p class="item-instruction">${item.pendingMessage}</p>
-        <a href="${item.formUrl}" target="_blank" class="btn-primary">
+        <a href="${item.formUrl}" target="_blank" class="btn-primary disabled">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Complete Form
         </a>`;
@@ -673,6 +633,17 @@ function renderPortal(data, oppId) {
   updateProgress();
   document.getElementById('loading-state').style.display = 'none';
   document.getElementById('portal-content').style.display = 'block';
+}
+
+function toggleTos(checked) {
+  document.querySelectorAll('.upload-zone').forEach(z => {
+    z.classList.toggle('disabled', !checked);
+    const input = z.querySelector('input[type="file"]');
+    if (input) input.disabled = !checked;
+  });
+  document.querySelectorAll('a.btn-primary').forEach(b => {
+    b.classList.toggle('disabled', !checked);
+  });
 }
 
 function handleDragOver(e, itemId) {
