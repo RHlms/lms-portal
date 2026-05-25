@@ -163,7 +163,10 @@
       line-height: 1.6;
       cursor: pointer;
       font-family: 'Open Sans', sans-serif;
-    }
+    }.tos-bar.error {
+  border-color: var(--danger);
+  box-shadow: 0 4px 20px rgba(239,68,68,0.25);
+}
 
     .checklist { display: flex; flex-direction: column; gap: 12px; }
 
@@ -717,6 +720,14 @@ async function uploadFile(file, itemId, oppId, contactId) {
 
 function scrollToFirstPending() {
   if (!checklistData) return;
+  const tosCheck = document.getElementById('tos-check');
+  if (!tosCheck.checked) {
+    const tosBar = document.querySelector('.tos-bar');
+    tosBar.classList.add('error');
+    tosBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => tosBar.classList.remove('error'), 3000);
+    return;
+  }
   for (const item of checklistData.items) {
     if (!completionState[item.id]) {
       document.getElementById(`card-${item.id}`)
