@@ -7,20 +7,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-  --teal:    #00A8C6;
-  --teal-dim: rgba(0,168,198,0.12);
-  --teal-border: rgba(0,168,198,0.25);
-  --navy:    #ffffff;
-  --navy-2:  #f0f4f8;
-  --navy-3:  #d1dde8;
-  --white:   #0B1F3A;
-  --muted:   #4a6a85;
-  --dim:     #7a9ab5;
-  --success: #22c55e;
-  --success-dim: rgba(34,197,94,0.12);
-  --danger:  #ef4444;
-  --radius:  14px;
-}
+      --teal:    #00A8C6;
+      --teal-dim: rgba(0,168,198,0.12);
+      --teal-border: rgba(0,168,198,0.25);
+      --navy:    #ffffff;
+      --navy-2:  #f0f4f8;
+      --navy-3:  #d1dde8;
+      --white:   #0B1F3A;
+      --muted:   #4a6a85;
+      --dim:     #7a9ab5;
+      --success: #22c55e;
+      --success-dim: rgba(34,197,94,0.12);
+      --danger:  #ef4444;
+      --radius:  14px;
+    }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -29,7 +29,7 @@
       font-family: 'Open Sans', sans-serif;
       color: var(--white);
       min-height: 100vh;
-      padding: 0 0 60px;
+      padding: 0 0 100px;
     }
 
     /* ── HEADER ── */
@@ -39,7 +39,6 @@
       padding: 18px 24px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -47,23 +46,11 @@
     }
 
     .logo img {
-      height: 120px;
+      height: 80px;
       width: auto;
       border-radius: 6px;
       display: block;
     }
-
-    .secure-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--teal);
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    .secure-badge svg { opacity: 0.9; }
 
     /* ── MAIN ── */
     .main {
@@ -115,9 +102,7 @@
     }
 
     /* ── PROGRESS ── */
-    .progress-section {
-      margin-bottom: 28px;
-    }
+    .progress-section { margin-bottom: 28px; }
 
     .progress-header {
       display: flex;
@@ -141,22 +126,22 @@
     }
 
     .progress-bar-track {
-  display: flex;
-  gap: 6px;
-}
+      display: flex;
+      gap: 6px;
+    }
 
-.progress-segment {
-  flex: 1;
-  height: 12px;
-  background: var(--navy-3);
-  border-radius: 99px;
-  transition: background 0.5s ease;
-}
+    .progress-segment {
+      flex: 1;
+      height: 12px;
+      background: var(--navy-3);
+      border-radius: 99px;
+      transition: background 0.5s ease;
+    }
 
-.progress-segment.filled {
-  background: linear-gradient(90deg, var(--teal), #00d4ff);
-  box-shadow: 0 2px 8px rgba(0,168,198,0.35);
-}
+    .progress-segment.filled {
+      background: linear-gradient(90deg, var(--teal), #00d4ff);
+      box-shadow: 0 2px 8px rgba(0,168,198,0.35);
+    }
 
     /* ── CHECKLIST ── */
     .checklist {
@@ -166,16 +151,18 @@
     }
 
     .item-card {
-      background: var(--navy-2);
-      border: 1px solid var(--navy-3);
+      background: #ffffff;
+      border: 2px solid var(--teal-border);
       border-radius: var(--radius);
       overflow: hidden;
       transition: border-color 0.2s;
+      box-shadow: 0 4px 16px rgba(0,168,198,0.10);
     }
 
     .item-card.complete {
-      border-color: rgba(34,197,94,0.3);
-      background: rgba(34,197,94,0.04);
+      border-color: rgba(34,197,94,0.4);
+      background: rgba(34,197,94,0.03);
+      box-shadow: 0 4px 16px rgba(34,197,94,0.08);
     }
 
     .item-header {
@@ -183,7 +170,6 @@
       align-items: center;
       gap: 14px;
       padding: 18px 20px;
-      cursor: default;
     }
 
     .item-status {
@@ -224,21 +210,13 @@
       border-radius: 99px;
     }
 
-    .item-tag.done {
-      background: var(--success-dim);
-      color: var(--success);
-    }
+    .item-tag.done { background: var(--success-dim); color: var(--success); }
+    .item-tag.pending { background: var(--teal-dim); color: var(--teal); }
 
-    .item-tag.pending {
-      background: var(--teal-dim);
-      color: var(--teal);
-    }
-
-    /* ── ITEM BODY (pending state) ── */
+    /* ── ITEM BODY ── */
     .item-body {
       padding: 0 20px 20px;
       border-top: 1px solid var(--navy-3);
-      margin-top: 0;
     }
 
     .item-instruction {
@@ -295,10 +273,7 @@
       height: 100%;
     }
 
-    .upload-icon {
-      margin-bottom: 10px;
-      color: var(--teal);
-    }
+    .upload-icon { margin-bottom: 10px; color: var(--teal); }
 
     .upload-text {
       font-family: 'Montserrat', sans-serif;
@@ -308,17 +283,10 @@
       margin-bottom: 4px;
     }
 
-    .upload-sub {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .upload-sub { font-size: 12px; color: var(--muted); }
 
     /* ── UPLOAD STATE ── */
-    .upload-state {
-      margin-top: 14px;
-      display: none;
-    }
-
+    .upload-state { margin-top: 14px; display: none; }
     .upload-state.visible { display: block; }
 
     .upload-progress-bar {
@@ -376,7 +344,6 @@
     }
 
     .all-done.visible { display: block; }
-
     .all-done-icon { font-size: 48px; margin-bottom: 16px; }
 
     .all-done h2 {
@@ -387,17 +354,10 @@
       margin-bottom: 10px;
     }
 
-    .all-done p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
+    .all-done p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
     /* ── LOADING / ERROR ── */
-    .state-screen {
-      text-align: center;
-      padding: 80px 20px;
-    }
+    .state-screen { text-align: center; padding: 80px 20px; }
 
     .spinner {
       width: 40px;
@@ -429,6 +389,43 @@
       line-height: 1.7;
     }
 
+    /* ── STICKY BAR ── */
+    .sticky-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      border-top: 2px solid var(--teal-border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: center;
+      z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+
+    .sticky-bar.hidden { display: none; }
+
+    .sticky-bar-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 15px 40px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      max-width: 420px;
+      justify-content: center;
+      letter-spacing: 0.3px;
+      transition: opacity 0.15s;
+    }
+
+    .sticky-bar-btn:hover { opacity: 0.88; }
+
     @media (max-width: 480px) {
       .header { padding: 14px 16px; }
       .main { padding: 24px 14px 0; }
@@ -445,13 +442,6 @@
 <header class="header">
   <div class="logo">
     <img src="/logo.png" alt="LMS — Loan Mitigation Services"/>
-  </div>
-  <div class="secure-badge">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-    Secure Upload
   </div>
 </header>
 
@@ -490,11 +480,12 @@
         <span class="progress-count" id="progress-count">0 of 4</span>
       </div>
       <div class="progress-bar-track">
-  <div class="progress-segment" id="seg-0"></div>
-  <div class="progress-segment" id="seg-1"></div>
-  <div class="progress-segment" id="seg-2"></div>
-  <div class="progress-segment" id="seg-3"></div>
-</div>
+        <div class="progress-segment" id="seg-0"></div>
+        <div class="progress-segment" id="seg-1"></div>
+        <div class="progress-segment" id="seg-2"></div>
+        <div class="progress-segment" id="seg-3"></div>
+      </div>
+    </div>
 
     <!-- Checklist -->
     <div class="checklist" id="checklist"></div>
@@ -510,13 +501,20 @@
     <div class="footer">
       &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
       Your documents are encrypted and stored securely.<br/>
-      Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
+      Having trouble uploading? Email your documents directly to <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
     </div>
   </div>
 </main>
 
+<!-- STICKY BAR -->
+<div class="sticky-bar hidden" id="sticky-bar">
+  <button class="sticky-bar-btn" onclick="scrollToFirstPending()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+    Submit Your Documents
+  </button>
+</div>
+
 <script>
-// ── UTILS ──
 function getOppId() {
   const parts = window.location.pathname.split('/');
   const idx = parts.indexOf('file');
@@ -531,7 +529,6 @@ function iconPending() {
   return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 }
 
-// ── RENDER ──
 let checklistData = null;
 let completionState = {};
 
@@ -540,20 +537,20 @@ function updateProgress() {
   const done  = checklistData.items.filter(i => completionState[i.id]).length;
   document.getElementById('progress-count').textContent = `${done} of ${total}`;
   for (let i = 0; i < total; i++) {
-  const seg = document.getElementById(`seg-${i}`);
-  if (seg) seg.classList.toggle('filled', i < done);
-}
+    const seg = document.getElementById(`seg-${i}`);
+    if (seg) seg.classList.toggle('filled', i < done);
+  }
   if (done === total) {
     document.getElementById('all-done').classList.add('visible');
     document.getElementById('checklist').style.display = 'none';
   }
+  updateStickyBar();
 }
 
 function markComplete(itemId) {
   completionState[itemId] = true;
   const card = document.getElementById(`card-${itemId}`);
   if (!card) return;
-
   card.classList.add('complete');
   card.querySelector('.item-status').className = 'item-status done';
   card.querySelector('.item-status').innerHTML = iconCheck();
@@ -561,10 +558,8 @@ function markComplete(itemId) {
   const tag = card.querySelector('.item-tag');
   tag.className = 'item-tag done';
   tag.textContent = 'Received ✓';
-
   const body = card.querySelector('.item-body');
   if (body) body.remove();
-
   updateProgress();
 }
 
@@ -593,7 +588,7 @@ function buildUploadZone(item, oppId, contactId) {
       <div class="upload-status-text" id="status-${item.id}">Uploading…</div>
     </div>
     <div class="confirmation" id="confirm-${item.id}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" flex-shrink="0" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>
       <div class="confirmation-text" id="confirm-text-${item.id}"></div>
     </div>
   `;
@@ -602,7 +597,6 @@ function buildUploadZone(item, oppId, contactId) {
 function buildItemCard(item, oppId, contactId) {
   const done = item.complete;
   let bodyHtml = '';
-
   if (!done) {
     let actionHtml = '';
     if (item.type === 'esign') {
@@ -613,46 +607,36 @@ function buildItemCard(item, oppId, contactId) {
         <a href="${item.formUrl}" target="_blank" class="btn-primary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Complete Form
-        </a>
-      `;
+        </a>`;
     } else if (item.type === 'upload') {
       actionHtml = `
         <p class="item-instruction">${item.instruction}</p>
-        ${buildUploadZone(item, oppId, contactId)}
-      `;
+        ${buildUploadZone(item, oppId, contactId)}`;
     }
     bodyHtml = `<div class="item-body">${actionHtml}</div>`;
   }
-
   return `
     <div class="item-card ${done ? 'complete' : ''}" id="card-${item.id}">
       <div class="item-header">
-        <div class="item-status ${done ? 'done' : 'pending'}">
-          ${done ? iconCheck() : iconPending()}
-        </div>
+        <div class="item-status ${done ? 'done' : 'pending'}">${done ? iconCheck() : iconPending()}</div>
         <div class="item-title ${done ? 'done' : 'pending'}">${item.label}</div>
         <div class="item-tag ${done ? 'done' : 'pending'}">${done ? 'Received ✓' : 'Needed'}</div>
       </div>
       ${bodyHtml}
-    </div>
-  `;
+    </div>`;
 }
 
 function renderPortal(data, oppId) {
   checklistData = data;
   data.items.forEach(i => completionState[i.id] = i.complete);
-
   document.getElementById('file-reference').textContent = data.fileReference;
   document.getElementById('checklist').innerHTML =
     data.items.map(i => buildItemCard(i, oppId, data.contactId)).join('');
-
   updateProgress();
-
   document.getElementById('loading-state').style.display = 'none';
-  document.getElementById('portal-content').style.display  = 'block';
+  document.getElementById('portal-content').style.display = 'block';
 }
 
-// ── UPLOAD HANDLING ──
 function handleDragOver(e, itemId) {
   e.preventDefault();
   document.getElementById(`zone-${itemId}`)?.classList.add('drag-over');
@@ -684,7 +668,6 @@ async function uploadFile(file, itemId, oppId, contactId) {
   zoneEl.style.pointerEvents = 'none';
   zoneEl.style.opacity = '0.5';
 
-  // Simulate progress during upload
   let pct = 0;
   const ticker = setInterval(() => {
     pct = Math.min(pct + 8, 85);
@@ -700,18 +683,15 @@ async function uploadFile(file, itemId, oppId, contactId) {
     statusEl.textContent = 'Uploading securely…';
     const res  = await fetch('/api/upload', { method: 'POST', body: formData });
     const data = await res.json();
-
     clearInterval(ticker);
 
     if (data.success) {
       fillEl.style.width = '100%';
       statusEl.textContent = 'Received ✓';
-
       const confirmEl     = document.getElementById(`confirm-${itemId}`);
       const confirmTextEl = document.getElementById(`confirm-text-${itemId}`);
       confirmTextEl.textContent = data.message;
       confirmEl.classList.add('visible');
-
       setTimeout(() => markComplete(itemId), 1200);
     } else {
       throw new Error(data.error || 'Upload failed');
@@ -726,7 +706,24 @@ async function uploadFile(file, itemId, oppId, contactId) {
   }
 }
 
-// ── INIT ──
+function scrollToFirstPending() {
+  if (!checklistData) return;
+  for (const item of checklistData.items) {
+    if (!completionState[item.id]) {
+      document.getElementById(`card-${item.id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+}
+
+function updateStickyBar() {
+  if (!checklistData) return;
+  const done = checklistData.items.filter(i => completionState[i.id]).length;
+  const bar = document.getElementById('sticky-bar');
+  if (bar) bar.classList.toggle('hidden', done === checklistData.items.length);
+}
+
 async function init() {
   const oppId = getOppId();
   if (!oppId) {
@@ -734,7 +731,6 @@ async function init() {
     document.getElementById('error-state').style.display   = 'block';
     return;
   }
-
   try {
     const res  = await fetch(`/api/checklist?opp_id=${oppId}`);
     if (!res.ok) throw new Error('Not found');
