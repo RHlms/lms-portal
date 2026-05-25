@@ -434,7 +434,45 @@
       .item-header { padding: 14px 16px; }
       .item-body { padding: 0 16px 16px; }
     }
-  </style>
+  .tos-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border: 2px solid var(--teal-border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0,168,198,0.10);
+}
+
+.tos-bar input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--teal);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tos-label {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.upload-zone.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.btn-primary.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}</style>
 </head>
 <body>
 
