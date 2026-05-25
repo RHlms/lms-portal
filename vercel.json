@@ -3,10 +3,12 @@
   "installCommand": "npm install",
   "functions": {
     "api/checklist.js": {
-      "runtime": "nodejs20.x"
+      "memory": 1024,
+      "maxDuration": 30
     },
     "api/upload.js": {
-      "runtime": "nodejs20.x"
+      "memory": 1024,
+      "maxDuration": 30
     }
   },
   "rewrites": [
