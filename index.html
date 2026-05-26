@@ -691,6 +691,7 @@ async function uploadFile(file, itemId, oppId, contactId) {
     formData.append('file', file);
     formData.append('opp_id', oppId);
     formData.append('contact_id', contactId || '');
+    formData.append('item_id', itemId);
 
     statusEl.textContent = 'Uploading securely…';
     const res  = await fetch('/api/upload', { method: 'POST', body: formData });
