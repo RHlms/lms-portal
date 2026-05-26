@@ -1,7 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/file/:opp_id", "destination": "/index.html" },
-    { "source": "/sign/:opp_id", "destination": "/sign.html" },
-    { "source": "/intake/:opp_id", "destination": "/intake.html" }
+  "routes": [
+    { "src": "/file/(.*)", "dest": "/index.html" },
+    { "src": "/sign/(.*)", "dest": "/sign.html" },
+    { "src": "/intake/(.*)", "dest": "/intake.html" },
+    { "src": "/offer/(.*)", "dest": "/offer.html" }
   ]
 }
