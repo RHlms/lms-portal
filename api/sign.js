@@ -64,7 +64,7 @@ export default async function handler(req, res) {
         headers: HEADERS,
         body: JSON.stringify({
           customFields: [
-            { id: FIELD_IDS.portal_sa_received, field_value: ['Received'] },
+            { id: FIELD_IDS.portal_sa_received, field_value: true },
           ],
         }),
       }
