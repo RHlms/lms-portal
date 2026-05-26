@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/file/:opp_id", "destination": "/index.html" },
-    { "source": "/sign/:opp_id", "destination": "/sign.html" }
+    { "source": "/sign/:opp_id", "destination": "/sign.html" },
+    { "source": "/intake/:opp_id", "destination": "/intake.html" }
   ]
 }
