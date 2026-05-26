@@ -511,7 +511,8 @@
     // ─── HELPERS ───────────────────────────────────────────────
     function getOppId() {
       const parts = window.location.pathname.split('/');
-      return parts[parts.length - 1] || parts[parts.length - 2];
+      const idx = parts.indexOf('offer');
+return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
     }
 
     function toggleConditional(id, value, triggerValue) {
