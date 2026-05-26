@@ -1,1 +1,1394 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS — Service Agreement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal:         #00A8C6;
+      --teal-dim:     rgba(0,168,198,0.10);
+      --teal-border:  rgba(0,168,198,0.25);
+      --navy:         #0B1F3A;
+      --navy-3:       #d1dde8;
+      --white:        #ffffff;
+      --muted:        #4a6a85;
+      --dim:          #7a9ab5;
+      --success:      #22c55e;
+      --success-dim:  rgba(34,197,94,0.12);
+      --danger:       #ef4444;
+      --warn-bg:      #fffbeb;
+      --warn-border:  #fbbf24;
+      --radius:       14px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: #d3d9db;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--navy);
+      min-height: 100vh;
+      padding-bottom: 120px;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    .header {
+      background: rgba(255,255,255,0.97);
+      border-bottom: 1px solid var(--navy-3);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .logo img { height: 80px; width: auto; border-radius: 6px; display: block; }
+
+    /* ── Progress strip ──────────────────────────────────────────────────── */
+    .progress-strip {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px 16px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Main layout ─────────────────────────────────────────────────────── */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 20px 0;
+    }
+
+    /* ── State screens ───────────────────────────────────────────────────── */
+    .state-screen { text-align: center; padding: 80px 20px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--navy-3);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-screen h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
+    .state-screen p  { font-size:14px; color:var(--muted); line-height:1.6; }
+
+    /* ── Doc intro card ─────────────────────────────────────────────────── */
+    .doc-intro {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.12);
+    }
+
+    .doc-intro-header {
+      background: var(--teal);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .doc-intro-header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .doc-intro-header .doc-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+    }
+
+    .doc-intro-body { padding: 24px 28px; }
+
+    .file-ref {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .file-ref-label {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 3px;
+    }
+    .file-ref-value {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--navy);
+    }
+
+    .name-input-section { margin-bottom: 4px; }
+    .name-input-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--navy);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .name-input-sub { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+    .master-name-input {
+      width: 100%;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      border: 2px solid var(--teal);
+      border-radius: 8px;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .master-name-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,168,198,0.15); }
+    .master-name-input.error { border-color: var(--danger); }
+
+    /* ── Section / Form cards ────────────────────────────────────────────── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0 16px;
+    }
+    .section-divider-line { flex: 1; height: 1px; background: var(--navy-3); }
+    .section-divider-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-card {
+      background: #fff;
+      border: 1.5px solid var(--teal-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,168,198,0.07);
+    }
+
+    .form-card-header {
+      background: var(--teal-dim);
+      border-bottom: 1px solid var(--teal-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .form-number {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .form-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+    }
+
+    .form-card-body { padding: 24px; }
+
+    /* ── Cover letter styles ─────────────────────────────────────────────── */
+    .cover-letter { padding: 28px; }
+    .cover-letter p { font-size: 14px; line-height: 1.8; color: var(--navy); margin-bottom: 14px; }
+    .cover-letter .salutation { font-size: 14px; margin-bottom: 18px; }
+    .cover-letter .highlight {
+      font-weight: 700;
+      text-decoration: underline;
+      color: var(--navy);
+    }
+    .cover-letter .warn {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+      font-weight: 700;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .cover-letter ul {
+      margin: 12px 0 12px 20px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .cover-letter ul li { margin-bottom: 6px; font-weight: 600; }
+    .cover-letter .legal-warn {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #991b1b;
+      margin: 16px 0;
+    }
+    .cover-letter .signoff { margin-top: 20px; font-size: 14px; line-height: 2; }
+
+    /* ── TOC ─────────────────────────────────────────────────────────────── */
+    .toc-list { list-style: none; }
+    .toc-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--navy-3);
+      font-size: 14px;
+    }
+    .toc-list li:last-child { border-bottom: none; }
+    .toc-num {
+      background: var(--teal-dim);
+      color: var(--teal);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* ── Form body text ──────────────────────────────────────────────────── */
+    .form-text { font-size: 13.5px; line-height: 1.8; color: var(--navy); margin-bottom: 16px; }
+    .form-text strong { font-weight: 700; }
+    .form-text em { font-style: italic; font-weight: 600; }
+    .form-text .caps { font-weight: 700; font-size: 13px; }
+    .form-text ul { margin: 10px 0 10px 20px; }
+    .form-text ul li { margin-bottom: 8px; }
+
+    .form-highlight {
+      background: var(--warn-bg);
+      border-left: 3px solid var(--warn-border);
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 12px 0;
+      font-weight: 700;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* ── Address pre-fill ────────────────────────────────────────────────── */
+    .prefill-field {
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 16px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .prefill-field-label {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 4px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* ── Form inputs ─────────────────────────────────────────────────────── */
+    .form-field { margin-bottom: 16px; }
+    .form-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+    .form-field input[type="text"],
+    .form-field input[type="email"],
+    .form-field input[type="tel"] {
+      width: 100%;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      color: var(--navy);
+      border: 1.5px solid var(--navy-3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    .form-field input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,168,198,0.12); }
+    .form-field input.error { border-color: var(--danger); }
+
+    .form-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── Radio / conditional agent ───────────────────────────────────────── */
+    .radio-group { margin-bottom: 16px; }
+    .radio-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--navy-3);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .radio-option:hover { border-color: var(--teal); background: var(--teal-dim); }
+    .radio-option.selected { border-color: var(--teal); background: var(--teal-dim); }
+    .radio-option input[type="radio"] { margin-top: 3px; accent-color: var(--teal); flex-shrink: 0; }
+    .radio-option-text { font-size: 13px; font-weight: 600; line-height: 1.5; }
+
+    .agent-fields {
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 8px;
+      display: none;
+    }
+    .agent-fields.visible { display: block; }
+
+    /* ── Initials blocks (Form 8) ────────────────────────────────────────── */
+    .initials-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--navy-3);
+    }
+    .initials-block:last-child { border-bottom: none; }
+    .initials-input {
+      width: 64px;
+      flex-shrink: 0;
+      text-align: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+      border: 2px solid var(--teal-border);
+      border-radius: 8px;
+      padding: 10px 8px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+      text-transform: uppercase;
+    }
+    .initials-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,168,198,0.12); }
+    .initials-input.error { border-color: var(--danger); }
+    .initials-text { font-size: 13px; line-height: 1.7; color: var(--navy); }
+
+    /* ── Acknowledge row ─────────────────────────────────────────────────── */
+    .ack-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    .ack-row.error { border-color: var(--danger); background: #fef2f2; }
+    .ack-row input[type="checkbox"] {
+      width: 20px; height: 20px;
+      margin-top: 1px;
+      accent-color: var(--teal);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .ack-label {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--navy);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    /* ── Sig preview block ───────────────────────────────────────────────── */
+    .sig-preview {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--navy-3);
+    }
+    .sig-preview-field { flex: 1; }
+    .sig-preview-label {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+    .sig-preview-value {
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      min-height: 28px;
+    }
+    .sig-preview-value.date-val { color: var(--muted); font-size: 13px; }
+
+    /* ── Final submit block ──────────────────────────────────────────────── */
+    .submit-block {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-top: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.15);
+    }
+    .submit-block h3 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .submit-block p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+
+    .submit-declaration {
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      color: var(--navy);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .submit-declaration strong { color: var(--teal); }
+
+    .submit-error {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #991b1b;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .submit-error.visible { display: block; }
+
+    /* ── Buttons ─────────────────────────────────────────────────────────── */
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      padding: 18px 32px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Sticky bar ──────────────────────────────────────────────────────── */
+    .sticky-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      border-top: 2px solid var(--teal-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .sticky-forms-count {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .sticky-forms-count span { color: var(--teal); }
+    .btn-sticky {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-sticky:hover { opacity: 0.88; }
+
+    /* ── Success screen ──────────────────────────────────────────────────── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      background: var(--success-dim);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: var(--radius);
+      padding: 48px 28px;
+      margin-top: 24px;
+    }
+    .success-screen.visible { display: block; }
+    .success-icon { font-size: 52px; margin-bottom: 16px; }
+    .success-screen h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+    .success-screen p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 480px) {
+      .main { padding: 20px 14px 0; }
+      .form-card-body { padding: 18px; }
+      .cover-letter { padding: 20px; }
+      .form-field-row { grid-template-columns: 1fr; }
+      .sig-preview { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <img src="/logo.png" alt="LMS — Loan Mitigation Services"/>
+  </div>
+</header>
+
+<div class="progress-strip" id="progress-strip">
+  REVIEWING SERVICE AGREEMENT — FORMS ACKNOWLEDGED: <span id="ack-count">0</span> OF 9
+</div>
+
+<main class="main" id="app">
+
+  <!-- Loading -->
+  <div class="state-screen" id="loading-state">
+    <div class="spinner"></div>
+    <h2>Loading your Service Agreement…</h2>
+    <p>Retrieving your file information securely.</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state-screen" id="error-state" style="display:none">
+    <h2>Link Not Found</h2>
+    <p>This link may be invalid or expired.<br/>Please contact us at <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a></p>
+  </div>
+
+  <!-- Main content -->
+  <div id="sa-content" style="display:none">
+
+    <!-- Intro / name collection -->
+    <div class="doc-intro">
+      <div class="doc-intro-header">
+        <h1>LMS SERVICE AGREEMENT</h1>
+        <div class="doc-badge">ELECTRONIC EXECUTION</div>
+      </div>
+      <div class="doc-intro-body">
+        <div class="file-ref">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <div>
+            <div class="file-ref-label">Your Short Sale File</div>
+            <div class="file-ref-value" id="file-ref-display">—</div>
+          </div>
+        </div>
+
+        <div class="name-input-section">
+          <label class="name-input-label" for="master-name">Enter Your Full Legal Name to Begin</label>
+          <p class="name-input-sub">This name will serve as your electronic signature on all forms below.</p>
+          <input
+            type="text"
+            id="master-name"
+            class="master-name-input"
+            placeholder="First Last"
+            oninput="onNameChange()"
+            autocomplete="name"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- COVER LETTER                                                       -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">COVER LETTER</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="cover-letter">
+        <p class="salutation">Dear Homeowner . . .</p>
+
+        <p>We thank you for trusting Loan Mitigation Services, LLC ("LMS") specializes in helping Homeowners resolve mortgage predicaments and avoid foreclosure through various Lender/Creditor offerings, i.e. Short-Sales, etc.</p>
+
+        <p>The purpose of this Service Agreement ("Service Agreement") is to begin the short-sale process with your Lender/Creditor, which involves the loan(s)/mortgage(s) and/or other claims on your residential/commercial property. The request was made by you, directly, to Loan Mitigation Services, LLC ("LMS") or by your Listing Agent. Please know, we are happy to help serve your processing needs and are sensitive to your situation. Each FORM provided below will require your initials and/or signatures, along with any other specific information. By completing/executing this LMS Service Agreement you authorize LMS to contact your Lender/Creditor(s) on your behalf in hopes of identifying a solution to prevent a possible foreclosure. We work closely with Lender/Creditors in hopes of facilitating your objectives.</p>
+
+        <p>That said and before beginning our efforts, we will need this <strong>Service Agreement</strong> executed by Borrower and Co-Borrower, if applicable. <span class="highlight">WE CANNOT BEGIN UNTIL WE RECEIVE THIS BACK FROM YOU.</span></p>
+
+        <ul>
+          <li>YOUR ANSWERS BELOW WILL BE KEPT PRIVATE AND USED FOR LMS INTERNAL USES ONLY</li>
+          <li>LMS SERVICES ARE AT NO COST TO HOMEOWNERS. THE LENDER/CREDITOR OR THE BUYER IS RESPONSIBLE FOR OUR PROCESSING FEE, NOT THE SELLER/BORROWER(S).</li>
+          <li>BY EXECUTING SAID SERVICE AGREEMENT AND ACKNOWLEDGEMENTS/DISCLOSURES, YOU ARE NOT ENTERING INTO A BUSINESS RELATIONSHIP OR BUSINESS AGREEMENT OF ANY KIND WITH LMS AND YOU AGREE TO THE SAME BY PROCEEDING.</li>
+        </ul>
+
+        <div class="legal-warn">*** LMS DOES NOT PROVIDE LEGAL OR FINANCIAL ADVICE. WE ENCOURAGE YOU TO SEEK THE COUNSEL OF AN ATTORNEY OR TAX PROFESSIONAL/ACCOUNTANT FOR THOSE MATTERS</div>
+
+        <p>LMS is a private, third-party company; not a government entity.</p>
+        <p>Please be advised that your Lender may not agree to provide a solution . . .</p>
+
+        <div class="signoff">
+          JUST KNOW . . . WE WILL TRY OUR VERY BEST FOR YOU.<br/>
+          Sincerely,<br/><br/>
+          LMS Management<br/>
+          151 Southhall Lane Ste 230<br/>
+          Maitland, FL 32751<br/>
+          info@shortsalestart.com
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- TABLE OF CONTENTS                                                  -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">TABLE OF CONTENTS</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-body">
+        <ul class="toc-list">
+          <li><span class="toc-num">FORM 1</span> Borrower / Co-Borrower Commitment</li>
+          <li><span class="toc-num">FORM 2</span> Right to Cancel</li>
+          <li><span class="toc-num">FORM 3</span> Hold-Harmless Acknowledgement</li>
+          <li><span class="toc-num">FORM 4</span> Authorization to Furnish – TILA-RESPA</li>
+          <li><span class="toc-num">FORM 5</span> "For Sale" Lender Requirement</li>
+          <li><span class="toc-num">FORM 6</span> Foreclosure Acknowledgement</li>
+          <li><span class="toc-num">FORM 7</span> Alternatives to Foreclosure</li>
+          <li><span class="toc-num">FORM 8</span> "Processing Fee" Acknowledgment</li>
+          <li><span class="toc-num">FORM 9</span> Relocation Assistance Acknowledgement</li>
+        </ul>
+        <div class="warn" style="margin-top:16px;background:#fffbeb;border-left:4px solid #fbbf24;padding:12px 16px;border-radius:6px;font-weight:700;font-size:13px;color:#92400e;">
+          PLEASE ACKNOWLEDGE EACH FORM WHERE NEEDED. MISSING INFORMATION WILL ONLY DELAY THE PROCESS.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- FORMS                                                              -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">PLEASE REVIEW AND ACKNOWLEDGE EACH FORM</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <!-- ─── FORM 1 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form1">
+      <div class="form-card-header">
+        <div class="form-number">FORM 1</div>
+        <div class="form-title">Borrower / Co-Borrower Commitment</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">THE LMS TEAM IS COMMITTED TO GIVING EVERY EFFORT IN YOUR PURSUIT TO PERFORM A SHORT-SALE OF YOUR MORTGAGE. BUT, <strong><em>THIS IS A TEAM-EFFORT</em></strong> AND <strong><em>LMS WILL NEED YOUR HELP/ASSISTANCE ALONG THE WAY.</em></strong> DURING THE NEXT SEVERAL MONTHS, LMS MAY, SPONTANEOUSLY, REQUEST DOCUMENTS FROM YOU, IN WHICH YOU WILL BE REQUIRED TO PRODUCE. IT'S VERY IMPORTANT THAT YOUR COMMITMENT LEVEL IS AS HIGH AS OURS. THE SHORT-SALE PROCESS CAN BE VERY TEDIOUS AND DEMANDING. WE/LMS TAKE GREAT PRIDE IN BEING ABLE TO PERFORM ON YOUR BEHALF.</p>
+
+        <p class="form-text"><strong>BORROWER/CO-BORROWER RESPONSIBILITIES . . .</strong></p>
+        <div class="form-text">
+          <ul>
+            <li>To communicate in an efficient manner;</li>
+            <li>To complete and provide all required documentation upon request in an efficient manner;</li>
+            <li>To provide needed access to property upon reasonable request.</li>
+          </ul>
+        </div>
+
+        <p class="form-text"><strong>I/WE ATTEST THAT I/WE WILL BE COMMITTED/RESPONSIVE TO THE PROCESS . . .</strong></p>
+
+        <div class="ack-row" id="ack-form1" onclick="toggleAck('form1',this)">
+          <input type="checkbox" id="chk-form1" onchange="toggleAck('form1',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form1">I have read and acknowledge Form 1 — Borrower/Co-Borrower Commitment</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form1"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 2 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form2">
+      <div class="form-card-header">
+        <div class="form-number">FORM 2</div>
+        <div class="form-title">Homeowner's Right to Cancel</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text caps"><strong>YOU MAY CANCEL THIS AGREEMENT FOR FORECLOSURE-RELATED SERVICES WITHOUT ANY PENALTY OR OBLIGATION WITHIN THREE (3) BUSINESS DAYS FOLLOWING THE DATE THIS AGREEMENT IS SIGNED BY YOU.</strong></p>
+
+        <p class="form-text caps"><strong>THE FORECLOSURE-RESCUE CONSULTANT IS PROHIBITED BY LAW FROM ACCEPTING ANY MONEY, PROPERTY, OR OTHER FORM OF PAYMENT FROM YOU UNTIL ALL PROMISED SERVICES ARE COMPLETE. IF FOR ANY REASON YOU HAVE PAID THE CONSULTANT BEFORE CANCELLATION, YOUR PAYMENT MUST BE RETURNED TO YOU NO LATER THAN TEN (10) BUSINESS DAYS AFTER THE CONSULTANT RECEIVES YOUR CANCELLATION NOTICE.</strong></p>
+
+        <p class="form-text caps"><strong>TO CANCEL THIS AGREEMENT, A SIGNED AND DATED COPY OF A STATEMENT THAT YOU ARE CANCELING THE AGREEMENT SHOULD BE MAILED (POSTMARKED) OR DELIVERED TO: LOAN MITIGATION SERVICES, LLC AT: 151 SOUTHHALL LANE STE 230; MAITLAND, FL 32751, NO LATER THAN MIDNIGHT OF THREE (3) BUSINESS DAYS AFTER EXECUTION OF THIS AGREEMENT.</strong></p>
+
+        <p class="form-text caps"><strong>IMPORTANT: IT IS RECOMMENDED THAT YOU CONTACT YOUR LENDER OR MORTGAGE SERVICER BEFORE SIGNING THIS AGREEMENT. YOUR LENDER OR MORTGAGE SERVICER MAY BE WILLING TO NEGOTIATE A PAYMENT PLAN OR A RESTRUCTURING WITH YOU FREE OF CHARGE.</strong></p>
+
+        <div class="ack-row" id="ack-form2" onclick="toggleAck('form2',this)">
+          <input type="checkbox" id="chk-form2" onchange="toggleAck('form2',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form2">I have read and acknowledge Form 2 — Homeowner's Right to Cancel</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form2"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 3 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form3">
+      <div class="form-card-header">
+        <div class="form-number">FORM 3</div>
+        <div class="form-title">Hold-Harmless Acknowledgement</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">Loan Mitigation Services, LLC ("LMS"), a Florida limited liability company is agreeing to act in assisting Borrowers ("Borrower") in obtaining information from Borrower's Lender ("Lender") regarding the loan for subject-property ("Property"). The information obtained is including, but not limited to payoff(s), important dates, potential lender workout options, etc.</p>
+
+        <div class="prefill-field-label">SUBJECT PROPERTY ADDRESS</div>
+        <div class="prefill-field" id="property-address-display">—</div>
+
+        <p class="form-text">And for good and valuable consideration, the receipt and sufficiency of which is hereby acknowledged, Borrower agrees to indemnify and hold harmless LMS as to damages and/or liabilities including defense thereof in connection with activities on behalf of the Borrower with respect to the Property, including, but not limited to, reasonable attorney's fees and cost, and reasonable attorney's fees and cost on appeal.</p>
+
+        <p class="form-text">Borrower acknowledges that LMS has disclosed that they are not attorneys, nor certified public accountants; and I/WE understand that I/WE have been advised to consult with any of these professionals with regard to any specific questions I may have relative to these areas of expertise.</p>
+
+        <p class="form-text">Moreover, Borrower acknowledges that it is the Borrower's responsibility to seek professional, legal and accounting advice with regard to all transactions with regard to the Property, including but not limited to any potential tax consequences of a "Loan Modification", "Short Sale", etc.</p>
+
+        <p class="form-text">Borrower acknowledges that LMS has not implied nor expressed warranties, nor represented, nor advised with regard to the sale of the property or the legal consequences of a "Loan Modification" or "Short Sale" and disclose that engaging in either does not prevent your Lender from pursuing foreclosure action against you.</p>
+
+        <div class="ack-row" id="ack-form3" onclick="toggleAck('form3',this)">
+          <input type="checkbox" id="chk-form3" onchange="toggleAck('form3',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form3">I have read and acknowledge Form 3 — Hold-Harmless Acknowledgement</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form3"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 4 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form4">
+      <div class="form-card-header">
+        <div class="form-number">FORM 4</div>
+        <div class="form-title">Authorization to Furnish – TILA-RESPA</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">To: Buyer, Seller, Buyer's Agent, Listing Agent, Lender, Title Company, Escrow Agent, and/or their representatives</p>
+
+        <div class="prefill-field-label">RE: SUBJECT PROPERTY</div>
+        <div class="prefill-field" id="tila-property-display">—</div>
+
+        <div class="prefill-field-label">I/WE (SELLER)</div>
+        <div class="prefill-field" id="tila-seller-display">—</div>
+
+        <div class="form-field">
+          <label for="buyer-name">I/WE (BUYER) — Optional</label>
+          <input type="text" id="buyer-name" placeholder="Buyer name if known"/>
+        </div>
+
+        <p class="form-text">hereby authorize Loan Mitigation Services, LLC ("LMS") to:</p>
+
+        <div class="form-text">
+          <p><strong>1.</strong> Furnish a copy of any and all documents specifically required by the short sale servicer(s) and/or the loan investor to facilitate the approval of the short sale, including but not limited buyer's proof of ability to complete the purchase, sellers financial information, loan estimates, Closing Disclosures, Combined ALTA settlement statements, Closing Statements, Preliminary HUDs, HOA Estoppels, Payoffs for liens or judgments, Boundary Survey's, Title Commitment and Municipal Lien searches (if applicable), any and all other documents provided in relation to the approval of the short sale; if applicable, any and all other documents provided in relation to the closing of the real estate and/or loan transaction involving the Property, to the above-named Broker or Broker's authorized agent.</p>
+          <br/>
+          <p><strong>2.</strong> Seller authorizes distribution of all documents required under the contract for sale and purchase to be distributed to all appropriate parties to fulfill the terms of the sales contract, such as the short sale approval letter(s) from the loan servicers(s) and the title commitment.</p>
+          <br/>
+          <p>A copy of this authorization shall serve as an original. This authorization is good through closing of the short sale or release and cancellation of the sales contract.</p>
+        </div>
+
+        <div class="ack-row" id="ack-form4" onclick="toggleAck('form4',this)">
+          <input type="checkbox" id="chk-form4" onchange="toggleAck('form4',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form4">I have read and acknowledge Form 4 — Authorization to Furnish TILA-RESPA</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form4"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form4"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 5 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form5">
+      <div class="form-card-header">
+        <div class="form-number">FORM 5</div>
+        <div class="form-title">"For Sale" Lender Requirement</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">As part of satisfying a Complete, "Lender-Package", it is typically required that your home/property be listed "For Sale" on the open market in the search for a Buyer. That said, you will need to be represented by a Listing Agent who can assist you in this process.</p>
+
+        <div class="form-highlight">*PLEASE NOTE*: THIS IS NOT A REGULAR LISTING AND MOST AGENTS PREFER NOT TO ACCEPT SERVICE, AS A SHORT-SALE LISTING IS SEVERAL MONTHS OF OVERSIGHT AND COMMUNICATION; VERY DEMANDING. YOUR CHOICE IS VERY IMPORTANT IN SATISFYING THE PROCESS ON BEHALF OF YOUR REQUEST.</div>
+
+        <p class="form-text"><strong>PLEASE CHOOSE ONE BELOW:</strong></p>
+
+        <div class="radio-group">
+          <label class="radio-option" id="radio-no-agent" onclick="selectAgent('no_agent')">
+            <input type="radio" name="listing-agent" value="no_agent" id="radio-no"/>
+            <div class="radio-option-text">I DO NOT HAVE A LISTING AGENT. PLEASE REFER ONE.<br/><span style="font-weight:400;font-size:12px;color:var(--muted)">LMS can refer a Listing Agent who is willing, able, and knowledgeable of this listing type.</span></div>
+          </label>
+
+          <label class="radio-option" id="radio-has-agent" onclick="selectAgent('has_agent')">
+            <input type="radio" name="listing-agent" value="has_agent" id="radio-yes"/>
+            <div class="radio-option-text">I HAVE A LISTING AGENT (please provide their information below)</div>
+          </label>
+        </div>
+
+        <div class="agent-fields" id="agent-fields">
+          <div class="form-field">
+            <label>A. Listing Agent Name</label>
+            <input type="text" id="la-name-input" placeholder="Full name"/>
+          </div>
+          <div class="form-field">
+            <label>B. Listing Brokerage Name</label>
+            <input type="text" id="la-brokerage-input" placeholder="Brokerage / company"/>
+          </div>
+          <div class="form-field-row">
+            <div class="form-field">
+              <label>C. Listing Agent Phone</label>
+              <input type="tel" id="la-phone-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-field">
+              <label>D. Listing Agent Email</label>
+              <input type="email" id="la-email-input" placeholder="agent@email.com"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="ack-row" id="ack-form5" onclick="toggleAck('form5',this)">
+          <input type="checkbox" id="chk-form5" onchange="toggleAck('form5',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form5">I have read and acknowledge Form 5 — "For Sale" Lender Requirement</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form5"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form5"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 6 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form6">
+      <div class="form-card-header">
+        <div class="form-number">FORM 6</div>
+        <div class="form-title">Foreclosure Acknowledgement</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">I, the undersigned, acknowledge that it has been disclosed to me that my realtor/listing agent has the intent to and/or has made diligent attempts to successfully market my property in order to save my home from foreclosure. In the event of a short sale on my property, I understand that there is no guarantee that the lender/beneficiary on my property will approve a payment for less than the full amount due on the loan. There are no guarantees or representations made regarding credit reporting practices or policy. A short sale does not stop my lender from pursuing foreclosure actions against me. Furthermore, I understand that I am unlikely to receive any cash compensation from this transaction. I have been advised that there may be tax ramifications associated with saving my home from foreclosure, including but not limited to, the issuance of an IRS tax form 1099 for any shortfall of the mortgage debt.</p>
+
+        <p class="form-text">I understand that my real estate professionals and Loan Mitigation Services, LLC ("LMS") have disclosed that they are not attorneys nor certified public accountants; and I understand that I have been advised to consult with any of these professionals with regard to any specific questions I may have relative to these areas of expertise.</p>
+
+        <p class="form-text">And, although a diligent effort will be made to obtain a full release/payoff status of my loan, there is a possibility of lender-instigated judgment against me for any loan deficiency. I further understand that the listing agent and/or their associates may become the listing agent for the beneficiary/investor or other new owner, if the property goes into foreclosure sale and is sold. If my property is being rented, I understand that my mortgage lender(s) and homeowner association might have the right to receive said rental income through an assignment of rents, and I understand that I have been advised of the risks of receiving rental income and not paying the mortgage Lender during the short sale process.</p>
+
+        <div class="ack-row" id="ack-form6" onclick="toggleAck('form6',this)">
+          <input type="checkbox" id="chk-form6" onchange="toggleAck('form6',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form6">I have read and acknowledge Form 6 — Foreclosure Acknowledgement</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form6"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 7 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form7">
+      <div class="form-card-header">
+        <div class="form-number">FORM 7</div>
+        <div class="form-title">Alternatives to Foreclosure Acknowledgement</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">Considering you may be facing foreclosure…it's important to know your options. Try to look at the situation more from a financial standpoint rather than an emotional standpoint. This way, you can more successfully analyze which option might best suit your needs and it serves to move you towards resolving your financial difficulty. One very important thing to remember: <strong>Time is of the essence.</strong> Take time to think through your situation and make a decision. Then, take action right away so you have enough time to complete the solution you choose. The below is a list of possible scenarios for you to consider, but not limited . . .</p>
+
+        <div class="form-text">
+          <ul>
+            <li><strong>#1: FORECLOSURE:</strong> If Borrower does nothing, they most likely will lose their home at foreclosure auction. Future loan applications may ask if the applicant has ever been foreclosed upon. Credit reports also disclose the damaging information of a foreclosure.</li>
+            <li><strong>#2: FORECLOSURE DEFENSE:</strong> When a Borrower hires an attorney to stall or delay the sale of the property at an Auction. This is costly and delays the inevitable.</li>
+            <li><strong>#3 LOAN MODIFICATION:</strong> When Lender agrees to adjust the terms of the Borrower's mortgage. This typically involves an application process to "qualify" for it and is widely known in the industry that most "loan-mods" end up back in default status.</li>
+            <li><strong>#4: REFINANCE:</strong> Borrower must qualify under application for a new mortgage and typically has another down payment. This is more common in homes that have equity. New mortgage may be at a higher interest rate with a prepayment penalty because of the recent default with current Lender.</li>
+            <li><strong>#5 REINSTATEMENT:</strong> When Borrower pays the entire defaulted amount of missed payments and typically attorney fees and late fees associated with the default. This is very costly, but if satisfied, loan continues under same terms, generally.</li>
+            <li><strong>#6 FORBEARANCE:</strong> Lender may arrange for a repayment plan based on financial situation and/or agree to put the missed payments on the back of the loan, extending the life of the loan, typically fees included.</li>
+            <li><strong>#7 DEED IN LIEU:</strong> When Borrower gives the property back to the Lender instead of Lender foreclosing. Lenders generally require the home to be well maintained and all mortgage payments and taxes must be current.</li>
+            <li><strong>#8 BANKRUPTCY:</strong> When Borrower liquidates debt by hiring a bankruptcy attorney. This can be costly and affect your credit score for several years.
+              <ul style="margin-top:6px">
+                <li>Chapter 7 (Liquidation) — To completely settle personal debt.</li>
+                <li>Chapter 13 (Wage Earner Plan) — Payments are made toward a plan to pay off debts in 3–5 years.</li>
+                <li>Chapter 11 (Business reorganization) — A Business debt solution.</li>
+              </ul>
+            </li>
+            <li><strong>#9 SHORT-SALE:</strong> If the property value is less than a purchase price, the sale can be negotiated with your Lender by your Real Estate Professional, which allows for sale price less than what is owed on the mortgage. No costs or fees and credit score not severely affected.</li>
+          </ul>
+        </div>
+
+        <div class="form-highlight">I have read this form and acknowledge it is merely provided by LMS as a guide and that I have several options available to me and that there may be more than those listed above. I have been advised that I should consult an attorney and/or CPA.</div>
+
+        <div class="ack-row" id="ack-form7" onclick="toggleAck('form7',this)">
+          <input type="checkbox" id="chk-form7" onchange="toggleAck('form7',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form7">I have read and acknowledge Form 7 — Alternatives to Foreclosure</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form7"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form7"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 8 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form8">
+      <div class="form-card-header">
+        <div class="form-number">FORM 8</div>
+        <div class="form-title">"Processing Fee" Acknowledgment</div>
+      </div>
+      <div class="form-card-body">
+        <p class="form-text">I/We, acknowledge our responsibility to consult with an attorney or CPA regarding any legal matters and have decided to proceed with processing a Short-Sale request with our Lender for the sale of our property/home. Further, we choose Loan Mitigation Services, LLC ("LMS") to handle the processing responsibilities, as well as, communicating with our Lender(s). Creditor(s), Listing Agent, Buyer's Agent, Buyer(s) and Title Company to satisfying our request to sell said property/home through the use of a short-sale.</p>
+
+        <p class="form-text"><strong>Please initial next to each item below:</strong></p>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-1" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/We understand the overall goal is to engage LMS to process a short-sale, obtain an "Approval Letter" and sell the subject-property in question; and</div>
+        </div>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-2" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/We understand LMS's primary objective is to process documents and facilitate communications between the Creditor(s) and any and all parties to the transaction/process. LMS does not possess a specialty license to negotiate any material price or terms; and</div>
+        </div>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-3" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/We understand that processing a short-sale is a demanding work-load and may take several months to complete in satisfying the Seller/Borrower/Co-Borrower request; and</div>
+        </div>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-4" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/We understand that LMS charges a "Processing Fee" of <strong>$4,950.00 (forty-nine hundred and fifty dollars)</strong> for their service and said fee is typically paid by the Lender or the Buyer of the transaction.</div>
+        </div>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-5" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/WE understand that the only circumstance in which Borrower/Co-Borrower shall be responsible to pay for LMS processing fee is when Borrower and/or Co-Borrower decides to cancel LMS short-sale processing services and no longer engage in the process; and</div>
+        </div>
+
+        <div class="initials-block">
+          <input type="text" class="initials-input" id="init-6" maxlength="4" placeholder="Init." oninput="this.value=this.value.toUpperCase()"/>
+          <div class="initials-text">I/We understand that if after 30 (thirty) calendar days from execution of Service Agreement, Borrower/Co-Borrower decide to cancel transaction, then LMS reserves the right at their discretion to invoice Borrower/Co-Borrower a processing fee of $4,950; payable within 30 (thirty) calendar days of invoice date. If said invoice is not paid/received by LMS within 30 (thirty) calendar days, then LMS reserves the right to file in County of Orange, State of Florida a "Notice of Intent ('NOI')" to pursue a judgment for said processing fee. Filing of such NOI is at the discretion of LMS and Borrower/Co-Borrower may be responsible for any filing fees and interest, but not limited to other costs associated with collection of processing fee.</div>
+        </div>
+
+        <div class="ack-row" id="ack-form8" onclick="toggleAck('form8',this)">
+          <input type="checkbox" id="chk-form8" onchange="toggleAck('form8',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form8">I have read, initialed each item, and acknowledge Form 8 — "Processing Fee" Acknowledgment</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form8"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form8"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORM 9 ──────────────────────────────────────────────────────── -->
+    <div class="form-card" id="card-form9">
+      <div class="form-card-header">
+        <div class="form-number">FORM 9</div>
+        <div class="form-title">"Relocation Assistance" Acknowledgement</div>
+      </div>
+      <div class="form-card-body">
+        <div class="form-text">
+          <ul>
+            <li>I/WE acknowledge that there is limited availability of relocation assistance programs and no request, either made by the Borrowers or their representatives guarantees them a right to assistance by Lender; and</li>
+            <li>I/WE acknowledge that eligibility may exist to receive relocation assistance as part of the terms to short sale; and</li>
+            <li>I/WE acknowledge Loan Mitigation Services, LLC ("LMS") strongly advocates for any program that assists Borrower(s) with relocation expenses, but is limited in their capacity to guarantee such assistance from Lender; and</li>
+            <li>I/WE acknowledge that LMS cannot assume responsibility or liability to Borrower(s) to either assist Borrower(s) in determining Borrower's eligibility for relocation assistance or to contact Borrower's lender(s) to request a relocation assistance eligibility determination; and</li>
+            <li>I/WE acknowledge that LMS's participation in Borrower receiving said Assistance shall merely be performed by requesting to Lender on Borrower's behalf and, subsequently, facilitating communications between parties; and</li>
+            <li>I/We acknowledge that LMS shall have no responsibility to advise Borrower(s) on the impact or desirability of participating in short sale programs that offer relocation assistance.</li>
+            <li>I/WE acknowledge that the request for relocation assistance / seller cash incentives was not advised by LMS staff or employees.</li>
+            <li>I/WE acknowledge that being determined eligible for relocation assistance does not constitute approval for relocation assistance. Relocation assistance approval is awarded at the sole determination of the lender/loan investor. Relocation Assistance, if awarded, is paid to the Borrower by their lender at closing.</li>
+          </ul>
+        </div>
+
+        <div class="ack-row" id="ack-form9" onclick="toggleAck('form9',this)">
+          <input type="checkbox" id="chk-form9" onchange="toggleAck('form9',this.closest('.ack-row'))"/>
+          <label class="ack-label" for="chk-form9">I have read and acknowledge Form 9 — "Relocation Assistance" Acknowledgement</label>
+        </div>
+        <div class="sig-preview">
+          <div class="sig-preview-field">
+            <div class="sig-preview-label">BORROWER PRINT NAME</div>
+            <div class="sig-preview-value" id="sig-form9"></div>
+          </div>
+          <div class="sig-preview-field" style="flex:0 0 160px">
+            <div class="sig-preview-label">DATE SIGNED</div>
+            <div class="sig-preview-value date-val" id="date-form9"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- SUBMIT                                                             -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div class="submit-block" id="submit-block">
+      <h3>Sign &amp; Submit Your Service Agreement</h3>
+      <p>By clicking the button below, you confirm that you have read all 9 forms above, that the information provided is accurate, and that your typed name constitutes your legally binding electronic signature on this Service Agreement.</p>
+
+      <div class="submit-declaration" id="submit-declaration">
+        I, <strong id="decl-name">—</strong>, electronically sign and execute this LMS Service Agreement on <strong id="decl-date">—</strong>.
+      </div>
+
+      <div class="submit-error" id="submit-error"></div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitSA()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Sign &amp; Submit Service Agreement
+      </button>
+    </div>
+
+    <!-- Success -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✅</div>
+      <h2>Service Agreement Signed!</h2>
+      <p>Your Service Agreement has been executed and recorded. You'll be redirected to your document portal now to complete the remaining steps.</p>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
+      This document is legally binding upon submission. Your signature is timestamped and logged.<br/>
+      Questions? Contact us at <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
+    </div>
+
+  </div><!-- /sa-content -->
+</main>
+
+<!-- Sticky bar -->
+<div class="sticky-bar" id="sticky-bar" style="display:none">
+  <div class="sticky-forms-count">Forms acknowledged: <span id="sticky-count">0</span> / 9</div>
+  <button class="btn-sticky" onclick="scrollToNext()">Next Unacknowledged ↓</button>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  let oppId      = null;
+  let contactId  = null;
+  let signData   = null;
+  let ackedForms = {};
+  const FORMS    = ['form1','form2','form3','form4','form5','form6','form7','form8','form9'];
+
+  const TODAY = new Date().toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  });
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  function getOppId() {
+    const parts = window.location.pathname.split('/');
+    const idx   = parts.indexOf('sign');
+    return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
+  }
+
+  async function init() {
+    oppId = getOppId();
+    if (!oppId) { showError(); return; }
+
+    try {
+      const res  = await fetch(`/api/sign-data?opp_id=${oppId}`);
+      if (!res.ok) throw new Error('not found');
+      signData = await res.json();
+      contactId = signData.contact_id;
+      renderPage();
+    } catch (e) {
+      showError();
+    }
+  }
+
+  function showError() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('error-state').style.display   = 'block';
+  }
+
+  function renderPage() {
+    // File reference
+    document.getElementById('file-ref-display').textContent = signData.property_address || oppId;
+
+    // Property address in forms
+    const addr = signData.property_address || '—';
+    document.getElementById('property-address-display').textContent = addr;
+    document.getElementById('tila-property-display').textContent    = addr;
+    document.getElementById('tila-seller-display').textContent      = signData.seller_name || '—';
+
+    // Pre-fill listing agent fields
+    if (signData.la_name)      { document.getElementById('la-name-input').value      = signData.la_name; }
+    if (signData.la_brokerage) { document.getElementById('la-brokerage-input').value = signData.la_brokerage; }
+    if (signData.la_phone)     { document.getElementById('la-phone-input').value      = signData.la_phone; }
+    if (signData.la_email)     { document.getElementById('la-email-input').value      = signData.la_email; }
+
+    // If listing agent data exists, default to "has agent"
+    if (signData.la_name) selectAgent('has_agent');
+
+    // Set all dates
+    FORMS.forEach(f => {
+      const el = document.getElementById(`date-${f}`);
+      if (el) el.textContent = TODAY;
+    });
+
+    // Declaration date
+    document.getElementById('decl-date').textContent = TODAY;
+
+    // Show content
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('sa-content').style.display    = 'block';
+    document.getElementById('sticky-bar').style.display    = 'flex';
+  }
+
+  // ── Name input ─────────────────────────────────────────────────────────
+  function onNameChange() {
+    const name = document.getElementById('master-name').value.trim();
+    FORMS.forEach(f => {
+      const el = document.getElementById(`sig-${f}`);
+      if (el) el.textContent = name;
+    });
+    document.getElementById('decl-name').textContent = name || '—';
+  }
+
+  // ── Acknowledge toggle ──────────────────────────────────────────────────
+  function toggleAck(formId, rowEl) {
+    const chk = document.getElementById(`chk-${formId}`);
+    if (!chk) return;
+    // If click was on row (not checkbox), toggle checkbox
+    if (event && event.target !== chk) chk.checked = !chk.checked;
+    ackedForms[formId] = chk.checked;
+    rowEl.classList.toggle('error', false);
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const count = Object.values(ackedForms).filter(Boolean).length;
+    document.getElementById('ack-count').textContent    = count;
+    document.getElementById('sticky-count').textContent = count;
+  }
+
+  // ── Listing agent radio ─────────────────────────────────────────────────
+  function selectAgent(val) {
+    document.getElementById('radio-no').checked  = val === 'no_agent';
+    document.getElementById('radio-yes').checked = val === 'has_agent';
+    document.getElementById('radio-no-agent').classList.toggle('selected', val === 'no_agent');
+    document.getElementById('radio-has-agent').classList.toggle('selected', val === 'has_agent');
+    document.getElementById('agent-fields').classList.toggle('visible', val === 'has_agent');
+  }
+
+  // ── Scroll to next unacknowledged ──────────────────────────────────────
+  function scrollToNext() {
+    for (const f of FORMS) {
+      if (!ackedForms[f]) {
+        document.getElementById(`card-${f}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+    document.getElementById('submit-block')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── Validation ─────────────────────────────────────────────────────────
+  function validate() {
+    const errors = [];
+    const nameVal = document.getElementById('master-name').value.trim();
+
+    if (!nameVal) {
+      document.getElementById('master-name').classList.add('error');
+      errors.push('Please enter your full legal name at the top of the page.');
+    }
+
+    // Check all forms acknowledged
+    FORMS.forEach(f => {
+      if (!ackedForms[f]) {
+        document.getElementById(`ack-${f}`)?.classList.add('error');
+        errors.push(`Please acknowledge Form ${f.replace('form','')}.`);
+      }
+    });
+
+    // Check initials
+    for (let i = 1; i <= 6; i++) {
+      const el = document.getElementById(`init-${i}`);
+      if (!el || !el.value.trim()) {
+        if (el) el.classList.add('error');
+        errors.push(`Please initial item ${i} in Form 8.`);
+      }
+    }
+
+    // Check listing agent option selected
+    const agentSelected = document.getElementById('radio-no').checked || document.getElementById('radio-yes').checked;
+    if (!agentSelected) errors.push('Please select your listing agent status in Form 5.');
+
+    return errors;
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────
+  async function submitSA() {
+    const errors = validate();
+    const errEl  = document.getElementById('submit-error');
+
+    if (errors.length) {
+      errEl.textContent = errors[0] + (errors.length > 1 ? ` (+ ${errors.length - 1} more — scroll up to review)` : '');
+      errEl.classList.add('visible');
+      return;
+    }
+
+    errEl.classList.remove('visible');
+    const btn = document.getElementById('btn-submit');
+    btn.disabled     = true;
+    btn.textContent  = 'Submitting…';
+
+    const agentOption = document.getElementById('radio-yes').checked ? 'has_agent' : 'no_agent';
+    const initials    = [1,2,3,4,5,6].map(i => document.getElementById(`init-${i}`)?.value.trim() || '');
+
+    const payload = {
+      opp_id:                   oppId,
+      contact_id:               contactId,
+      borrower_name:            document.getElementById('master-name').value.trim(),
+      buyer_name:               document.getElementById('buyer-name').value.trim(),
+      listing_agent_option:     agentOption,
+      listing_agent_name:       document.getElementById('la-name-input').value.trim(),
+      listing_agent_brokerage:  document.getElementById('la-brokerage-input').value.trim(),
+      listing_agent_phone:      document.getElementById('la-phone-input').value.trim(),
+      listing_agent_email:      document.getElementById('la-email-input').value.trim(),
+      initials,
+    };
+
+    try {
+      const res  = await fetch('/api/sign', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById('submit-block').style.display  = 'none';
+        document.getElementById('sticky-bar').style.display    = 'none';
+        document.getElementById('success-screen').classList.add('visible');
+        // Redirect to portal after 3 seconds
+        setTimeout(() => {
+          window.location.href = `/file/${oppId}`;
+        }, 3000);
+      } else {
+        throw new Error(data.error || 'Submission failed');
+      }
+    } catch (err) {
+      btn.disabled    = false;
+      btn.innerHTML   = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sign & Submit Service Agreement';
+      errEl.textContent = `Submission failed: ${err.message}. Please try again or email documents@shortsalestart.com.`;
+      errEl.classList.add('visible');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
