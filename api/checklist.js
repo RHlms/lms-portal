@@ -26,6 +26,7 @@ export default async function handler(req, res) {
     }
 
     const data = await ghlRes.json();
+    console.log('ALL CUSTOM FIELDS:', JSON.stringify(data.opportunity?.customFields || data.customFields || []));
     const opp = data.opportunity || data;
     const customFields = opp.customFields || [];
     const contactEmail = opp.contact?.email || '';
