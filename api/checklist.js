@@ -52,7 +52,7 @@ export default async function handler(req, res) {
           label: 'Step 1 — Service Agreement',
           complete: getField('portal_sa_received'),
           type: saSigningUrl ? 'form' : 'esign',
-          pendingMessage: saSigningUrl ? '' : 'Your Service Agreement has been sent to your email for electronic signature. Please check your inbox and complete the signature to proceed.',
+          pendingMessage: saSigningUrl ? 'Please sign your Service Agreement to proceed. This authorizes LMS to begin processing your short sale file.' : 'Your Service Agreement has been sent to your email for electronic signature. Please check your inbox and complete the signature to proceed.',
           formUrl: saSigningUrl || ''
         },
         {
