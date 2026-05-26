@@ -69,7 +69,7 @@ export default async function handler(req, res) {
     const saSigningUrl = getFieldValue('sa_signing_url') || '';
 
     return res.status(200).json({
-      debug_keymap: Object.keys(keyToId).filter(k => k.includes('sa') || k.includes('portal')),
+      debug_all_ids: customFields.map(f => ({ id: f.id, val: f.fieldValue ?? f.value })),
       fileReference: opp.name || 'File ' + opp_id,
       contactId: opp.contactId || opp.contact?.id || '',
       items: [
