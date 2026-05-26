@@ -36,20 +36,28 @@ export default async function handler(req, res) {
       return f.value === true || f.value === 'true' || f.value === '1' || f.value === 1;
     };
 
+    const getFieldValue = (key) => {
+      const f = customFields.find(f => f.key === key || f.fieldKey === key);
+      return f?.value || '';
+    };
+
+    const saSigningUrl = getFieldValue('sa_signing_url');
+
     return res.status(200).json({
       fileReference: opp.name || 'File ' + opp_id,
       contactId: opp.contactId || opp.contact?.id || '',
       items: [
         {
           id: 'sa',
-          label: 'Service Agreement',
+          label: 'Step 1 — Service Agreement',
           complete: getField('portal_sa_received'),
-          type: 'esign',
-          pendingMessage: 'Your Service Agreement has been sent to your email for electronic signature. Please check your inbox and complete the signature to proceed.'
+          type: saSigningUrl ? 'form' : 'esign',
+          pendingMessage: saSigningUrl ? '' : 'Your Service Agreement has been sent to your email for electronic signature. Please check your inbox and complete the signature to proceed.',
+          formUrl: saSigningUrl || ''
         },
         {
           id: 'sif',
-          label: 'Seller Intake Form',
+          label: 'Step 2 — Seller Intake Form',
           complete: getField('portal_sif_received'),
           type: 'form',
           pendingMessage: 'Please complete the Seller Intake Form so we can gather everything needed to process your file.',
@@ -57,7 +65,7 @@ export default async function handler(req, res) {
         },
         {
           id: 'mortgage',
-          label: 'Mortgage Statement',
+          label: 'Step 3 — Mortgage Statement',
           complete: getField('portal_mortgage_statement_received'),
           type: 'upload',
           instruction: 'Upload your most recent mortgage statement (within the last 30 days). PDF, JPG, or PNG accepted.',
@@ -65,7 +73,7 @@ export default async function handler(req, res) {
         },
         {
           id: 'threepa',
-          label: 'Third-Party Authorization (3PA)',
+          label: 'Step 4 — Third-Party Authorization (3PA)',
           complete: getField('portal_3pa_received'),
           type: 'upload',
           instruction: 'Upload your signed Third-Party Authorization form. This allows LMS to communicate with your lender on your behalf.',
