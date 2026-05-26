@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   try {
     // Fetch field definitions to get key→ID mapping
     const fieldsRes = await fetch(
-      `https://services.leadconnectorhq.com/locations/${process.env.GHL_LOCATION_ID}/customFields`,
+     `https://services.leadconnectorhq.com/locations/${process.env.GHL_LOCATION_ID}/customFields?model=opportunity`
       {
         headers: {
           'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
