@@ -1,1 +1,1660 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS — Seller Intake Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal:        #00A8C6;
+      --teal-dim:    rgba(0,168,198,0.10);
+      --teal-border: rgba(0,168,198,0.25);
+      --navy:        #0B1F3A;
+      --navy-3:      #d1dde8;
+      --muted:       #4a6a85;
+      --dim:         #7a9ab5;
+      --success:     #22c55e;
+      --success-dim: rgba(34,197,94,0.12);
+      --danger:      #ef4444;
+      --radius:      14px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #d3d9db;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--navy);
+      min-height: 100vh;
+      padding-bottom: 120px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: rgba(255,255,255,0.97);
+      border-bottom: 1px solid var(--navy-3);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .logo img { height: 80px; width: auto; border-radius: 6px; }
+
+    .progress-strip {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px 16px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Layout ── */
+    .main { max-width: 720px; margin: 0 auto; padding: 32px 20px 0; }
+
+    /* ── State screens ── */
+    .state-screen { text-align: center; padding: 80px 20px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--navy-3);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-screen h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
+    .state-screen p { font-size:14px; color:var(--muted); line-height:1.6; }
+
+    /* ── Intro card ── */
+    .intro-card {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.12);
+    }
+    .intro-header {
+      background: var(--teal);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .intro-header h1 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:20px; color:#fff; }
+    .intro-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .intro-body { padding: 20px 28px; }
+    .file-ref {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .file-ref-label { font-size:11px; font-weight:700; font-family:'Montserrat',sans-serif; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px; }
+    .file-ref-value { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:var(--navy); }
+    .intro-note { font-size:13px; color:var(--muted); line-height:1.6; }
+    .intro-note strong { color:var(--navy); }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: #fff;
+      border: 1.5px solid var(--teal-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,168,198,0.07);
+    }
+    .section-header {
+      background: var(--teal-dim);
+      border-bottom: 1px solid var(--teal-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-num {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .section-title { font-family:'Montserrat',sans-serif; font-weight:700; font-size:15px; color:var(--navy); }
+    .section-body { padding: 24px; }
+
+    /* ── Collapsible conditional sections ── */
+    .conditional-section {
+      display: none;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+    .conditional-section.visible { display: block; }
+    .conditional-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--teal-border);
+    }
+
+    /* ── Form fields ── */
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 7px;
+    }
+    .req { color: var(--danger); }
+
+    .form-input, .form-select {
+      width: 100%;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      color: var(--navy);
+      border: 1.5px solid var(--navy-3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(0,168,198,0.12);
+    }
+    .form-input.prefilled { background: var(--teal-dim); border-color: var(--teal-border); }
+
+    .form-textarea {
+      width: 100%;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      color: var(--navy);
+      border: 1.5px solid var(--navy-3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .form-textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,168,198,0.12); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* ── Radio pills ── */
+    .radio-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1.5px solid var(--navy-3);
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      color: var(--muted);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .pill:hover { border-color: var(--teal); color: var(--teal); }
+    .pill input[type="radio"] {
+      width: 13px; height: 13px;
+      accent-color: var(--teal);
+      flex-shrink: 0;
+    }
+    .pill.selected {
+      border-color: var(--teal);
+      background: var(--teal-dim);
+      color: var(--teal);
+    }
+
+    /* ── Divider ── */
+    .field-divider {
+      border: none;
+      border-top: 1px solid var(--navy-3);
+      margin: 20px 0;
+    }
+
+    /* ── Attestation ── */
+    .attest-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    .attest-block input[type="checkbox"] {
+      width: 20px; height: 20px;
+      margin-top: 2px;
+      accent-color: var(--teal);
+      flex-shrink: 0;
+    }
+    .attest-label { font-size:13px; font-weight:600; font-family:'Montserrat',sans-serif; color:var(--navy); line-height:1.6; }
+
+    /* ── Submit ── */
+    .submit-block {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-top: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.15);
+    }
+    .submit-block h3 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:17px; color:var(--navy); margin-bottom:8px; }
+    .submit-block p { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+
+    .submit-error {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #991b1b;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .submit-error.visible { display: block; }
+
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      padding: 18px 32px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Success ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      background: var(--success-dim);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: var(--radius);
+      padding: 48px 28px;
+      margin-top: 24px;
+    }
+    .success-screen.visible { display: block; }
+    .success-icon { font-size: 52px; margin-bottom: 16px; }
+    .success-screen h2 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:22px; color:var(--success); margin-bottom:10px; }
+    .success-screen p { font-size:14px; color:var(--muted); line-height:1.7; }
+
+    /* ── Sticky bar ── */
+    .sticky-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      border-top: 2px solid var(--teal-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .sticky-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:13px; color:var(--muted); }
+    .sticky-label span { color: var(--teal); }
+    .btn-sticky {
+      background: var(--teal);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-sticky:hover { opacity: 0.88; }
+
+    .footer { text-align:center; margin-top:48px; font-size:12px; color:var(--dim); line-height:1.7; }
+
+    @media (max-width: 480px) {
+      .main { padding: 20px 14px 0; }
+      .section-body { padding: 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <img src="/logo.png" alt="LMS — Loan Mitigation Services"/>
+  </div>
+</header>
+
+<div class="progress-strip">SELLER INTAKE FORM — PLEASE COMPLETE ALL SECTIONS</div>
+
+<main class="main" id="app">
+
+  <div class="state-screen" id="loading-state">
+    <div class="spinner"></div>
+    <h2>Loading your intake form…</h2>
+    <p>Retrieving your file information securely.</p>
+  </div>
+
+  <div class="state-screen" id="error-state" style="display:none">
+    <h2>Link Not Found</h2>
+    <p>This link may be invalid or expired.<br/>Contact us at <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a></p>
+  </div>
+
+  <div id="sif-content" style="display:none">
+
+    <!-- Intro -->
+    <div class="intro-card">
+      <div class="intro-header">
+        <h1>SELLER INTAKE FORM</h1>
+        <div class="intro-badge">CONFIDENTIAL</div>
+      </div>
+      <div class="intro-body">
+        <div class="file-ref">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <div>
+            <div class="file-ref-label">Your Short Sale File</div>
+            <div class="file-ref-value" id="file-ref-display">—</div>
+          </div>
+        </div>
+        <p class="intro-note">Please complete all required fields below. <strong>Your information is private and used for LMS internal processing only.</strong> Fields pre-filled from your file can be edited if needed.</p>
+      </div>
+    </div>
+
+    <!-- ══ SECTION I — SUBJECT PROPERTY ══════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION I</div>
+        <div class="section-title">Subject Property</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Subject Street — Address <span class="req">*</span></label>
+          <textarea name="subject_address" class="form-textarea" rows="2" placeholder="Street address"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">City <span class="req">*</span></label>
+            <input type="text" name="subject_address_city" class="form-input" placeholder="City"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">State <span class="req">*</span></label>
+            <input type="text" name="subject_address__state" class="form-input" placeholder="State"/>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Zip Code <span class="req">*</span></label>
+            <input type="text" name="subject_address__zip_code" class="form-input" placeholder="Zip"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">County <span class="req">*</span></label>
+            <input type="text" name="subject_address__county" class="form-input" placeholder="County"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Property Type <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_type">
+            <label class="pill"><input type="radio" name="property_type" value="Single-Family Residence (SFR)"/> Single-Family (SFR)</label>
+            <label class="pill"><input type="radio" name="property_type" value="Condo / Townhome"/> Condo / Townhome</label>
+            <label class="pill"><input type="radio" name="property_type" value="Multi-Family (1-4 units)"/> Multi-Family (1–4)</label>
+            <label class="pill"><input type="radio" name="property_type" value="Lot / Land"/> Lot / Land</label>
+            <label class="pill"><input type="radio" name="property_type" value="Commercial"/> Commercial</label>
+            <label class="pill"><input type="radio" name="property_type" value="Other"/> Other</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Property Use <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_use">
+            <label class="pill"><input type="radio" name="property_use" value="Personal"/> Personal</label>
+            <label class="pill"><input type="radio" name="property_use" value="Investment / Vacation / 2nd Home"/> Investment / Vacation / 2nd Home</label>
+            <label class="pill"><input type="radio" name="property_use" value="Investment Rehab / Flip"/> Investment Rehab / Flip</label>
+            <label class="pill"><input type="radio" name="property_use" value="Investment Rental (long-term)"/> Rental (long-term)</label>
+            <label class="pill"><input type="radio" name="property_use" value="Investment Rental (short-term; STR)"/> Rental (STR)</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Property Occupied? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_occupied">
+            <label class="pill"><input type="radio" name="property_occupied" value="Yes"/> Yes</label>
+            <label class="pill"><input type="radio" name="property_occupied" value="No, it's vacant"/> No, it's vacant</label>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Bedrooms <span class="req">*</span></label>
+            <div class="radio-pills" id="rg-property_bedrooms">
+              <label class="pill"><input type="radio" name="property_bedrooms" value="0 — N/A"/> N/A</label>
+              <label class="pill"><input type="radio" name="property_bedrooms" value="1"/> 1</label>
+              <label class="pill"><input type="radio" name="property_bedrooms" value="2"/> 2</label>
+              <label class="pill"><input type="radio" name="property_bedrooms" value="3"/> 3</label>
+              <label class="pill"><input type="radio" name="property_bedrooms" value="4"/> 4</label>
+              <label class="pill"><input type="radio" name="property_bedrooms" value="5+"/> 5+</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bathrooms (Full) <span class="req">*</span></label>
+            <div class="radio-pills" id="rg-property_bathrooms_full">
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="0 — N/A"/> N/A</label>
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="1"/> 1</label>
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="2"/> 2</label>
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="3"/> 3</label>
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="4"/> 4</label>
+              <label class="pill"><input type="radio" name="property_bathrooms_full" value="5+"/> 5+</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bathrooms (Half) <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_bathrooms_half">
+            <label class="pill"><input type="radio" name="property_bathrooms_half" value="0 — N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_bathrooms_half" value="1"/> 1</label>
+            <label class="pill"><input type="radio" name="property_bathrooms_half" value="2"/> 2</label>
+            <label class="pill"><input type="radio" name="property_bathrooms_half" value="3+"/> 3+</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Square Footage</label>
+          <input type="text" name="property_square_footage" class="form-input" placeholder="e.g. 1,850"/>
+        </div>
+
+        <!-- Condition fields -->
+        <hr class="field-divider"/>
+        <p style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:16px;">PROPERTY CONDITIONS</p>
+
+        <div class="form-group">
+          <label class="form-label">Interior Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_interior_condition">
+            <label class="pill"><input type="radio" name="property_interior_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_interior_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_interior_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_interior_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_interior_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Exterior Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_exterior_condiiton">
+            <label class="pill"><input type="radio" name="property_exterior_condiiton" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_exterior_condiiton" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_exterior_condiiton" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_exterior_condiiton" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_exterior_condiiton" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Roof Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_roof_condition">
+            <label class="pill"><input type="radio" name="property_roof_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_roof_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_roof_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_roof_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_roof_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Plumbing Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_plumbing_condition">
+            <label class="pill"><input type="radio" name="property_plumbing_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_plumbing_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_plumbing_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_plumbing_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_plumbing_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Electrical Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_electrical_condition">
+            <label class="pill"><input type="radio" name="property_electrical_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_electrical_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_electrical_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_electrical_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_electrical_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">HVAC / Air Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_hvac__air_condition">
+            <label class="pill"><input type="radio" name="property_hvac__air_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_hvac__air_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_hvac__air_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_hvac__air_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_hvac__air_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Foundation Condition <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_foundation_condition">
+            <label class="pill"><input type="radio" name="property_foundation_condition" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_foundation_condition" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="property_foundation_condition" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="property_foundation_condition" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="property_foundation_condition" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <hr class="field-divider"/>
+
+        <div class="form-group">
+          <label class="form-label">Garage <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_garage">
+            <label class="pill"><input type="radio" name="property_garage" value="0 — N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="property_garage" value="0 — Carport (1-car)"/> Carport (1-car)</label>
+            <label class="pill"><input type="radio" name="property_garage" value="0 — Carport (2-car)"/> Carport (2-car)</label>
+            <label class="pill"><input type="radio" name="property_garage" value="Yes, 1-car"/> 1-car</label>
+            <label class="pill"><input type="radio" name="property_garage" value="Yes, 2-car"/> 2-car</label>
+            <label class="pill"><input type="radio" name="property_garage" value="Yes, 3-car"/> 3-car</label>
+            <label class="pill"><input type="radio" name="property_garage" value="Yes, 4-car+"/> 4-car+</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Pool <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_pool">
+            <label class="pill"><input type="radio" name="property_pool" value="None — N/A"/> None</label>
+            <label class="pill"><input type="radio" name="property_pool" value="Yes, above-ground (private)"/> Above-ground</label>
+            <label class="pill"><input type="radio" name="property_pool" value="Yes, in-ground (private)"/> In-ground</label>
+            <label class="pill"><input type="radio" name="property_pool" value="Yes, community"/> Community</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="pool-condition-group" style="display:none">
+          <label class="form-label">Pool Condition</label>
+          <div class="radio-pills" id="rg-pool_condiiton">
+            <label class="pill"><input type="radio" name="pool_condiiton" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="pool_condiiton" value="Excellent"/> Excellent</label>
+            <label class="pill"><input type="radio" name="pool_condiiton" value="Good"/> Good</label>
+            <label class="pill"><input type="radio" name="pool_condiiton" value="Bad"/> Bad</label>
+            <label class="pill"><input type="radio" name="pool_condiiton" value="Ugly"/> Ugly</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lot Size <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_lot_size">
+            <label class="pill"><input type="radio" name="property_lot_size" value="Unsure"/> Unsure</label>
+            <label class="pill"><input type="radio" name="property_lot_size" value="Zero-Lot Line"/> Zero-Lot Line</label>
+            <label class="pill"><input type="radio" name="property_lot_size" value="< .25 acres"/> &lt;.25 acres</label>
+            <label class="pill"><input type="radio" name="property_lot_size" value=".25 - .50 acres"/> .25–.50 acres</label>
+            <label class="pill"><input type="radio" name="property_lot_size" value=".50 to 1 acre +"/> .50–1 acre+</label>
+            <label class="pill"><input type="radio" name="property_lot_size" value="5 acres +"/> 5 acres+</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Property on Water? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-property_on_water">
+            <label class="pill"><input type="radio" name="property_on_water" value="No"/> No</label>
+            <label class="pill"><input type="radio" name="property_on_water" value="Yes, water-front"/> Water-front</label>
+            <label class="pill"><input type="radio" name="property_on_water" value="Water-view only"/> Water-view only</label>
+            <label class="pill"><input type="radio" name="property_on_water" value="Water access (community)"/> Water access (community)</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION II — BORROWER / SELLER ════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION II</div>
+        <div class="section-title">Borrower / Seller Information</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Seller / Borrower (Full) Name <span class="req">*</span></label>
+          <input type="text" name="sellerborrower_name" class="form-input" placeholder="Full legal name"/>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Phone <span class="req">*</span></label>
+            <input type="tel" name="sellerborrower_phone" class="form-input" placeholder="(000) 000-0000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email <span class="req">*</span></label>
+            <input type="email" name="sellerborrower_email" class="form-input" placeholder="email@example.com"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Best Time of Day</label>
+          <div class="radio-pills" id="rg-seller__borrower_best_time_of_day">
+            <label class="pill"><input type="radio" name="seller__borrower_best_time_of_day" value="N/A"/> N/A</label>
+            <label class="pill"><input type="radio" name="seller__borrower_best_time_of_day" value="Anytime"/> Anytime</label>
+            <label class="pill"><input type="radio" name="seller__borrower_best_time_of_day" value="Morning"/> Morning</label>
+            <label class="pill"><input type="radio" name="seller__borrower_best_time_of_day" value="Afternoon"/> Afternoon</label>
+            <label class="pill"><input type="radio" name="seller__borrower_best_time_of_day" value="Evening"/> Evening</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mailing Address <span class="req">*</span></label>
+          <textarea name="mailing_address" class="form-textarea" rows="2" placeholder="Full mailing address (if different from property)"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Last 4 of SS# <span class="req">*</span></label>
+            <input type="text" name="sellerborrower_last_4_of_ss" class="form-input" maxlength="4" placeholder="XXXX"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth <span class="req">*</span></label>
+            <input type="text" name="seller_dob" class="form-input" placeholder="MM/DD/YYYY"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Employed? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-seller__borrower_employed">
+            <label class="pill"><input type="radio" name="seller__borrower_employed" value="Yes"/> Yes</label>
+            <label class="pill"><input type="radio" name="seller__borrower_employed" value="No"/> No</label>
+            <label class="pill"><input type="radio" name="seller__borrower_employed" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Recently Filed Bankruptcy? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-seller__borrower_recently_filed_bankruptcy">
+            <label class="pill"><input type="radio" name="seller__borrower_recently_filed_bankruptcy" value="Yes"/> Yes</label>
+            <label class="pill"><input type="radio" name="seller__borrower_recently_filed_bankruptcy" value="No"/> No</label>
+            <label class="pill"><input type="radio" name="seller__borrower_recently_filed_bankruptcy" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Seller / Borrower Notes</label>
+          <textarea name="seller__borrower_notes" class="form-textarea" rows="3" placeholder="Any additional notes about the seller/borrower..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION III — CO-BORROWER ═════════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION III</div>
+        <div class="section-title">Co-Borrower Information</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Is There a Co-Borrower? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-is_there_a_coborrower">
+            <label class="pill"><input type="radio" name="is_there_a_coborrower" value="Yes" onchange="toggleSection('coborrower-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="is_there_a_coborrower" value="No" onchange="toggleSection('coborrower-section', 'No')"/> No</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="coborrower-section">
+          <div class="conditional-title">CO-BORROWER DETAILS</div>
+
+          <div class="form-group">
+            <label class="form-label">Co-Borrower Name</label>
+            <input type="text" name="coborrower_name" class="form-input" placeholder="Full legal name"/>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" name="coborrower_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" name="coborrower_email" class="form-input" placeholder="email@example.com"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Best Time of Day</label>
+            <div class="radio-pills" id="rg-coborrower_best_time_of_day">
+              <label class="pill"><input type="radio" name="coborrower_best_time_of_day" value="Anytime"/> Anytime</label>
+              <label class="pill"><input type="radio" name="coborrower_best_time_of_day" value="Morning"/> Morning</label>
+              <label class="pill"><input type="radio" name="coborrower_best_time_of_day" value="Afternoon"/> Afternoon</label>
+              <label class="pill"><input type="radio" name="coborrower_best_time_of_day" value="Evening"/> Evening</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mailing Address</label>
+            <textarea name="coborrower_mailing_address" class="form-textarea" rows="2" placeholder="Full mailing address"></textarea>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Last 4 of SS#</label>
+              <input type="text" name="coborrower_last_4_of_ss" class="form-input" maxlength="4" placeholder="XXXX"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input type="text" name="coborrower_dob" class="form-input" placeholder="MM/DD/YYYY"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Employed?</label>
+            <div class="radio-pills" id="rg-coborrower_employed">
+              <label class="pill"><input type="radio" name="coborrower_employed" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="coborrower_employed" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="coborrower_employed" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Recently Filed Bankruptcy?</label>
+            <div class="radio-pills" id="rg-coborrower_recently_filed_bankruptcy">
+              <label class="pill"><input type="radio" name="coborrower_recently_filed_bankruptcy" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="coborrower_recently_filed_bankruptcy" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="coborrower_recently_filed_bankruptcy" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Co-Borrower Notes</label>
+            <textarea name="coborrower_notes" class="form-textarea" rows="3" placeholder="Any additional notes..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION IV — TENANT ════════════════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION IV</div>
+        <div class="section-title">Tenant Information</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Is the Property Rented? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-is_the_property_rented">
+            <label class="pill"><input type="radio" name="is_the_property_rented" value="Yes" onchange="toggleSection('tenant-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="is_the_property_rented" value="No" onchange="toggleSection('tenant-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="is_the_property_rented" value="Unsure" onchange="toggleSection('tenant-section', 'No')"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="tenant-section">
+          <div class="conditional-title">TENANT DETAILS</div>
+
+          <div class="form-group">
+            <label class="form-label">Tenant Full Name</label>
+            <input type="text" name="tenant_name_full" class="form-input" placeholder="Full name"/>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Tenant Phone</label>
+              <input type="tel" name="tenant_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tenant Email</label>
+              <input type="email" name="tenant_email" class="form-input" placeholder="email@example.com"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Lease Situation</label>
+            <div class="radio-pills" id="rg-lease_situation">
+              <label class="pill"><input type="radio" name="lease_situation" value="Under Lease"/> Under Lease</label>
+              <label class="pill"><input type="radio" name="lease_situation" value="Month-to-Month"/> Month-to-Month</label>
+              <label class="pill"><input type="radio" name="lease_situation" value="Squatter"/> Squatter</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Lease Deposit Amount</label>
+            <input type="text" name="lease_deposit_amount" class="form-input" placeholder="$0.00"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tenant in Good Standing?</label>
+            <div class="radio-pills" id="rg-tenant_good_standing">
+              <label class="pill"><input type="radio" name="tenant_good_standing" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="tenant_good_standing" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="tenant_good_standing" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tenant Additional Notes</label>
+            <textarea name="tenant_additional_notes" class="form-textarea" rows="3" placeholder="Any additional notes about the tenant..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION V — LISTING AGENT ══════════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION V</div>
+        <div class="section-title">Listing Agent Information</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Is the Home For Sale? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-is_the_home_for_sale">
+            <label class="pill"><input type="radio" name="is_the_home_for_sale" value="Yes"/> Yes</label>
+            <label class="pill"><input type="radio" name="is_the_home_for_sale" value="No"/> No</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Do You Have a Real Estate Agent? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-do_you_have_a_real_estate_agent">
+            <label class="pill"><input type="radio" name="do_you_have_a_real_estate_agent" value="Yes" onchange="toggleSection('agent-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="do_you_have_a_real_estate_agent" value="No" onchange="toggleSection('agent-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="do_you_have_a_real_estate_agent" value="Unsure" onchange="toggleSection('agent-section', 'No')"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="agent-section">
+          <div class="conditional-title">LISTING AGENT DETAILS</div>
+
+          <div class="form-group">
+            <label class="form-label">Listing Agent Name</label>
+            <input type="text" name="listing_agent_name" class="form-input" placeholder="Full name"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Listing Brokerage / Company</label>
+            <input type="text" name="listing_agent_brokerage__company" class="form-input" placeholder="Brokerage name"/>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Listing Agent Phone</label>
+              <input type="tel" name="listing_agent_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Listing Agent Email</label>
+              <input type="email" name="listing_agent_email" class="form-input" placeholder="email@example.com"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Listing Agent Notes</label>
+            <textarea name="listing_agent_notes" class="form-textarea" rows="2" placeholder="Any notes about your listing agent..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION VI — LENDER / LOAN #1 ══════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION VI</div>
+        <div class="section-title">Lender — Loan #1 Information</div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-group">
+          <label class="form-label">Total # of Loans <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-total__of_loans">
+            <label class="pill"><input type="radio" name="total__of_loans" value="1" onchange="onLoanCountChange(1)"/> 1</label>
+            <label class="pill"><input type="radio" name="total__of_loans" value="2" onchange="onLoanCountChange(2)"/> 2</label>
+            <label class="pill"><input type="radio" name="total__of_loans" value="3" onchange="onLoanCountChange(3)"/> 3</label>
+            <label class="pill"><input type="radio" name="total__of_loans" value="Other" onchange="onLoanCountChange(1)"/> Other</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lender-Loan #1 Name <span class="req">*</span></label>
+          <input type="text" name="lenderloan_1_name" class="form-input" placeholder="Lender name"/>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Lender-Loan #1 Phone</label>
+            <input type="tel" name="lenderloan_1_phone" class="form-input" placeholder="(000) 000-0000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lender-Loan #1 Account #</label>
+            <input type="text" name="lenderloan_1_account_" class="form-input" placeholder="Account number"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Loan Type <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-lenderloan_1_loan_type">
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="FHA"/> FHA</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="VA"/> VA</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="Conventional Financing"/> Conventional</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="Home Equity Line of Credit (HELOC)"/> HELOC</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="Private / Hard-Money"/> Private / Hard-Money</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_loan_type" value="Other"/> Other</label>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Estimated Balance <span class="req">*</span></label>
+            <input type="text" name="lenderloan_1_estimated_balance" class="form-input" placeholder="$0.00"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Payment</label>
+            <input type="text" name="lenderloan_1_monthly_payment" class="form-input" placeholder="$0.00"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">In Default? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-lenderloan_1_in_default">
+            <label class="pill"><input type="radio" name="lenderloan_1_in_default" value="Yes"/> Yes</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_in_default" value="No"/> No</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_in_default" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Months in Default / Late?</label>
+          <div class="radio-pills" id="rg-lenderloan_1_months_in_defaultlate">
+            <label class="pill"><input type="radio" name="lenderloan_1_months_in_defaultlate" value="0 — current"/> Current</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_months_in_defaultlate" value="1-4"/> 1–4</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_months_in_defaultlate" value="5-10"/> 5–10</label>
+            <label class="pill"><input type="radio" name="lenderloan_1_months_in_defaultlate" value="11+"/> 11+</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lender-Loan #1 Additional Notes</label>
+          <textarea name="lenderloan_1_additional_notes" class="form-textarea" rows="2" placeholder="Any additional notes about this loan..."></textarea>
+        </div>
+
+        <!-- Loan #2 -->
+        <div class="conditional-section" id="loan2-section">
+          <div class="conditional-title">LENDER — LOAN #2</div>
+
+          <div class="form-group">
+            <label class="form-label">Lender-Loan #2 Name</label>
+            <input type="text" name="lenderloan_2_name" class="form-input" placeholder="Lender name"/>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" name="lenderloan_2_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Account #</label>
+              <input type="text" name="lenderloan_2_account_" class="form-input" placeholder="Account number"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Loan Type</label>
+            <div class="radio-pills" id="rg-lenderloan_2_loan_type">
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="FHA"/> FHA</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="VA"/> VA</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="Conventional Financing"/> Conventional</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="Home Equity Line of Credit (HELOC)"/> HELOC</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="Private / Hard-Money"/> Private / Hard-Money</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_loan_type" value="Other"/> Other</label>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Estimated Balance</label>
+              <input type="text" name="lenderloan_2_estimated_balance" class="form-input" placeholder="$0.00"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Payment</label>
+              <input type="text" name="lenderloan_2_monthly_payment" class="form-input" placeholder="$0.00"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">In Default?</label>
+            <div class="radio-pills" id="rg-lenderloan_2_in_default">
+              <label class="pill"><input type="radio" name="lenderloan_2_in_default" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_in_default" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_in_default" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Months in Default?</label>
+            <div class="radio-pills" id="rg-lenderloan_2_months_in_default">
+              <label class="pill"><input type="radio" name="lenderloan_2_months_in_default" value="0 — current"/> Current</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_months_in_default" value="1-4"/> 1–4</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_months_in_default" value="5-10"/> 5–10</label>
+              <label class="pill"><input type="radio" name="lenderloan_2_months_in_default" value="11+"/> 11+</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Additional Notes</label>
+            <textarea name="lenderloan_2_additional_notes" class="form-textarea" rows="2" placeholder="Any additional notes..."></textarea>
+          </div>
+        </div>
+
+        <!-- Loan #3 -->
+        <div class="conditional-section" id="loan3-section">
+          <div class="conditional-title">LENDER — LOAN #3</div>
+
+          <div class="form-group">
+            <label class="form-label">Lender-Loan #3 Name</label>
+            <input type="text" name="lenderloan_3_name" class="form-input" placeholder="Lender name"/>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" name="lenderloan_3_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Account #</label>
+              <input type="text" name="lenderloan_3_account_" class="form-input" placeholder="Account number"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Loan Type</label>
+            <div class="radio-pills" id="rg-lenderloan_3_loan_type">
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="FHA"/> FHA</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="VA"/> VA</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="Conventional Financing"/> Conventional</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="Home Equity Line of Credit (HELOC)"/> HELOC</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="Private / Hard-Money"/> Private / Hard-Money</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_loan_type" value="Other"/> Other</label>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Estimated Balance</label>
+              <input type="text" name="lenderloan_3_estimated_balance" class="form-input" placeholder="$0.00"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Payment</label>
+              <input type="text" name="lenderloan_3_monthly_payment" class="form-input" placeholder="$0.00"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">In Default?</label>
+            <div class="radio-pills" id="rg-lenderloan_3_in_default">
+              <label class="pill"><input type="radio" name="lenderloan_3_in_default" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_in_default" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="lenderloan_3_in_default" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Additional Notes</label>
+            <textarea name="lenderloan_3_additional_notes" class="form-textarea" rows="2" placeholder="Any additional notes..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECTION VII — HOA / SOLAR / WATER ══════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">SECTION VII</div>
+        <div class="section-title">HOA / Solar / Water</div>
+      </div>
+      <div class="section-body">
+
+        <!-- HOA -->
+        <div class="form-group">
+          <label class="form-label">Is There a Home Owners Association (HOA)? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-is_there_an_home_owners_association_hoa">
+            <label class="pill"><input type="radio" name="is_there_an_home_owners_association_hoa" value="Yes" onchange="toggleSection('hoa-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="is_there_an_home_owners_association_hoa" value="No" onchange="toggleSection('hoa-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="is_there_an_home_owners_association_hoa" value="Unsure" onchange="toggleSection('hoa-section', 'No')"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="hoa-section">
+          <div class="conditional-title">HOA #1</div>
+
+          <div class="form-group">
+            <label class="form-label"># of HOAs</label>
+            <div class="radio-pills" id="rg-_of_hoas">
+              <label class="pill"><input type="radio" name="_of_hoas" value="1" onchange="toggleHOA2('No')"/> 1</label>
+              <label class="pill"><input type="radio" name="_of_hoas" value="2" onchange="toggleHOA2('Yes')"/> 2</label>
+              <label class="pill"><input type="radio" name="_of_hoas" value="3" onchange="toggleHOA2('Yes')"/> 3</label>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">HOA #1 Community Name</label>
+              <input type="text" name="hoa_1_community_name" class="form-input" placeholder="Community name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">HOA #1 Contact Name</label>
+              <input type="text" name="hoa_1_contact_name" class="form-input" placeholder="Contact name"/>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">HOA #1 Contact Phone</label>
+              <input type="tel" name="hoa_1_contact_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">HOA #1 Contact Email</label>
+              <input type="email" name="hoa_1_contact_email" class="form-input" placeholder="email@example.com"/>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Payment Amount</label>
+              <input type="text" name="hoa_1_payment_amount" class="form-input" placeholder="$0.00"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Schedule</label>
+              <div class="radio-pills" id="rg-hoa_1_payment_schedule">
+                <label class="pill"><input type="radio" name="hoa_1_payment_schedule" value="Monthly"/> Monthly</label>
+                <label class="pill"><input type="radio" name="hoa_1_payment_schedule" value="Quarterly"/> Quarterly</label>
+                <label class="pill"><input type="radio" name="hoa_1_payment_schedule" value="Annually"/> Annually</label>
+                <label class="pill"><input type="radio" name="hoa_1_payment_schedule" value="Unsure"/> Unsure</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HOA #1 In Default?</label>
+            <div class="radio-pills" id="rg-hoa_1_in_default">
+              <label class="pill"><input type="radio" name="hoa_1_in_default" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="hoa_1_in_default" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="hoa_1_in_default" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HOA #1 Amount in Default</label>
+            <input type="text" name="hoa_1_amount_in_default" class="form-input" placeholder="$0.00"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HOA #1 Notes</label>
+            <textarea name="hoa_1_notes" class="form-textarea" rows="2" placeholder="Any notes about HOA #1..."></textarea>
+          </div>
+
+          <!-- HOA #2 -->
+          <div class="conditional-section" id="hoa2-section">
+            <div class="conditional-title">HOA #2</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">HOA #2 Community Name</label>
+                <input type="text" name="hoa_2_community_name" class="form-input" placeholder="Community name"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">HOA #2 Contact Name</label>
+                <input type="text" name="hoa_2_contact_name" class="form-input" placeholder="Contact name"/>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" name="hoa_2_contact_phone" class="form-input" placeholder="(000) 000-0000"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="hoa_2_contact_email" class="form-input" placeholder="email@example.com"/>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Payment Amount</label>
+                <input type="text" name="hoa_2_payment_amount" class="form-input" placeholder="$0.00"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payment Schedule</label>
+                <div class="radio-pills" id="rg-hoa_2_payment_schedule">
+                  <label class="pill"><input type="radio" name="hoa_2_payment_schedule" value="Monthly"/> Monthly</label>
+                  <label class="pill"><input type="radio" name="hoa_2_payment_schedule" value="Quarterly"/> Quarterly</label>
+                  <label class="pill"><input type="radio" name="hoa_2_payment_schedule" value="Annually"/> Annually</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">HOA #2 In Default?</label>
+              <div class="radio-pills" id="rg-hoa_2_in_default">
+                <label class="pill"><input type="radio" name="hoa_2_in_default" value="Yes"/> Yes</label>
+                <label class="pill"><input type="radio" name="hoa_2_in_default" value="No"/> No</label>
+                <label class="pill"><input type="radio" name="hoa_2_in_default" value="Unsure"/> Unsure</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">HOA #2 Amount in Default</label>
+              <input type="text" name="hoa_2_amount_in_default" class="form-input" placeholder="$0.00"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">HOA #2 Notes</label>
+              <textarea name="hoa_2_notes" class="form-textarea" rows="2" placeholder="Any notes about HOA #2..."></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <hr class="field-divider"/>
+
+        <!-- Solar -->
+        <div class="form-group">
+          <label class="form-label">Is There Solar on the Property? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-is_there_solar">
+            <label class="pill"><input type="radio" name="is_there_solar" value="Yes" onchange="toggleSection('solar-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="is_there_solar" value="No" onchange="toggleSection('solar-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="is_there_solar" value="Unsure" onchange="toggleSection('solar-section', 'No')"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="solar-section">
+          <div class="conditional-title">SOLAR DETAILS</div>
+
+          <div class="form-group">
+            <label class="form-label">Solar: Lease or Loan?</label>
+            <div class="radio-pills" id="rg-solar_lease_or_loan">
+              <label class="pill"><input type="radio" name="solar_lease_or_loan" value="Lease"/> Lease</label>
+              <label class="pill"><input type="radio" name="solar_lease_or_loan" value="Loan"/> Loan</label>
+              <label class="pill"><input type="radio" name="solar_lease_or_loan" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Solar Company Name</label>
+            <input type="text" name="solar_company_name" class="form-input" placeholder="Company name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar Account #</label>
+            <input type="text" name="solar_account_number" class="form-input" placeholder="Account number"/>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Solar Contact Name</label>
+              <input type="text" name="solar_contact_name" class="form-input" placeholder="Contact name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Solar Contact Phone</label>
+              <input type="tel" name="solar_contact_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar Contact Email</label>
+            <input type="email" name="solar_contact_email" class="form-input" placeholder="email@example.com"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar Assumable? (can buyer take over?)</label>
+            <div class="radio-pills" id="rg-solar_assumable">
+              <label class="pill"><input type="radio" name="solar_assumable" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="solar_assumable" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="solar_assumable" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Solar Estimated Balance</label>
+              <input type="text" name="solar_estimated_balance" class="form-input" placeholder="$0.00"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Solar Maturity Date (year)</label>
+              <input type="text" name="solar_maturity_date_year" class="form-input" placeholder="YYYY"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar In Default?</label>
+            <div class="radio-pills" id="rg-solar_in_default">
+              <label class="pill"><input type="radio" name="solar_in_default" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="solar_in_default" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="solar_in_default" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar Estimated Amount in Default</label>
+            <input type="text" name="solar_estimated_amount_in_default" class="form-input" placeholder="$0.00"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solar Notes</label>
+            <textarea name="solar_notes" class="form-textarea" rows="2" placeholder="Any notes about solar..."></textarea>
+          </div>
+        </div>
+
+        <hr class="field-divider"/>
+
+        <!-- Water -->
+        <div class="form-group">
+          <label class="form-label">Water Filtration or Softener System? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-water_filtration_or_softener_system">
+            <label class="pill"><input type="radio" name="water_filtration_or_softener_system" value="Yes" onchange="toggleSection('water-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="water_filtration_or_softener_system" value="No" onchange="toggleSection('water-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="water_filtration_or_softener_system" value="Unsure" onchange="toggleSection('water-section', 'No')"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="water-section">
+          <div class="conditional-title">WATER SYSTEM DETAILS</div>
+
+          <div class="form-group">
+            <label class="form-label">Water Company Name</label>
+            <input type="text" name="water_company_name" class="form-input" placeholder="Company name"/>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Water Account #</label>
+              <input type="text" name="water_account_" class="form-input" placeholder="Account number"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Water Phone</label>
+              <input type="tel" name="water_phone" class="form-input" placeholder="(000) 000-0000"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Water Assumable? (can buyer take over?)</label>
+            <div class="radio-pills" id="rg-water_assumable">
+              <label class="pill"><input type="radio" name="water_assumable" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="water_assumable" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="water_assumable" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Water Estimated Balance</label>
+            <input type="text" name="water_estimated_balance" class="form-input" placeholder="$0.00"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Water In Default?</label>
+            <div class="radio-pills" id="rg-water_in_default">
+              <label class="pill"><input type="radio" name="water_in_default" value="Yes"/> Yes</label>
+              <label class="pill"><input type="radio" name="water_in_default" value="No"/> No</label>
+              <label class="pill"><input type="radio" name="water_in_default" value="Unsure"/> Unsure</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Water Notes</label>
+            <textarea name="water_notes" class="form-textarea" rows="2" placeholder="Any notes about the water system..."></textarea>
+          </div>
+        </div>
+
+        <hr class="field-divider"/>
+
+        <!-- Other Liens -->
+        <div class="form-group">
+          <label class="form-label">Other Open Liens Affecting Property? <span class="req">*</span></label>
+          <div class="radio-pills" id="rg-other_open_liens_affecting_property">
+            <label class="pill"><input type="radio" name="other_open_liens_affecting_property" value="Yes" onchange="toggleSection('liens-section', 'Yes')"/> Yes</label>
+            <label class="pill"><input type="radio" name="other_open_liens_affecting_property" value="No" onchange="toggleSection('liens-section', 'No')"/> No</label>
+            <label class="pill"><input type="radio" name="other_open_liens_affecting_property" value="Maybe; unsure" onchange="toggleSection('liens-section', 'No')"/> Maybe / Unsure</label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="liens-section">
+          <div class="form-group">
+            <label class="form-label">Open Liens Notes (please explain)</label>
+            <textarea name="open_liens_notes" class="form-textarea" rows="3" placeholder="Describe the open lien(s)..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SUBMIT ══════════════════════════════════════════════════════════ -->
+    <div class="submit-block" id="submit-block">
+      <h3>Submit Your Seller Intake Form</h3>
+      <p>By submitting, you confirm that the information provided above is an accurate reflection of your current situation and that LMS may rely on this submission to process your short sale file.</p>
+
+      <div class="attest-block">
+        <input type="checkbox" id="attest-check"/>
+        <label class="attest-label" for="attest-check">By checking this box, I attest that the above-provided information is an accurate reflection of the current Borrower/Seller position and that LMS can rely on this submission.</label>
+      </div>
+
+      <div class="submit-error" id="submit-error"></div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitSIF()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit Seller Intake Form
+      </button>
+    </div>
+
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✅</div>
+      <h2>Seller Intake Form Submitted!</h2>
+      <p>Your information has been saved to your file. You'll be redirected to your document portal now.</p>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
+      Your information is private and used for LMS internal processing only.<br/>
+      Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
+    </div>
+
+  </div><!-- /sif-content -->
+</main>
+
+<div class="sticky-bar" id="sticky-bar" style="display:none">
+  <div class="sticky-label">Complete all sections, then submit below</div>
+  <button class="btn-sticky" onclick="document.getElementById('submit-block').scrollIntoView({behavior:'smooth',block:'center'})">Jump to Submit ↓</button>
+</div>
+
+<script>
+  let oppId     = null;
+  let contactId = null;
+
+  function getOppId() {
+    const parts = window.location.pathname.split('/');
+    const idx   = parts.indexOf('intake');
+    return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  async function init() {
+    oppId = getOppId();
+    if (!oppId) { showError(); return; }
+
+    try {
+      const res  = await fetch(`/api/intake-data?opp_id=${oppId}`);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      contactId  = data.contact_id;
+      prefill(data);
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('sif-content').style.display   = 'block';
+      document.getElementById('sticky-bar').style.display    = 'flex';
+      document.getElementById('file-ref-display').textContent = data.file_reference || oppId;
+    } catch (e) {
+      showError();
+    }
+  }
+
+  function showError() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('error-state').style.display   = 'block';
+  }
+
+  // ── Pre-fill ───────────────────────────────────────────────────────────
+  function prefill(data) {
+    const map = {
+      subject_address:                data.street,
+      subject_address_city:           data.city,
+      'subject_address__state':       data.state,
+      'subject_address__zip_code':    data.zip,
+      'subject_address__county':      data.county,
+      sellerborrower_name:            data.seller_name,
+      sellerborrower_phone:           data.seller_phone,
+      sellerborrower_email:           data.seller_email,
+      listing_agent_name:             data.la_name,
+      'listing_agent_brokerage__company': data.la_brokerage,
+      listing_agent_phone:            data.la_phone,
+      listing_agent_email:            data.la_email,
+    };
+
+    for (const [name, val] of Object.entries(map)) {
+      if (!val) continue;
+      const el = document.querySelector(`[name="${name}"]`);
+      if (!el) continue;
+      el.value = val;
+      el.classList.add('prefilled');
+    }
+
+    // If LA data exists, show agent section
+    if (data.la_name) {
+      const yesRadio = document.querySelector('[name="do_you_have_a_real_estate_agent"][value="Yes"]');
+      if (yesRadio) {
+        yesRadio.checked = true;
+        yesRadio.closest('.pill')?.classList.add('selected');
+        toggleSection('agent-section', 'Yes');
+      }
+    }
+  }
+
+  // ── Radio pill styling ─────────────────────────────────────────────────
+  document.addEventListener('change', (e) => {
+    if (e.target.type !== 'radio') return;
+    const group = e.target.closest('.radio-pills');
+    if (!group) return;
+    group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    e.target.closest('.pill')?.classList.add('selected');
+  });
+
+  // ── Show/hide conditional sections ────────────────────────────────────
+  function toggleSection(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('visible', val === 'Yes');
+  }
+
+  function onLoanCountChange(count) {
+    document.getElementById('loan2-section').classList.toggle('visible', count >= 2);
+    document.getElementById('loan3-section').classList.toggle('visible', count >= 3);
+  }
+
+  function toggleHOA2(val) {
+    document.getElementById('hoa2-section').classList.toggle('visible', val === 'Yes');
+  }
+
+  // Pool condition show/hide
+  document.addEventListener('change', (e) => {
+    if (e.target.name === 'property_pool') {
+      const hasPool = e.target.value !== 'None — N/A';
+      document.getElementById('pool-condition-group').style.display = hasPool ? 'block' : 'none';
+    }
+  });
+
+  // ── Collect form data ──────────────────────────────────────────────────
+  function collectFormData() {
+    const data = {};
+    document.querySelectorAll('input[name], textarea[name]').forEach(el => {
+      if (el.type === 'radio') {
+        if (el.checked) data[el.name] = el.value;
+      } else if (el.type === 'checkbox') {
+        // skip — attestation checkbox handled separately
+      } else {
+        const val = el.value.trim();
+        if (val) data[el.name] = val;
+      }
+    });
+    return data;
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────
+  async function submitSIF() {
+    const attest  = document.getElementById('attest-check');
+    const errEl   = document.getElementById('submit-error');
+
+    if (!attest.checked) {
+      errEl.textContent = 'Please check the attestation box to confirm your information is accurate.';
+      errEl.classList.add('visible');
+      return;
+    }
+
+    errEl.classList.remove('visible');
+    const btn     = document.getElementById('btn-submit');
+    btn.disabled  = true;
+    btn.textContent = 'Submitting…';
+
+    const fields  = collectFormData();
+
+    try {
+      const res  = await fetch('/api/intake-submit', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ opp_id: oppId, contact_id: contactId, fields }),
+      });
+      const data = await res.json();
+
+      if (data.success || res.ok) {
+        document.getElementById('submit-block').style.display  = 'none';
+        document.getElementById('sticky-bar').style.display    = 'none';
+        document.getElementById('success-screen').classList.add('visible');
+        setTimeout(() => { window.location.href = `/file/${oppId}`; }, 3000);
+      } else {
+        throw new Error(data.error || 'Submission failed');
+      }
+    } catch (err) {
+      btn.disabled    = false;
+      btn.innerHTML   = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Submit Seller Intake Form';
+      errEl.textContent = `Submission failed: ${err.message}. Please try again or email documents@shortsalestart.com.`;
+      errEl.classList.add('visible');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
