@@ -1,165 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LMS — Secure Document Upload</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --teal:    #00A8C6;
-      --teal-dim: rgba(0,168,198,0.12);
-      --teal-border: rgba(0,168,198,0.25);
-      --navy:    #0B1F3A;
-      --navy-2:  #132d4a;
-      --navy-3:  #1a3a5c;
-      --white:   #ffffff;
-      --muted:   #7a9ab5;
-      --dim:     #4a6a85;
-      --success: #22c55e;
-      --success-dim: rgba(34,197,94,0.12);
-      --danger:  #ef4444;
-      --radius:  14px;
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
+
+export const config = { api: { bodyParser: false } };
+
+const DOC_TYPES = {
+  sa:       { label: 'Service Agreement',            field: 'portal_sa_received' },
+  sif:      { label: 'Seller Intake Form',           field: 'portal_sif_received' },
+  mortgage: { label: 'Mortgage Statement',           field: 'portal_mortgage_statement_received' },
+  threepa:  { label: 'Third-Party Authorization',   field: 'portal_3pa_received' },
+};
+
+async function classifyDocument(fileBuffer, filename) {
+  try {
+    const base64 = fileBuffer.toString('base64');
+    const isPdf  = filename.toLowerCase().endsWith('.pdf');
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-opus-4-5',
+        max_tokens: 100,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: isPdf ? 'document' : 'image',
+              source: {
+                type:       'base64',
+                media_type: isPdf ? 'application/pdf' : 'image/jpeg',
+                data:       base64,
+              },
+            },
+            {
+              type: 'text',
+              text: 'Classify this document. Reply with ONLY one of these exact words: sa, sif, mortgage, threepa, unknown\n\nsa = Service Agreement or contract\nsif = Seller Intake Form or seller information form\nmortgage = Mortgage statement or loan statement\nthreepa = Third-party authorization or 3PA form\nunknown = anything else',
+            },
+          ],
+        }],
+      }),
+    });
+
+    const data   = await response.json();
+    const result = data.content?.[0]?.text?.trim().toLowerCase();
+    return DOC_TYPES[result] ? result : 'unknown';
+  } catch (err) {
+    console.error('Claude classification error:', err);
+    return 'unknown';
+  }
+}
+
+async function updateGHLField(oppId, fieldKey) {
+  try {
+    const res = await fetch(
+      `https://services.leadconnectorhq.com/opportunities/${oppId}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
+          'Content-Type':  'application/json',
+          'Version':       '2021-07-28',
+        },
+        body: JSON.stringify({
+          customFields: [{ key: fieldKey, field_value: true }],
+        }),
+      }
+    );
+    const data = await res.json();
+    console.log('GHL update response:', JSON.stringify(data).slice(0, 300));
+    return res.ok;
+  } catch (err) {
+    console.error('GHL update error:', err);
+    return false;
+  }
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
+
+  try {
+    const form = formidable({ maxFileSize: 20 * 1024 * 1024 });
+
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve({ fields, files });
+      });
+    });
+
+    const oppId     = Array.isArray(fields.opp_id)     ? fields.opp_id[0]     : fields.opp_id;
+    const contactId = Array.isArray(fields.contact_id) ? fields.contact_id[0] : fields.contact_id;
+    const file      = Array.isArray(files.file)        ? files.file[0]        : files.file;
+
+    if (!oppId || !file) {
+      return res.status(400).json({ error: 'Missing opp_id or file' });
     }
- 
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
- 
-    body {
-      background: var(--navy);
-      font-family: 'Open Sans', sans-serif;
-      color: var(--white);
-      min-height: 100vh;
-      padding: 0 0 60px;
+
+    const fileBuffer = fs.readFileSync(file.filepath);
+    const filename   = file.originalFilename || 'upload';
+
+    console.log(`Processing upload: ${filename} for opp ${oppId}`);
+
+    const docType = await classifyDocument(fileBuffer, filename);
+    console.log(`Classified as: ${docType}`);
+
+    if (docType === 'unknown') {
+      return res.status(200).json({
+        success: false,
+        error:   'We couldn\'t identify this document type. Please make sure you\'re uploading the correct file.',
+      });
     }
- 
-    /* ── HEADER ── */
-    .header {
-      background: rgba(11,31,58,0.95);
-      border-bottom: 1px solid var(--navy-3);
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(12px);
+
+    const docInfo = DOC_TYPES[docType];
+    const updated = await updateGHLField(oppId, docInfo.field);
+
+    if (!updated) {
+      return res.status(500).json({ error: 'Failed to update file record. Please try again.' });
     }
- 
-    .logo img {
-      height: 40px;
-      width: auto;
-      border-radius: 6px;
-      display: block;
-    }
- 
-    .secure-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--teal);
-      font-family: 'Montserrat', sans-serif;
-    }
- 
-    .secure-badge svg { opacity: 0.9; }
- 
-    /* ── MAIN ── */
-    .main {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 36px 20px 0;
-    }
- 
-    /* ── FILE BANNER ── */
-    .file-banner {
-      background: var(--navy-2);
-      border: 1px solid var(--navy-3);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
- 
-    .file-icon {
-      width: 44px;
-      height: 44px;
-      background: var(--teal-dim);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
- 
-    .file-info { flex: 1; }
- 
-    .file-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      font-family: 'Montserrat', sans-serif;
-      margin-bottom: 4px;
-    }
- 
-    .file-address {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      font-size: 17px;
-      color: var(--white);
-    }
- 
-    /* ── PROGRESS ── */
-    .progress-section {
-      margin-bottom: 28px;
-    }
- 
-    .progress-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
- 
-    .progress-label {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--muted);
-    }
- 
-    .progress-count {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--teal);
-    }
- 
-    .progress-bar-track {
-      height: 6px;
-      background: var(--navy-3);
-      border-radius: 99px;
-      overflow: hidden;
-    }
- 
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--teal), #00d4ff);
-      border-radius: 99px;
-      transition: width 0.6s ease;
-    }
- 
-    /* ── CHECKLIST ── */
-    .checklist {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
- 
-    .item-card {
-      background: var(--navy-2);
+
+    return res.status(200).json({
+      success:  true,
+      docType,
+      message:  `${docInfo.label} received and added to your file. ✓`,
+    });
+
+  } catch (err) {
+    console.error('Upload handler error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
