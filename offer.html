@@ -1,57 +1,678 @@
-// api/offer-data.js
-const GHL_API_KEY = process.env.GHL_API_KEY;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMS — Offer Intake Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #00A8C6;
+      --navy: #2d637d;
+      --dark: #1a2e3b;
+      --light-bg: #f0f4f6;
+      --white: #ffffff;
+      --border: #e2e8f0;
+      --text: #4a5568;
+      --label: #1a2e3b;
+      --error: #e53e3e;
+      --success: #38a169;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      --warning-text: #92400e;
+    }
+    body { font-family: 'Open Sans', sans-serif; background: var(--light-bg); color: var(--text); min-height: 100vh; }
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+    /* HEADER */
+    .header { background: var(--navy); padding: 28px 24px; text-align: center; }
+    .header img { height: 56px; margin-bottom: 8px; }
+    .header p { font-family: 'Open Sans', sans-serif; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); letter-spacing: 2px; text-transform: uppercase; }
 
-  const { opp_id } = req.query;
-  if (!opp_id) return res.status(400).json({ error: 'Missing opp_id' });
+    /* ADDRESS BAND */
+    .address-band { background: #eaf6f9; border-bottom: 1px solid #d0eaf0; padding: 14px 24px; text-align: center; }
+    .address-band .label { font-size: 10px; font-weight: 600; color: var(--navy); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    .address-band .address { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark); }
 
-  try {
-    const oppRes = await fetch(`https://services.leadconnectorhq.com/opportunities/${opp_id}`, {
-      headers: { 'Authorization': `Bearer ${GHL_API_KEY}`, 'Version': '2021-07-28' }
+    /* FORM TITLE */
+    .form-title-bar { background: var(--navy); padding: 16px 24px; text-align: center; }
+    .form-title-bar h1 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; color: white; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* CAUTION */
+    .caution { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; margin: 20px 16px; padding: 16px; text-align: center; }
+    .caution .caution-icon { font-size: 28px; margin-bottom: 6px; }
+    .caution strong { display: block; font-family: 'Montserrat', sans-serif; font-size: 14px; color: #856404; margin-bottom: 4px; }
+    .caution p { font-size: 12px; color: #856404; line-height: 1.5; }
+
+    /* MAIN CONTAINER */
+    .container { max-width: 680px; margin: 0 auto; padding: 0 16px 40px; }
+
+    /* SECTION CARD */
+    .section-card { background: white; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .section-header { background: var(--navy); padding: 14px 20px; display: flex; align-items: center; gap: 10px; }
+    .section-number { width: 28px; height: 28px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+    .section-title { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; color: white; letter-spacing: 0.5px; text-transform: uppercase; }
+    .section-body { padding: 20px; }
+
+    /* FORM FIELDS */
+    .field-group { margin-bottom: 16px; }
+    .field-group:last-child { margin-bottom: 0; }
+    .field-label { display: block; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; color: var(--label); margin-bottom: 6px; letter-spacing: 0.3px; }
+    .field-label .required { color: var(--error); margin-left: 2px; }
+    .field-label .prefilled-tag { font-size: 10px; font-weight: 600; color: var(--teal); background: #e6f7fb; border-radius: 3px; padding: 1px 6px; margin-left: 6px; letter-spacing: 0.5px; }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="date"], textarea, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+      font-family: 'Open Sans', sans-serif; font-size: 14px; color: var(--dark);
+      background: white; transition: border-color 0.2s, box-shadow 0.2s; appearance: none;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,168,198,0.12); }
+    input.prefilled { background: #f0f9fb; border-color: #b8e4ef; color: var(--dark); }
+    textarea { min-height: 80px; resize: vertical; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234a5568' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+    /* TWO COLUMN */
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+    /* RADIO / CHECKBOX GROUP */
+    .radio-group, .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
+    .radio-option, .checkbox-option { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .radio-option input, .checkbox-option input { width: 16px; height: 16px; accent-color: var(--teal); cursor: pointer; flex-shrink: 0; }
+    .radio-option span, .checkbox-option span { font-size: 13px; color: var(--dark); }
+
+    /* CONDITIONAL FIELDS */
+    .conditional { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .conditional.visible { display: block; }
+
+    /* SUBMIT BUTTON */
+    .submit-section { margin-top: 24px; }
+    .btn-submit { width: 100%; padding: 18px; background: var(--teal); color: white; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: background 0.2s, transform 0.1s; text-transform: uppercase; }
+    .btn-submit:hover { background: #0090aa; }
+    .btn-submit:active { transform: scale(0.99); }
+    .btn-submit:disabled { background: #a0aec0; cursor: not-allowed; }
+
+    /* STATUS MESSAGES */
+    .status-msg { display: none; padding: 14px 16px; border-radius: 8px; font-size: 14px; margin-top: 12px; text-align: center; }
+    .status-msg.success { display: block; background: #f0fff4; border: 1px solid #9ae6b4; color: var(--success); font-weight: 600; }
+    .status-msg.error { display: block; background: #fff5f5; border: 1px solid #feb2b2; color: var(--error); }
+    .status-msg.loading { display: block; background: #ebf8ff; border: 1px solid #bee3f8; color: var(--navy); }
+
+    /* LOADING SPINNER */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FOOTER */
+    .footer { background: var(--navy); padding: 24px; text-align: center; margin-top: 8px; }
+    .footer img { height: 40px; margin-bottom: 12px; }
+    .footer p { font-size: 10px; color: rgba(255,255,255,0.35); line-height: 1.6; max-width: 500px; margin: 0 auto; }
+
+    /* INFO BOX */
+    .info-box { background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; }
+    .info-box p { font-size: 12px; color: var(--warning-text); line-height: 1.6; }
+
+    /* LOADING STATE */
+    .loading-overlay { text-align: center; padding: 40px 20px; }
+    .loading-overlay p { font-size: 14px; color: var(--text); margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="https://storage.googleapis.com/msgsndr/SmS67ZUDphr7uhGrsQGm/media/6863cc281bac8a7a23b3b5c0.png" alt="LMS">
+    <p>Professional Short-Sale Processing</p>
+  </div>
+
+  <!-- ADDRESS BAND -->
+  <div class="address-band">
+    <div class="label">Offer Intake</div>
+    <div class="address" id="propertyAddress">Loading...</div>
+  </div>
+
+  <!-- FORM TITLE -->
+  <div class="form-title-bar">
+    <h1>Offer Intake Form</h1>
+  </div>
+
+  <!-- CAUTION -->
+  <div class="caution">
+    <div class="caution-icon">⚠️</div>
+    <strong>FORM DOES NOT SAVE.</strong>
+    <p>If you need to re-submit this form, you will need to fill out all required fields again.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- LOADING STATE -->
+    <div id="loadingState" class="section-card">
+      <div class="loading-overlay">
+        <p>Loading your file information...</p>
+      </div>
+    </div>
+
+    <form id="oifForm" style="display:none;">
+
+      <!-- SECTION I: TRANSACTION INFORMATION -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">I</div>
+          <div class="section-title">Transaction Information</div>
+        </div>
+        <div class="section-body">
+          <div class="field-group">
+            <label class="field-label">Seller Name (as Deeded) <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+            <input type="text" id="sellerName" name="sellerName" class="prefilled" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Subject Property Address (Full) <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+            <input type="text" id="subjectAddress" name="subjectAddress" class="prefilled" required>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Purchase Price <span class="required">*</span></label>
+              <input type="text" id="purchasePrice" name="purchasePrice" placeholder="$0.00" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Escrow / Deposit Amount <span class="required">*</span></label>
+              <input type="text" id="escrowAmount" name="escrowAmount" placeholder="$0.00" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Inspection / Due Diligence Days <span class="required">*</span></label>
+              <input type="text" id="dueDiligenceDays" name="dueDiligenceDays" placeholder="e.g. 10" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Close Date</label>
+              <input type="date" id="closeDate" name="closeDate">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Additional Terms</label>
+            <textarea id="additionalTerms" name="additionalTerms" placeholder="Any additional terms or notes..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION II: TITLE COMPANY -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">II</div>
+          <div class="section-title">Title Company Information</div>
+        </div>
+        <div class="section-body">
+          <div class="field-group">
+            <label class="field-label">Title Company Name <span class="required">*</span></label>
+            <input type="text" id="titleCompanyName" name="titleCompanyName" required>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Title Agent Name <span class="required">*</span></label>
+              <input type="text" id="titleAgentName" name="titleAgentName" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Title Agent Phone <span class="required">*</span></label>
+              <input type="tel" id="titleAgentPhone" name="titleAgentPhone" required>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Title Agent Email <span class="required">*</span></label>
+            <input type="email" id="titleAgentEmail" name="titleAgentEmail" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION III: LISTING AGENT -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">III</div>
+          <div class="section-title">Listing Agent Information</div>
+        </div>
+        <div class="section-body">
+          <div class="info-box">
+            <p>⚡ Fields marked PRE-FILLED are pulled from your file. Please verify and correct if needed.</p>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Company / Brokerage <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+              <input type="text" id="laCompany" name="laCompany" class="prefilled" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Listing Agent Name <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+              <input type="text" id="laName" name="laName" class="prefilled" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Phone <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+              <input type="tel" id="laPhone" name="laPhone" class="prefilled" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Email <span class="required">*</span> <span class="prefilled-tag">PRE-FILLED</span></label>
+              <input type="email" id="laEmail" name="laEmail" class="prefilled" required>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Commission % <span class="required">*</span></label>
+            <input type="text" id="laCommission" name="laCommission" placeholder="e.g. 3%">
+          </div>
+
+          <!-- Transaction / Admin Fee -->
+          <div class="field-group">
+            <label class="field-label">Transaction / Admin Fee? <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="laAdminFee" value="Yes" onchange="toggleConditional('laAdminFeeDetails', this.value, 'Yes')"><span>Yes</span></label>
+              <label class="radio-option"><input type="radio" name="laAdminFee" value="No" onchange="toggleConditional('laAdminFeeDetails', this.value, 'Yes')"><span>No</span></label>
+            </div>
+            <div id="laAdminFeeDetails" class="conditional">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Admin Fee Amount</label>
+                  <input type="text" id="laAdminFeeAmount" name="laAdminFeeAmount" placeholder="$0.00">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Paid By</label>
+                  <div class="radio-group" style="margin-top:10px;">
+                    <label class="radio-option"><input type="radio" name="laAdminFeePaidBy" value="Seller's Side - HUD"><span>Seller's Side — HUD</span></label>
+                    <label class="radio-option"><input type="radio" name="laAdminFeePaidBy" value="Buyer's Side - HUD"><span>Buyer's Side — HUD</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Coordinator -->
+          <div class="field-group">
+            <label class="field-label">Transaction Coordinator? <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="laTCYesNo" value="Yes" onchange="toggleConditional('laTCDetails', this.value, 'Yes')"><span>Yes</span></label>
+              <label class="radio-option"><input type="radio" name="laTCYesNo" value="No" onchange="toggleConditional('laTCDetails', this.value, 'Yes')"><span>No</span></label>
+            </div>
+            <div id="laTCDetails" class="conditional">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">TC Company / Brokerage</label>
+                  <input type="text" id="laTCCompany" name="laTCCompany">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">TC Name</label>
+                  <input type="text" id="laTCName" name="laTCName">
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">TC Phone</label>
+                  <input type="tel" id="laTCPhone" name="laTCPhone">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">TC Email</label>
+                  <input type="email" id="laTCEmail" name="laTCEmail">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Co-Listing Agent -->
+          <div class="field-group">
+            <label class="field-label">Co-Listing Agent?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="coListingYesNo" value="Yes" onchange="toggleConditional('coListingDetails', this.value, 'Yes')"><span>Yes</span></label>
+              <label class="radio-option"><input type="radio" name="coListingYesNo" value="No" onchange="toggleConditional('coListingDetails', this.value, 'Yes')"><span>No</span></label>
+            </div>
+            <div id="coListingDetails" class="conditional">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Co-Listing Brokerage</label>
+                  <input type="text" id="coListingBrokerage" name="coListingBrokerage">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Co-Listing Agent Name</label>
+                  <input type="text" id="coListingName" name="coListingName">
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Co-Listing Phone</label>
+                  <input type="tel" id="coListingPhone" name="coListingPhone">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Co-Listing Email</label>
+                  <input type="email" id="coListingEmail" name="coListingEmail">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION IV: BUYER AGENT -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">IV</div>
+          <div class="section-title">Buyer Agent Information</div>
+        </div>
+        <div class="section-body">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Brokerage / Company Name <span class="required">*</span></label>
+              <input type="text" id="baCompany" name="baCompany" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Buyer Agent Name <span class="required">*</span></label>
+              <input type="text" id="baName" name="baName" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Phone <span class="required">*</span></label>
+              <input type="tel" id="baPhone" name="baPhone" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Email <span class="required">*</span></label>
+              <input type="email" id="baEmail" name="baEmail" required>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Commission % <span class="required">*</span></label>
+            <input type="text" id="baCommission" name="baCommission" placeholder="e.g. 3%">
+          </div>
+
+          <!-- Buyer Agent Admin Fee -->
+          <div class="field-group">
+            <label class="field-label">Transaction / Admin Fee? <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="baAdminFee" value="Yes" onchange="toggleConditional('baAdminFeeDetails', this.value, 'Yes')"><span>Yes</span></label>
+              <label class="radio-option"><input type="radio" name="baAdminFee" value="No" onchange="toggleConditional('baAdminFeeDetails', this.value, 'Yes')"><span>No</span></label>
+            </div>
+            <div id="baAdminFeeDetails" class="conditional">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Admin Fee Amount</label>
+                  <input type="text" id="baAdminFeeAmount" name="baAdminFeeAmount" placeholder="$0.00">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Paid By</label>
+                  <div class="radio-group" style="margin-top:10px;">
+                    <label class="radio-option"><input type="radio" name="baAdminFeePaidBy" value="Seller's Side - HUD"><span>Seller's Side — HUD</span></label>
+                    <label class="radio-option"><input type="radio" name="baAdminFeePaidBy" value="Buyer's Side - HUD"><span>Buyer's Side — HUD</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Buyer Agent TC -->
+          <div class="field-group">
+            <label class="field-label">Transaction Coordinator? <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="baTCYesNo" value="Yes" onchange="toggleConditional('baTCDetails', this.value, 'Yes')"><span>Yes</span></label>
+              <label class="radio-option"><input type="radio" name="baTCYesNo" value="No" onchange="toggleConditional('baTCDetails', this.value, 'Yes')"><span>No</span></label>
+            </div>
+            <div id="baTCDetails" class="conditional">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">TC Company Name</label>
+                  <input type="text" id="baTCCompany" name="baTCCompany">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">TC Name</label>
+                  <input type="text" id="baTCName" name="baTCName">
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">TC Phone</label>
+                  <input type="tel" id="baTCPhone" name="baTCPhone">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">TC Email</label>
+                  <input type="email" id="baTCEmail" name="baTCEmail">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION V: BUYER INFORMATION -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">V</div>
+          <div class="section-title">Buyer Information</div>
+        </div>
+        <div class="section-body">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Corporate Entity? <span class="required">*</span></label>
+              <div class="radio-group" style="margin-top:8px;">
+                <label class="radio-option"><input type="radio" name="buyerCorporate" value="Yes"><span>Yes</span></label>
+                <label class="radio-option"><input type="radio" name="buyerCorporate" value="No"><span>No</span></label>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Financing Type <span class="required">*</span></label>
+              <div class="radio-group" style="margin-top:8px;">
+                <label class="radio-option"><input type="radio" name="buyerFinancing" value="Cash"><span>Cash</span></label>
+                <label class="radio-option"><input type="radio" name="buyerFinancing" value="Financing"><span>Financing</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Property Use</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="buyerPropertyUse" value="Personal"><span>Personal</span></label>
+              <label class="radio-option"><input type="radio" name="buyerPropertyUse" value="Investment"><span>Investment</span></label>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Buyer Name (as Deeded) <span class="required">*</span></label>
+              <input type="text" id="buyerNameDeeded" name="buyerNameDeeded" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Buyer Name (Contact) <span class="required">*</span></label>
+              <input type="text" id="buyerNameContact" name="buyerNameContact" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Buyer Phone <span class="required">*</span></label>
+              <input type="tel" id="buyerPhone" name="buyerPhone" required>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Buyer Email</label>
+              <input type="email" id="buyerEmail" name="buyerEmail">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Buyer Mailing Address</label>
+            <input type="text" id="buyerMailingAddress" name="buyerMailingAddress">
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-section">
+        <button type="submit" class="btn-submit" id="submitBtn">SUBMIT OFFER INTAKE FORM</button>
+        <div id="statusMsg" class="status-msg"></div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <img src="https://storage.googleapis.com/msgsndr/SmS67ZUDphr7uhGrsQGm/media/686418d1dac0bb38c56a50d3.png" alt="Credentials">
+    <p>Loan Mitigation Services LLC &bull; shortsalestart.com &bull; info@shortsalestart.com<br>
+    This form is secure and private. LMS does not provide legal or financial advice. Public record data may contain errors.</p>
+  </div>
+
+  <script>
+    // ─── HELPERS ───────────────────────────────────────────────
+    function getOppId() {
+      const parts = window.location.pathname.split('/');
+      return parts[parts.length - 1] || parts[parts.length - 2];
+    }
+
+    function toggleConditional(id, value, triggerValue) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('visible', value === triggerValue);
+    }
+
+    function getRadioValue(name) {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      return checked ? checked.value : '';
+    }
+
+    function setStatus(type, msg) {
+      const el = document.getElementById('statusMsg');
+      el.className = `status-msg ${type}`;
+      el.textContent = msg;
+    }
+
+    // ─── PRE-FILL FROM GHL ────────────────────────────────────
+    async function loadOfferData() {
+      const oppId = getOppId();
+      if (!oppId) {
+        document.getElementById('loadingState').innerHTML = '<div class="loading-overlay"><p style="color:#e53e3e;">No file ID found in URL.</p></div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/offer-data?opp_id=${oppId}`);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        // Property address display
+        const addr = data.oif_subject_property_address || data.fs_subject_street_address || 'Your File';
+        document.getElementById('propertyAddress').textContent = addr;
+
+        // Pre-fill fields
+        setValue('sellerName', data.oif_seller_name_as_deeded || (data.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : ''));
+        setValue('subjectAddress', data.oif_subject_property_address || data.fs_subject_street_address || '');
+        setValue('laCompany', data.oif_listing_agent_company__brokerage || data.fs_submitter_company_brokerage_name || '');
+        setValue('laName', data.oif_listing_agent_name || data.fs_submitter_full_name || '');
+        setValue('laPhone', data.oif_listing_agent_phone || data.fs_submitter_phone_number || '');
+        setValue('laEmail', data.oif_listing_agent_email || data.fs_submitter_email || '');
+
+        // Show form
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('oifForm').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('loadingState').innerHTML = `<div class="loading-overlay"><p style="color:#e53e3e;">Error loading file: ${err.message}</p></div>`;
+      }
+    }
+
+    function setValue(id, val) {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    }
+
+    // ─── FORM SUBMIT ──────────────────────────────────────────
+    document.getElementById('oifForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Submitting...';
+      setStatus('loading', 'Submitting your form. Please wait...');
+
+      const oppId = getOppId();
+
+      const payload = {
+        opp_id: oppId,
+
+        // I. Transaction
+        oif_seller_name_as_deeded: document.getElementById('sellerName').value,
+        oif_subject_property_address__full_: document.getElementById('subjectAddress').value,
+        oif_purchase_price: document.getElementById('purchasePrice').value,
+        oif_escrowdeposit_amount: document.getElementById('escrowAmount').value,
+        oif_inspection__due_diligence_days: document.getElementById('dueDiligenceDays').value,
+        oif_close_date: document.getElementById('closeDate').value,
+        oif_additional_terms: document.getElementById('additionalTerms').value,
+
+        // II. Title
+        oif_title_company_name: document.getElementById('titleCompanyName').value,
+        oif_title_agent_name: document.getElementById('titleAgentName').value,
+        oif_title_agent_phone: document.getElementById('titleAgentPhone').value,
+        oif_title_agent_email: document.getElementById('titleAgentEmail').value,
+
+        // III. Listing Agent
+        oif_listing_agent_company__brokerage: document.getElementById('laCompany').value,
+        oif_listing_agent_name: document.getElementById('laName').value,
+        oif_listing_agent_phone: document.getElementById('laPhone').value,
+        oif_listing_agent_email: document.getElementById('laEmail').value,
+        oif_listing_agent_commission_: document.getElementById('laCommission').value,
+        oif_listing_agent__transaction__admin_fee: getRadioValue('laAdminFee'),
+        oif_listing_agent_transaction__admin_fee_amount: document.getElementById('laAdminFeeAmount').value,
+        oif_listing_agent_transaction__admin_fee_paid_by: getRadioValue('laAdminFeePaidBy'),
+        oif_listing_agent__transaction_coordinator: getRadioValue('laTCYesNo'),
+        oif_listing_agent__tc_company__brokerage_name: document.getElementById('laTCCompany').value,
+        oif_listing_agent__transaction_coordinator___tc__name: document.getElementById('laTCName').value,
+        oif_listing_agent__tc_phone: document.getElementById('laTCPhone').value,
+        oif_listing_agent__tc_email: document.getElementById('laTCEmail').value,
+        oif_co_listing_agent: getRadioValue('coListingYesNo'),
+        oif_co_listing_agent_brokerage___company_name: document.getElementById('coListingBrokerage').value,
+        oif_co_listing_agent_name: document.getElementById('coListingName').value,
+        oif_co_listing_agent_phone: document.getElementById('coListingPhone').value,
+        oif_co_listing_agent_email: document.getElementById('coListingEmail').value,
+
+        // IV. Buyer Agent
+        oif_buyer_agent___brokerage_company_name: document.getElementById('baCompany').value,
+        oif_buyer_agent_name: document.getElementById('baName').value,
+        oif_buyer_agent_phone: document.getElementById('baPhone').value,
+        oif_buyer_agent_email: document.getElementById('baEmail').value,
+        oif_buyeragent_commission_: document.getElementById('baCommission').value,
+        oif_buyer_agent__transaction___admin_fee: getRadioValue('baAdminFee'),
+        oif_buyer_agent__transaction___admin_fee_amount: document.getElementById('baAdminFeeAmount').value,
+        oif_buyer_agent__transaction___admin_fee_paid_by: getRadioValue('baAdminFeePaidBy'),
+        oif_buyer_agent__transaction_coordinator: getRadioValue('baTCYesNo'),
+        oif_buyer_agent___tc_company_name: document.getElementById('baTCCompany').value,
+        oif_buyer_agent___tc_name: document.getElementById('baTCName').value,
+        oif_buyer_agent___tc_phone: document.getElementById('baTCPhone').value,
+        oif_buyer_agent___tc_email: document.getElementById('baTCEmail').value,
+
+        // V. Buyer
+        oif_buyer___corporate_entity: getRadioValue('buyerCorporate'),
+        oif_buyer___financing_type: getRadioValue('buyerFinancing'),
+        oif_buyer__property_use: getRadioValue('buyerPropertyUse'),
+        oif_buyer_name_as_deeded: document.getElementById('buyerNameDeeded').value,
+        buyer_name_contact: document.getElementById('buyerNameContact').value,
+        oif_buyer_phone: document.getElementById('buyerPhone').value,
+        oif_buyer_email: document.getElementById('buyerEmail').value,
+        oif_buyer_mailing_address: document.getElementById('buyerMailingAddress').value,
+      };
+
+      try {
+        const res = await fetch('/api/offer-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) throw new Error(result.error || 'Submission failed');
+
+        setStatus('success', '✅ Offer Intake Form submitted successfully! LMS has been notified.');
+        btn.textContent = '✅ Submitted';
+        btn.style.background = '#38a169';
+
+        // Scroll to success
+        document.getElementById('statusMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      } catch (err) {
+        setStatus('error', `Submission error: ${err.message}. Please try again or contact LMS.`);
+        btn.disabled = false;
+        btn.textContent = 'SUBMIT OFFER INTAKE FORM';
+      }
     });
-    if (!oppRes.ok) throw new Error(`GHL opportunity fetch failed: ${oppRes.status}`);
-    const oppData = await oppRes.json();
-    const opp = oppData.opportunity || oppData;
-    const contactId = opp.contact?.id || opp.contactId;
-    if (!contactId) throw new Error('No contact ID on opportunity');
 
-    const contactRes = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
-      headers: { 'Authorization': `Bearer ${GHL_API_KEY}`, 'Version': '2021-07-28' }
-    });
-    if (!contactRes.ok) throw new Error(`GHL contact fetch failed: ${contactRes.status}`);
-    const contactData = await contactRes.json();
-    const contact = contactData.contact || contactData;
-
-    const getField = (fields, key) => {
-      if (!fields) return '';
-      const f = fields.find(f => f.key === key || f.id === key);
-      return f ? (f.value || '') : '';
-    };
-
-    const cf = contact.customFields || [];
-
-    const data = {
-      oif_seller_name_as_deeded: getField(cf, 'oif_seller_name_as_deeded') || `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
-      oif_subject_property_address: getField(cf, 'oif_subject_property_address__full_') || getField(cf, 'fs_subject_street_address') || contact.address1 || '',
-      oif_listing_agent_company__brokerage: getField(cf, 'oif_listing_agent_company__brokerage') || getField(cf, 'fs_submitter_company_brokerage_name') || '',
-      oif_listing_agent_name: getField(cf, 'oif_listing_agent_name') || getField(cf, 'fs_submitter_full_name') || '',
-      oif_listing_agent_phone: getField(cf, 'oif_listing_agent_phone') || getField(cf, 'fs_submitter_phone_number') || '',
-      oif_listing_agent_email: getField(cf, 'oif_listing_agent_email') || getField(cf, 'fs_submitter_email') || '',
-      first_name: contact.firstName || '',
-      last_name: contact.lastName || '',
-      fs_subject_street_address: getField(cf, 'fs_subject_street_address') || contact.address1 || '',
-      fs_submitter_full_name: getField(cf, 'fs_submitter_full_name') || '',
-      fs_submitter_phone_number: getField(cf, 'fs_submitter_phone_number') || '',
-      fs_submitter_email: getField(cf, 'fs_submitter_email') || '',
-      fs_submitter_company_brokerage_name: getField(cf, 'fs_submitter_company_brokerage_name') || '',
-    };
-
-    return res.status(200).json(data);
-
-  } catch (err) {
-    console.error('offer-data error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-}
+    // ─── INIT ─────────────────────────────────────────────────
+    loadOfferData();
+  </script>
+</body>
+</html>
