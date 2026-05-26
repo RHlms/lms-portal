@@ -1,79 +1,77 @@
+// api/offer-data.js
+// Pre-fills OIF from GHL opportunity + contact fields
 
-// api/intake-data.js
-// Returns pre-fill data for the Seller Intake Form page.
-// Pulls from opportunity FS form fields (confirmed IDs from debug-fields, 2026-05-26).
-
-const OPP_FIELD_IDS = {
-  seller_name:    'DmA0vggMvgaDQuQtFXwM', // fs_seller_full_name
-  seller_phone:   'nCBJtC2i0iK8uwuzUmlZ', // fs_seller_phone
-  seller_email:   'GsalqwA6Fer5SetS6SxW', // fs_seller_email
-  street:         'bTOQKVASljmlKC3ri7uH', // fs_street_address
-  city:           'LQ0MnHCePkhyIXvFqmTF', // fs_city
-  state:          'Ocpa5jBIyG52nTViZUxj', // fs_state
-  zip:            'Ye3bBHdAY4LOtLLXcwMl', // fs_zip_code
-  county:         'pSjlP4aKb4n4AWgjsUSA', // fs_county
-  la_name:        'bDmxH95bi0chTpHxA2wr', // fs_your_full_name (submitter = LA)
-  la_phone:       'pa5yWsq8BoZ6e43uqXyE', // fs_your_phone_number
-  la_email:       'H5uu7kekmBaYxG14v2Dk', // fs_your_email
-  la_brokerage:   'QHAaE53pmuq0Gvrhm969', // fs_submitter_companybrokerage_name
-};
+const GHL_API_KEY = process.env.GHL_API_KEY;
+const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
   const { opp_id } = req.query;
-  if (!opp_id) return res.status(400).json({ error: 'opp_id required' });
-
-  const GHL_API_KEY = process.env.GHL_API_KEY;
-  if (!GHL_API_KEY) return res.status(500).json({ error: 'GHL_API_KEY not configured' });
-
-  const HEADERS = {
-    Authorization: `Bearer ${GHL_API_KEY}`,
-    Version: '2021-07-28',
-  };
+  if (!opp_id) return res.status(400).json({ error: 'Missing opp_id' });
 
   try {
-    // Fetch opportunity for FS form pre-fill data
-    const oppRes = await fetch(
-      `https://services.leadconnectorhq.com/opportunities/${opp_id}`,
-      { headers: HEADERS }
-    );
-    if (!oppRes.ok) throw new Error('Opportunity fetch failed');
+    // Fetch opportunity
+    const oppRes = await fetch(`https://services.leadconnectorhq.com/opportunities/${opp_id}`, {
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': '2021-07-28'
+      }
+    });
+
+    if (!oppRes.ok) throw new Error(`GHL opportunity fetch failed: ${oppRes.status}`);
     const oppData = await oppRes.json();
     const opp = oppData.opportunity || oppData;
 
-    // Build field value lookup
-    const fieldMap = {};
-    for (const f of (opp.customFields || [])) {
-      const val = f.fieldValue ?? f.field_value ?? f.value ?? null;
-      fieldMap[f.id] = Array.isArray(val) ? val[0] : val;
-    }
+    const contactId = opp.contact?.id || opp.contactId;
+    if (!contactId) throw new Error('No contact ID on opportunity');
 
-    const get = (id) => fieldMap[id] || '';
-
-    const contact = opp.contact || {};
-
-    return res.status(200).json({
-      opp_id,
-      contact_id:       contact.id || '',
-      file_reference:   opp.name || '',
-      // Pre-fill seller info
-      seller_name:      get(OPP_FIELD_IDS.seller_name),
-      seller_phone:     get(OPP_FIELD_IDS.seller_phone),
-      seller_email:     get(OPP_FIELD_IDS.seller_email),
-      // Pre-fill property address
-      street:           get(OPP_FIELD_IDS.street),
-      city:             get(OPP_FIELD_IDS.city),
-      state:            get(OPP_FIELD_IDS.state),
-      zip:              get(OPP_FIELD_IDS.zip),
-      county:           get(OPP_FIELD_IDS.county),
-      // Pre-fill listing agent
-      la_name:          get(OPP_FIELD_IDS.la_name),
-      la_phone:         get(OPP_FIELD_IDS.la_phone),
-      la_email:         get(OPP_FIELD_IDS.la_email),
-      la_brokerage:     get(OPP_FIELD_IDS.la_brokerage),
+    // Fetch contact
+    const contactRes = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': '2021-07-28'
+      }
     });
 
+    if (!contactRes.ok) throw new Error(`GHL contact fetch failed: ${contactRes.status}`);
+    const contactData = await contactRes.json();
+    const contact = contactData.contact || contactData;
+
+    // Helper to get custom field value
+    const getField = (fields, key) => {
+      if (!fields) return '';
+      const f = fields.find(f => f.key === key || f.id === key);
+      return f ? (f.value || '') : '';
+    };
+
+    const cf = contact.customFields || [];
+    const of = opp.customFields || [];
+
+    // Build response — check opp fields first, fall back to contact fields
+    const data = {
+      // Pre-fill fields
+      oif_seller_name_as_deeded: getField(cf, 'oif_seller_name_as_deeded') || `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
+      oif_subject_property_address: getField(cf, 'oif_subject_property_address__full_') || getField(cf, 'fs_subject_street_address') || contact.address1 || '',
+      oif_listing_agent_company__brokerage: getField(cf, 'oif_listing_agent_company__brokerage') || getField(cf, 'fs_submitter_company_brokerage_name') || '',
+      oif_listing_agent_name: getField(cf, 'oif_listing_agent_name') || getField(cf, 'fs_submitter_full_name') || '',
+      oif_listing_agent_phone: getField(cf, 'oif_listing_agent_phone') || getField(cf, 'fs_submitter_phone_number') || '',
+      oif_listing_agent_email: getField(cf, 'oif_listing_agent_email') || getField(cf, 'fs_submitter_email') || '',
+
+      // Pass through for fallback
+      first_name: contact.firstName || '',
+      last_name: contact.lastName || '',
+      fs_subject_street_address: getField(cf, 'fs_subject_street_address') || contact.address1 || '',
+      fs_submitter_full_name: getField(cf, 'fs_submitter_full_name') || '',
+      fs_submitter_phone_number: getField(cf, 'fs_submitter_phone_number') || '',
+      fs_submitter_email: getField(cf, 'fs_submitter_email') || '',
+      fs_submitter_company_brokerage_name: getField(cf, 'fs_submitter_company_brokerage_name') || '',
+    };
+
+    return res.status(200).json(data);
+
   } catch (err) {
-    console.error('[intake-data]', err);
+    console.error('offer-data error:', err);
     return res.status(500).json({ error: err.message });
   }
 }
