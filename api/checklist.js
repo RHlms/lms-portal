@@ -46,6 +46,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       fileReference: opp.name || 'File ' + opp_id,
+      debug_fields: customFields.map(f => ({ key: f.key || f.fieldKey, value: f.value })),
       contactId: opp.contactId || opp.contact?.id || '',
       items: [
         {
