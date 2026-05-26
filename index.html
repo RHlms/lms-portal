@@ -542,6 +542,8 @@ function iconLocked() {
   return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 }
 
+const PEN_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+
 let checklistData = null;
 let completionState = {};
 let tosChecked = false;
@@ -642,21 +644,35 @@ function buildItemCard(item, oppId, contactId) {
   let bodyHtml = '';
   if (!done) {
     let actionHtml = '';
+
     if (item.type === 'esign') {
-      actionHtml = `<p class="item-instruction">${item.pendingMessage}</p>`;
+      // ── UPDATED: show Sign Agreement button if signingUrl present ──────────
+      if (item.signingUrl) {
+        actionHtml = `
+          <p class="item-instruction">Your Service Agreement is ready. Please review and complete your electronic signature — it only takes a minute.</p>
+          <a href="${item.signingUrl}" target="_blank" class="btn-primary">
+            ${PEN_ICON}
+            ${item.buttonLabel || 'Sign Agreement'}
+          </a>`;
+      } else {
+        // Fallback: signing URL not yet populated in GHL
+        actionHtml = `<p class="item-instruction">${item.pendingMessage}</p>`;
+      }
+
     } else if (item.type === 'form') {
-      const btnLabel = isSA ? 'Sign Agreement' : 'Complete Form';
       actionHtml = `
         <p class="item-instruction">${item.pendingMessage}</p>
         <a href="${item.formUrl}" target="_blank" class="btn-primary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          ${btnLabel}
+          ${PEN_ICON}
+          Complete Form
         </a>`;
+
     } else if (item.type === 'upload') {
       actionHtml = `
         <p class="item-instruction">${item.instruction}</p>
         ${buildUploadZone(item, oppId, contactId)}`;
     }
+
     bodyHtml = `<div class="item-body">${actionHtml}</div>`;
   }
 
