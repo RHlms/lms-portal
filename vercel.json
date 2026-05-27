@@ -1,8 +1,9 @@
 {
   "routes": [
-    { "src": "/file/(.*)", "dest": "/index.html" },
-    { "src": "/sign/(.*)", "dest": "/sign.html" },
-    { "src": "/intake/(.*)", "dest": "/intake.html" },
-    { "src": "/offer/(.*)", "dest": "/offer.html" }
+    { "src": "/file/(.*)",       "dest": "/index.html"      },
+    { "src": "/sign/(.*)",       "dest": "/sign.html"       },
+    { "src": "/intake/(.*)",     "dest": "/intake.html"     },
+    { "src": "/offer/(.*)",      "dest": "/offer.html"      },
+    { "src": "/offer-docs/(.*)", "dest": "/offer-docs.html" }
   ]
 }
