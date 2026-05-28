@@ -1,3 +1,9 @@
+// api/upload.js
+// Handles document uploads from the seller portal.
+// 1. Sets the GHL opportunity flag to ["Received"]
+// 2. Fetches contact ID from opportunity
+// 3. Uploads the file to GHL contact Documents tab
+
 import formidable from 'formidable';
 import fs from 'fs';
 
@@ -40,7 +46,7 @@ async function updateGHLField(oppId, fieldKey, apiKey) {
         method: 'PUT',
         headers: { ...GHL_HEADERS(apiKey), 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customFields: [{ key: fieldKey, field_value: true }],
+          customFields: [{ key: fieldKey, field_value: ["Received"] }],
         }),
       }
     );
