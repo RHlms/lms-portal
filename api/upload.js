@@ -1,8 +1,8 @@
 // api/upload.js
 // Handles document uploads from the seller portal.
 // 1. Sets the GHL opportunity flag to ["Received"]
-// 2. Fetches contact ID from opportunity
-// 3. Uploads the file to GHL contact Documents tab
+// 2. Uploads the file to GHL media library (attached to contact)
+// 3. Logs file receipt as a note on the contact
 
 import formidable from 'formidable';
 import fs from 'fs';
@@ -51,7 +51,7 @@ async function updateGHLField(oppId, fieldKey, apiKey) {
       }
     );
     const data = await res.json();
-    console.log('[upload] GHL flag update:', JSON.stringify(data).slice(0, 300));
+    console.log('[upload] GHL flag update:', JSON.stringify(data).slice(0, 200));
     return res.ok;
   } catch (err) {
     console.error('[upload] GHL flag update error:', err);
@@ -59,7 +59,7 @@ async function updateGHLField(oppId, fieldKey, apiKey) {
   }
 }
 
-async function uploadFileToContact(contactId, file, docLabel, apiKey) {
+async function uploadFileToGHL(contactId, file, docLabel, apiKey) {
   try {
     const fileBuffer = fs.readFileSync(file.filepath);
     const formData = new FormData();
@@ -69,9 +69,10 @@ async function uploadFileToContact(contactId, file, docLabel, apiKey) {
       file.originalFilename || `${docLabel}.pdf`
     );
     formData.append('locationId', GHL_LOCATION_ID);
+    formData.append('contactId', contactId);
 
     const res = await fetch(
-      `https://services.leadconnectorhq.com/contacts/${contactId}/documents`,
+      'https://services.leadconnectorhq.com/medias/upload-file',
       {
         method: 'POST',
         headers: GHL_HEADERS(apiKey),
@@ -79,11 +80,30 @@ async function uploadFileToContact(contactId, file, docLabel, apiKey) {
       }
     );
     const txt = await res.text();
-    console.log('[upload] GHL doc upload response:', res.status, txt.slice(0, 300));
-    return res.ok;
+    console.log('[upload] GHL media upload response:', res.status, txt.slice(0, 300));
+    return { ok: res.ok, body: txt };
   } catch (err) {
-    console.error('[upload] file upload error:', err);
-    return false;
+    console.error('[upload] media upload error:', err);
+    return { ok: false, body: err.message };
+  }
+}
+
+async function addNoteToContact(contactId, noteBody, apiKey) {
+  try {
+    const res = await fetch(
+      `https://services.leadconnectorhq.com/contacts/${contactId}/notes`,
+      {
+        method: 'POST',
+        headers: { ...GHL_HEADERS(apiKey), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: noteBody }),
+      }
+    );
+    if (!res.ok) {
+      const txt = await res.text();
+      console.warn('[upload] note creation failed:', txt);
+    }
+  } catch (err) {
+    console.error('[upload] note error:', err);
   }
 }
 
@@ -127,16 +147,33 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to update file record. Please try again.' });
     }
 
-    // ── 2. Get contact ID and upload file to Documents tab ────────────────
+    // ── 2. Get contact ID ─────────────────────────────────────────────────
     const contactId = await getContactIdFromOpp(oppId, GHL_API_KEY);
-    if (contactId) {
-      const uploaded = await uploadFileToContact(contactId, file, docInfo.label, GHL_API_KEY);
-      if (!uploaded) {
-        console.warn('[upload] File upload to GHL Documents failed — flag was set, file not stored');
-      }
-    } else {
-      console.warn('[upload] Could not resolve contactId from opp — file not stored');
+    if (!contactId) {
+      console.warn('[upload] Could not resolve contactId — file not stored');
+      return res.status(200).json({
+        success: true,
+        docType: itemId,
+        message: `${docInfo.label} received and added to your file. ✓`,
+      });
     }
+
+    // ── 3. Upload file to GHL media library ───────────────────────────────
+    const now = new Date();
+    const edtTime = new Date(now.getTime() + (-4 * 60) * 60000);
+    const edtString = edtTime.toLocaleString('en-US', {
+      month: 'long', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    }) + ' EDT';
+
+    const upload = await uploadFileToGHL(contactId, file, docInfo.label, GHL_API_KEY);
+
+    // ── 4. Add note to contact ────────────────────────────────────────────
+    const noteBody = upload.ok
+      ? `📎 ${docInfo.label} — UPLOADED VIA PORTAL\nUploaded: ${edtString}\nOpportunity ID: ${oppId}`
+      : `⚠️ ${docInfo.label} — FLAG SET BUT FILE UPLOAD FAILED\nAttempted: ${edtString}\nError: ${upload.body.slice(0, 200)}`;
+
+    await addNoteToContact(contactId, noteBody, GHL_API_KEY);
 
     return res.status(200).json({
       success: true,
