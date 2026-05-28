@@ -53,10 +53,11 @@ export default async function handler(req, res) {
     }
 
     // ── 3. Helper: is a portal checkbox field marked complete? ─────────────
+    // Only ["Received"] is accepted — legacy true/1 values are ignored
     const isComplete = (fieldId) => {
       const val = fieldMap[fieldId];
-      if (Array.isArray(val)) return val[0] === true || val[0] === 'true' || val[0] === 1;
-      return val === true || val === 'true' || val === 1;
+      if (Array.isArray(val)) return val.includes('Received');
+      return val === 'Received';
     };
 
     // ── 4. Resolve SA signing URL ──────────────────────────────────────────
