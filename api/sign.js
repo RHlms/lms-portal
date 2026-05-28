@@ -1,11 +1,7 @@
 // api/sign.js
 // Processes Service Agreement submission.
-// 1. Marks portal_sa_received = true on opportunity
+// 1. Marks portal_sa_received = ["Received"] on opportunity
 // 2. Writes timestamped audit note to contact
-
-const FIELD_IDS = {
-  portal_sa_received: 'BrrAzBKKBxVpCC8Mjfwq', // PORTAL: SA Received (checkbox)
-};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -16,40 +12,30 @@ export default async function handler(req, res) {
   if (!GHL_API_KEY) return res.status(500).json({ error: 'GHL_API_KEY not configured' });
 
   const {
-    opp_id,
-    contact_id,
-    borrower_name,
-    buyer_name,
-    listing_agent_option,
-    listing_agent_name,
-    listing_agent_brokerage,
-    listing_agent_phone,
-    listing_agent_email,
-    initials,
+    opp_id, contact_id, borrower_name, buyer_name,
+    listing_agent_option, listing_agent_name, listing_agent_brokerage,
+    listing_agent_phone, listing_agent_email, initials,
   } = req.body;
 
   if (!opp_id || !borrower_name) {
     return res.status(400).json({ error: 'opp_id and borrower_name required' });
   }
 
-  // ── Capture audit data ───────────────────────────────────────────────────
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
-    || req.headers['x-real-ip']
-    || 'unknown';
-
+    || req.headers['x-real-ip'] || 'unknown';
   const userAgent = req.headers['user-agent'] || 'unknown';
 
   const now = new Date();
   const timestampUTC = now.toISOString();
-  const timestampET  = now.toLocaleString('en-US', {
-    timeZone:  'America/New_York',
+  const timestampET = now.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
     dateStyle: 'full',
     timeStyle: 'long',
   });
 
   const HEADERS = {
     Authorization: `Bearer ${GHL_API_KEY}`,
-    Version:       '2021-07-28',
+    Version: '2021-07-28',
     'Content-Type': 'application/json',
   };
 
@@ -63,9 +49,7 @@ export default async function handler(req, res) {
         method: 'PUT',
         headers: HEADERS,
         body: JSON.stringify({
-          customFields: [
-           { key: 'portal_sa_received', field_value: true },
-          ],
+          customFields: [{ key: 'portal_sa_received', field_value: ["Received"] }],
         }),
       }
     );
@@ -125,7 +109,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Return success even if note failed — SA is marked, that's the critical path
   return res.status(200).json({
     success: true,
     warnings: errors.length ? errors : undefined,
