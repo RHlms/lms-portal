@@ -18,8 +18,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'opp_id is required' });
   }
 
-  const GHL_API_KEY     = process.env.GHL_API_KEY;
-  const GHL_SIF_FORM_ID = process.env.GHL_SIF_FORM_ID;
+  const GHL_API_KEY = process.env.GHL_API_KEY;
 
   if (!GHL_API_KEY) {
     return res.status(500).json({ error: 'GHL_API_KEY not configured' });
@@ -63,10 +62,9 @@ export default async function handler(req, res) {
     // ── 4. Resolve SA signing URL ──────────────────────────────────────────
     const saSigningUrl = fieldMap[FIELD_IDS.sa_signing_url] || '';
 
-    // ── 5. Contact info for form URLs ──────────────────────────────────────
-    const contact      = opp.contact || {};
-    const contactEmail = contact.email || '';
-    const contactId    = contact.id    || '';
+    // ── 5. Contact info ────────────────────────────────────────────────────
+    const contact     = opp.contact || {};
+    const contactId   = contact.id  || '';
 
     const fileReference = opp.name
       || `${contact.firstName || ''} ${contact.lastName || ''}`.trim()
@@ -75,10 +73,6 @@ export default async function handler(req, res) {
     // ── 6. Build checklist items ───────────────────────────────────────────
     const saComplete = isComplete(FIELD_IDS.portal_sa_received);
 
-    // SA item: three states
-    //   a) complete → checkmark only
-    //   b) incomplete + signing URL → show button
-    //   c) incomplete + no URL → email fallback message
     let saExtra = {};
     if (!saComplete) {
       if (saSigningUrl) {
@@ -110,7 +104,7 @@ export default async function handler(req, res) {
         complete:       isComplete(FIELD_IDS.portal_sif_received),
         type:           'form',
         pendingMessage: 'Please complete the Seller Intake Form so we can gather everything needed to process your file.',
-        formUrl:        `https://api.leadconnectorhq.com/widget/form/${GHL_SIF_FORM_ID}?email=${encodeURIComponent(contactEmail)}`,
+        formUrl:        `https://documents.shortsalestart.com/intake/${opp_id}`,
       },
       {
         id:          'mortgage',
