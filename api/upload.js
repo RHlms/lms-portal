@@ -2,7 +2,7 @@
 // Handles document uploads from the seller portal.
 // 1. Sets the GHL opportunity flag to ["Received"]
 // 2. Uploads the file to GHL media library (attached to contact)
-// 3. Logs file receipt as a note on the contact
+// 3. Logs file receipt + download URL as a note on the contact
 
 import formidable from 'formidable';
 import fs from 'fs';
@@ -81,10 +81,18 @@ async function uploadFileToGHL(contactId, file, docLabel, apiKey) {
     );
     const txt = await res.text();
     console.log('[upload] GHL media upload response:', res.status, txt.slice(0, 300));
-    return { ok: res.ok, body: txt };
+
+    // Parse URL from response
+    let fileUrl = null;
+    try {
+      const parsed = JSON.parse(txt);
+      fileUrl = parsed.url || parsed.fileUrl || parsed.mediaUrl || parsed.data?.url || null;
+    } catch (_) {}
+
+    return { ok: res.ok, body: txt, fileUrl };
   } catch (err) {
     console.error('[upload] media upload error:', err);
-    return { ok: false, body: err.message };
+    return { ok: false, body: err.message, fileUrl: null };
   }
 }
 
@@ -169,9 +177,24 @@ export default async function handler(req, res) {
     const upload = await uploadFileToGHL(contactId, file, docInfo.label, GHL_API_KEY);
 
     // ── 4. Add note to contact ────────────────────────────────────────────
-    const noteBody = upload.ok
-      ? `📎 ${docInfo.label} — UPLOADED VIA PORTAL\nUploaded: ${edtString}\nOpportunity ID: ${oppId}`
-      : `⚠️ ${docInfo.label} — FLAG SET BUT FILE UPLOAD FAILED\nAttempted: ${edtString}\nError: ${upload.body.slice(0, 200)}`;
+    let noteBody;
+    if (upload.ok) {
+      const fileRef = upload.fileUrl
+        ? `File: ${upload.fileUrl}`
+        : `File: stored in GHL media library (no direct URL returned)`;
+      noteBody = [
+        `📎 ${docInfo.label} — UPLOADED VIA PORTAL`,
+        `Uploaded: ${edtString}`,
+        fileRef,
+        `Opportunity ID: ${oppId}`,
+      ].join('\n');
+    } else {
+      noteBody = [
+        `⚠️ ${docInfo.label} — FLAG SET BUT FILE UPLOAD FAILED`,
+        `Attempted: ${edtString}`,
+        `Error: ${upload.body.slice(0, 200)}`,
+      ].join('\n');
+    }
 
     await addNoteToContact(contactId, noteBody, GHL_API_KEY);
 
