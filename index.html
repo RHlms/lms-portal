@@ -582,12 +582,15 @@ async function hashPin(pin) {
 async function promptStaffPin() {
   const pin = prompt('Staff PIN:');
   if (!pin) return;
-  const hashed = await hashPin(pin);
+  const hashed  = await hashPin(pin);
   const correct = await hashPin('4567');
   if (hashed === correct) {
     staffUnlocked = true;
     document.querySelectorAll('.toggle-btn').forEach(btn => {
       btn.style.display = 'inline-flex';
+    });
+    document.querySelectorAll('.item-card').forEach(card => {
+      card.classList.remove('locked');
     });
   }
 }
