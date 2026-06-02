@@ -236,6 +236,24 @@
     .item-tag.pending { background: var(--teal-dim);    color: var(--teal); }
     .item-tag.locked  { background: #f0f4f8;            color: var(--muted); }
 
+    .toggle-btn {
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .toggle-btn.mark   { border-color: var(--success); color: var(--success); }
+    .toggle-btn.mark:hover   { background: var(--success-dim); }
+    .toggle-btn.unmark { border-color: var(--dim); color: var(--dim); }
+    .toggle-btn.unmark:hover { background: rgba(122,154,181,0.1); }
+    .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
     .item-body { padding: 0 20px 20px; border-top: 1px solid var(--navy-3); }
 
     .item-instruction {
@@ -445,6 +463,7 @@
       .file-address { font-size: 15px; }
       .item-header { padding: 14px 16px; }
       .item-body { padding: 0 16px 16px; }
+      .toggle-btn { display: none; }
     }
   </style>
 </head>
@@ -547,6 +566,7 @@ const PEN_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" st
 let checklistData = null;
 let completionState = {};
 let tosChecked = false;
+let currentOppId = null;
 
 function saComplete() {
   return completionState['sa'] === true;
@@ -555,7 +575,7 @@ function saComplete() {
 function applyLockStates() {
   if (!checklistData) return;
   checklistData.items.forEach((item, idx) => {
-    if (idx === 0) return; // SA always managed separately
+    if (idx === 0) return;
     const card = document.getElementById(`card-${item.id}`);
     if (!card || completionState[item.id]) return;
     const shouldLock = !tosChecked || !saComplete();
@@ -591,12 +611,14 @@ function markComplete(itemId) {
   const tag = card.querySelector('.item-tag');
   tag.className = 'item-tag done';
   tag.textContent = 'Received ✓';
+  const toggleBtn = document.getElementById(`toggle-${itemId}`);
+  if (toggleBtn) {
+    toggleBtn.textContent = 'Unmark';
+    toggleBtn.className = 'toggle-btn unmark';
+  }
   const body = card.querySelector('.item-body');
   if (body) body.remove();
-
-  // If SA just completed, unlock steps 2-4
   if (itemId === 'sa') applyLockStates();
-
   updateProgress();
 }
 
@@ -641,12 +663,17 @@ function buildItemCard(item, oppId, contactId) {
   let tagClass    = done ? 'done' : locked ? 'locked' : 'pending';
   let tagText     = done ? 'Received ✓' : locked ? 'Complete Step 1 First' : 'Needed';
 
+  const toggleBtn = `<button class="toggle-btn ${done ? 'unmark' : 'mark'}"
+    id="toggle-${item.id}"
+    onclick="handleToggle('${item.id}')">
+    ${done ? 'Unmark' : 'Mark received'}
+  </button>`;
+
   let bodyHtml = '';
   if (!done) {
     let actionHtml = '';
 
     if (item.type === 'esign') {
-      // ── UPDATED: show Sign Agreement button if signingUrl present ──────────
       if (item.signingUrl) {
         actionHtml = `
           <p class="item-instruction">Your Service Agreement is ready. Please review and complete your electronic signature — it only takes a minute.</p>
@@ -655,10 +682,8 @@ function buildItemCard(item, oppId, contactId) {
             ${item.buttonLabel || 'Sign Agreement'}
           </a>`;
       } else {
-        // Fallback: signing URL not yet populated in GHL
         actionHtml = `<p class="item-instruction">${item.pendingMessage}</p>`;
       }
-
     } else if (item.type === 'form') {
       actionHtml = `
         <p class="item-instruction">${item.pendingMessage}</p>
@@ -666,7 +691,6 @@ function buildItemCard(item, oppId, contactId) {
           ${PEN_ICON}
           Complete Form
         </a>`;
-
     } else if (item.type === 'upload') {
       actionHtml = `
         <p class="item-instruction">${item.instruction}</p>
@@ -682,13 +706,15 @@ function buildItemCard(item, oppId, contactId) {
         <div class="item-status ${statusClass}">${statusIcon}</div>
         <div class="item-title ${statusClass}">${item.label}</div>
         <div class="item-tag ${tagClass}">${tagText}</div>
+        ${toggleBtn}
       </div>
       ${bodyHtml}
     </div>`;
 }
 
 function renderPortal(data, oppId) {
-  checklistData = data;
+  checklistData  = data;
+  currentOppId   = oppId;
   data.items.forEach(i => completionState[i.id] = i.complete);
   document.getElementById('file-reference').textContent = data.fileReference;
   document.getElementById('checklist').innerHTML =
@@ -771,6 +797,35 @@ async function uploadFile(file, itemId, oppId, contactId) {
     statusEl.style.color = 'var(--danger)';
     zoneEl.style.pointerEvents = '';
     zoneEl.style.opacity = '1';
+  }
+}
+
+async function handleToggle(itemId) {
+  const btn     = document.getElementById(`toggle-${itemId}`);
+  const current = completionState[itemId] ?? false;
+  const next    = !current;
+  btn.disabled  = true;
+
+  try {
+    const res  = await fetch('/api/checklist', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ opp_id: currentOppId, item_id: itemId, received: next })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Update failed');
+
+    if (next) {
+      markComplete(itemId);
+    } else {
+      completionState[itemId] = false;
+      location.reload();
+    }
+  } catch (err) {
+    console.error('Toggle failed:', err.message);
+    alert('Could not update status. Please try again.');
+  } finally {
+    btn.disabled = false;
   }
 }
 
