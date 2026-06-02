@@ -60,7 +60,6 @@ export default async function handler(req, res) {
 
     try {
       const opp = await getOpp(opp_id);
-      if (req.query.debug) return res.status(200).json({ raw_opp: opp });
       const cf  = opp?.customFields ?? [];
 
       const status = {};
@@ -70,7 +69,7 @@ export default async function handler(req, res) {
           f.key === def.key ||
           f.fieldKey === def.key
         );
-        const val  = field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
+const val  = field?.fieldValueArray ?? field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
         status[id] = isReceived(val);
       }
 
