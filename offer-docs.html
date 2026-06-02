@@ -315,7 +315,7 @@
       const data = await dataRes.json();
       docStatus  = statusRes.ok ? (await statusRes.json()).status ?? {} : {};
 
-      document.getElementById('file-ref-display').textContent = data.address || oppId;
+      document.getElementById('file-ref-display').textContent = data.oif_subject_property_address || data.fs_subject_street_address || oppId;
       document.getElementById('loading-state').style.display  = 'none';
       document.getElementById('docs-content').style.display   = 'block';
       renderUploadCards();
