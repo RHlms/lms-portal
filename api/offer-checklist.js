@@ -1,8 +1,6 @@
 // api/offer-checklist.js
-// GET  ?opp_id=xxx        → current received status for all 7 offer docs
-// POST {opp_id, item_id, received: true|false} → manually toggle a field
-
 const GHL_KEY = process.env.GHL_API_KEY;
+const LOC_ID  = process.env.GHL_LOCATION_ID;
 const BASE    = 'https://services.leadconnectorhq.com';
 
 const hdrs = () => ({
@@ -11,7 +9,6 @@ const hdrs = () => ({
   'Version':       '2021-07-28'
 });
 
-// Maps item_id (from offer-docs.html) → GHL opportunity field key
 const FIELDS = {
   listing_agreement: { key: 'offer_docs_listing_agreement',                   id: '1NgEJRm39ag7NEBkzSin' },
   ss_addendum_asis:  { key: 'offer_docs_ss_addendum',                         id: '1mjRkJ2cU1sy7ZXv7v2d' },
@@ -35,9 +32,10 @@ async function getOpp(oppId) {
   if (!res.ok) throw new Error(`GHL search ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const list = data?.opportunities ?? data?.data ?? [];
-const opp  = list.find(o => o.id === oppId);
-if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
-return opp;
+  const opp  = list.find(o => o.id === oppId);
+  if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
+  return opp;
+}
 
 async function setField(oppId, fieldKey, received) {
   const res = await fetch(`${BASE}/opportunities/${oppId}`, {
@@ -56,26 +54,25 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ── GET ──────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
     const { opp_id } = req.query;
     if (!opp_id) return res.status(400).json({ error: 'opp_id required' });
 
     try {
       const opp = await getOpp(opp_id);
-if (req.query.debug) return res.status(200).json({ raw_opp: opp });
-const cf  = opp?.customFields ?? [];
+      if (req.query.debug) return res.status(200).json({ raw_opp: opp });
+      const cf  = opp?.customFields ?? [];
 
       const status = {};
-for (const [id, def] of Object.entries(FIELDS)) {
-  const field = cf.find(f =>
-    f.id === def.id ||
-    f.key === def.key ||
-    f.fieldKey === def.key
-  );
-  const val   = field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
-  status[id]  = isReceived(val);
-}
+      for (const [id, def] of Object.entries(FIELDS)) {
+        const field = cf.find(f =>
+          f.id === def.id ||
+          f.key === def.key ||
+          f.fieldKey === def.key
+        );
+        const val  = field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
+        status[id] = isReceived(val);
+      }
 
       return res.status(200).json({ opp_id, status });
     } catch (err) {
@@ -84,14 +81,13 @@ for (const [id, def] of Object.entries(FIELDS)) {
     }
   }
 
-  // ── POST ─────────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
     const { opp_id, item_id, received } = req.body ?? {};
     if (!opp_id || !item_id) return res.status(400).json({ error: 'opp_id and item_id required' });
-    if (!(item_id in FIELDS))  return res.status(400).json({ error: `Unknown item_id: ${item_id}` });
+    if (!(item_id in FIELDS)) return res.status(400).json({ error: `Unknown item_id: ${item_id}` });
 
     try {
-      const ok = await setField(opp_id, FIELDS[item_id], !!received);
+      const ok = await setField(opp_id, FIELDS[item_id].key, !!received);
       if (!ok) return res.status(500).json({ error: 'GHL update failed' });
       return res.status(200).json({ success: true, item_id, received: !!received });
     } catch (err) {
