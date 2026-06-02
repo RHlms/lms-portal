@@ -540,7 +540,15 @@ return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
         const data = await res.json();
 
         if (data.error) throw new Error(data.error);
-
+// Check if OIF already received — redirect to offer-docs if so
+        const checklistRes = await fetch(`/api/offer-checklist?opp_id=${oppId}`);
+        if (checklistRes.ok) {
+          const checklistData = await checklistRes.json();
+          if (checklistData.status?.oif_received) {
+            window.location.href = `/offer-docs/${oppId}`;
+            return;
+          }
+        }
         // Property address display
         const addr = data.oif_subject_property_address || data.fs_subject_street_address || 'Your File';
         document.getElementById('propertyAddress').textContent = addr;
