@@ -2,13 +2,11 @@
 const GHL_KEY = process.env.GHL_API_KEY;
 const LOC_ID  = process.env.GHL_LOCATION_ID;
 const BASE    = 'https://services.leadconnectorhq.com';
-
 const hdrs = () => ({
   'Authorization': `Bearer ${GHL_KEY}`,
   'Content-Type':  'application/json',
   'Version':       '2021-07-28'
 });
-
 const FIELDS = {
   listing_agreement: { key: 'offer_docs_listing_agreement',                   id: '1NgEJRm39ag7NEBkzSin' },
   ss_addendum_asis:  { key: 'offer_docs_ss_addendum',                         id: '1mjRkJ2cU1sy7ZXv7v2d' },
@@ -17,13 +15,12 @@ const FIELDS = {
   buyer_disclosure:  { key: 'offer_docs_lms_buyer_disclosure',                id: 'k9MPzBHNuGA8mcbvGi9g' },
   ss_addendum_la:    { key: 'offer_docs_ss_addendum_to_listing_agreement',    id: 'FTEZyE97TwdZ4ZJ3YQvI' },
   proof_of_funds:    { key: 'offer_docs_buyer_proof_of_fundsapproval_letter', id: 'k3Y2AOEgaorsg6hteaAm' },
+  oif_received:      { key: 'offer_docs_oif_received',                        id: null },
 };
-
 function isReceived(val) {
   if (Array.isArray(val)) return val.includes('Received');
   return val === 'Received';
 }
-
 async function getOpp(oppId) {
   const res  = await fetch(
     `${BASE}/opportunities/search?location_id=${LOC_ID}&id=${oppId}`,
@@ -36,7 +33,6 @@ async function getOpp(oppId) {
   if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
   return opp;
 }
-
 async function setField(oppId, fieldKey, received) {
   const res = await fetch(`${BASE}/opportunities/${oppId}`, {
     method:  'PUT',
@@ -47,44 +43,37 @@ async function setField(oppId, fieldKey, received) {
   });
   return res.ok;
 }
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-
   if (req.method === 'GET') {
     const { opp_id } = req.query;
     if (!opp_id) return res.status(400).json({ error: 'opp_id required' });
-
     try {
       const opp = await getOpp(opp_id);
       const cf  = opp?.customFields ?? [];
-
       const status = {};
       for (const [id, def] of Object.entries(FIELDS)) {
         const field = cf.find(f =>
-          f.id === def.id ||
+          (def.id && f.id === def.id) ||
           f.key === def.key ||
           f.fieldKey === def.key
         );
-const val  = field?.fieldValueArray ?? field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
+        const val  = field?.fieldValueArray ?? field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
         status[id] = isReceived(val);
       }
-
       return res.status(200).json({ opp_id, status });
     } catch (err) {
       console.error('[offer-checklist GET]', err.message);
       return res.status(500).json({ error: err.message });
     }
   }
-
   if (req.method === 'POST') {
     const { opp_id, item_id, received } = req.body ?? {};
     if (!opp_id || !item_id) return res.status(400).json({ error: 'opp_id and item_id required' });
     if (!(item_id in FIELDS)) return res.status(400).json({ error: `Unknown item_id: ${item_id}` });
-
     try {
       const ok = await setField(opp_id, FIELDS[item_id].key, !!received);
       if (!ok) return res.status(500).json({ error: 'GHL update failed' });
@@ -94,6 +83,5 @@ const val  = field?.fieldValueArray ?? field?.fieldValue ?? field?.value ?? fiel
       return res.status(500).json({ error: err.message });
     }
   }
-
   return res.status(405).json({ error: 'Method not allowed' });
 }
