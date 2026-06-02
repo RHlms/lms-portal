@@ -13,13 +13,13 @@ const hdrs = () => ({
 
 // Maps item_id (from offer-docs.html) → GHL opportunity field key
 const FIELDS = {
-  listing_agreement: 'offer_docs_listing_agreement',
-  ss_addendum_asis:  'offer_docs_ss_addendum',
-  mls_sheet:         'offer_docs_mls_sheet',
-  asis_contract:     'offer_docs_asis_contract',
-  buyer_disclosure:  'offer_docs_lms_buyer_disclosure',
-  ss_addendum_la:    'offer_docs_ss_addendum_to_listing_agreement',
-  proof_of_funds:    'offer_docs_buyer_proof_of_fundsapproval_letter',
+  listing_agreement: { key: 'offer_docs_listing_agreement',                   id: '1NgEJRm39ag7NEBkzSin' },
+  ss_addendum_asis:  { key: 'offer_docs_ss_addendum',                         id: '1mjRkJ2cU1sy7ZXv7v2d' },
+  mls_sheet:         { key: 'offer_docs_mls_sheet',                           id: 'F2y4Vqq9yOlRcsrp5Kvt' },
+  asis_contract:     { key: 'offer_docs_asis_contract',                       id: 'ZQjModsIT01Vq1ezRUKR'  },
+  buyer_disclosure:  { key: 'offer_docs_lms_buyer_disclosure',                id: 'k9MPzBHNuGA8mcbvGi9g' },
+  ss_addendum_la:    { key: 'offer_docs_ss_addendum_to_listing_agreement',    id: 'FTEZyE97TwdZ4ZJ3YQvI' },
+  proof_of_funds:    { key: 'offer_docs_buyer_proof_of_fundsapproval_letter', id: 'k3Y2AOEgaorsg6hteaAm' },
 };
 
 function isReceived(val) {
