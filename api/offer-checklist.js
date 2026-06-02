@@ -22,16 +22,13 @@ function isReceived(val) {
   return val === 'Received';
 }
 async function getOpp(oppId) {
-  const res  = await fetch(
-    `${BASE}/opportunities/search?location_id=${LOC_ID}&id=${oppId}`,
+  const res = await fetch(
+    `${BASE}/opportunities/${oppId}`,
     { headers: hdrs() }
   );
-  if (!res.ok) throw new Error(`GHL search ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`GHL fetch ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  const list = data?.opportunities ?? data?.data ?? [];
-  const opp  = list.find(o => o.id === oppId);
-  if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
-  return opp;
+  return data.opportunity || data;
 }
 async function setField(oppId, fieldKey, received) {
   const res = await fetch(`${BASE}/opportunities/${oppId}`, {
