@@ -67,7 +67,6 @@
     .state-screen h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
     .state-screen p  { font-size:14px; color:var(--muted); line-height:1.6; }
 
-    /* Intro card */
     .intro-card {
       background: #fff;
       border: 2px solid var(--teal);
@@ -110,7 +109,6 @@
     .intro-note { font-size:13px; color:var(--muted); line-height:1.6; }
     .intro-note strong { color:var(--navy); }
 
-    /* Upload cards */
     .upload-card {
       background: #fff;
       border: 1.5px solid var(--teal-border);
@@ -120,9 +118,7 @@
       box-shadow: 0 2px 12px rgba(0,168,198,0.07);
       transition: border-color 0.2s;
     }
-    .upload-card.done {
-      border-color: var(--success);
-    }
+    .upload-card.done { border-color: var(--success); }
     .upload-card-header {
       display: flex;
       align-items: center;
@@ -145,6 +141,11 @@
       gap: 10px;
     }
     .doc-icon { font-size: 18px; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .upload-status {
       font-family: 'Montserrat', sans-serif;
       font-size: 11px;
@@ -153,14 +154,28 @@
       border-radius: 99px;
       letter-spacing: 0.5px;
     }
-    .status-pending {
-      background: rgba(0,168,198,0.12);
-      color: var(--teal);
+    .status-pending { background: rgba(0,168,198,0.12); color: var(--teal); }
+    .status-done    { background: var(--success-dim); color: var(--success); }
+
+    /* Manual toggle button */
+    .toggle-btn {
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
     }
-    .status-done {
-      background: var(--success-dim);
-      color: var(--success);
-    }
+    .toggle-btn.mark   { border-color: var(--success); color: var(--success); }
+    .toggle-btn.mark:hover   { background: var(--success-dim); }
+    .toggle-btn.unmark { border-color: var(--dim); color: var(--dim); }
+    .toggle-btn.unmark:hover { background: rgba(122,154,181,0.1); }
+    .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
     .upload-card-body { padding: 18px 22px; }
 
     .upload-zone {
@@ -181,48 +196,14 @@
       width: 100%;
       height: 100%;
     }
-    .upload-zone-icon { font-size: 28px; margin-bottom: 8px; }
-    .upload-zone-label {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-    .upload-zone-sub { font-size: 11px; color: var(--dim); }
+    .upload-zone-icon  { font-size: 28px; margin-bottom: 8px; }
+    .upload-zone-label { font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700; color:var(--muted); margin-bottom:4px; }
+    .upload-zone-sub   { font-size:11px; color:var(--dim); }
 
-    .upload-progress {
-      display: none;
-      margin-top: 12px;
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-    }
-    .upload-success {
-      display: none;
-      margin-top: 12px;
-      background: var(--success-dim);
-      border: 1px solid rgba(34,197,94,0.3);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--success);
-      text-align: center;
-    }
-    .upload-error {
-      display: none;
-      margin-top: 12px;
-      background: #fef2f2;
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: var(--danger);
-      text-align: center;
-    }
+    .upload-progress { display:none; margin-top:12px; font-size:13px; color:var(--muted); text-align:center; }
+    .upload-success  { display:none; margin-top:12px; background:var(--success-dim); border:1px solid rgba(34,197,94,0.3); border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; color:var(--success); text-align:center; }
+    .upload-error    { display:none; margin-top:12px; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; font-size:13px; color:var(--danger); text-align:center; }
 
-    /* Summary */
     .summary-card {
       background: #fff;
       border: 2px solid var(--teal);
@@ -237,8 +218,9 @@
     .footer { text-align:center; margin-top:48px; font-size:12px; color:var(--dim); line-height:1.7; }
 
     @media (max-width:480px) {
-      .main { padding: 20px 14px 0; }
-      .upload-card-body { padding: 14px; }
+      .main { padding:20px 14px 0; }
+      .upload-card-body { padding:14px; }
+      .toggle-btn { display:none; }
     }
   </style>
 </head>
@@ -266,8 +248,6 @@
   </div>
 
   <div id="docs-content" style="display:none">
-
-    <!-- Intro -->
     <div class="intro-card">
       <div class="intro-header">
         <h1>OFFER DOCUMENT UPLOAD</h1>
@@ -281,14 +261,11 @@
             <div class="file-ref-value" id="file-ref-display">—</div>
           </div>
         </div>
-        <p class="intro-note">Upload each document below. <strong>Each file is logged to your file immediately upon upload.</strong> Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>
-      </div>
+<p class="intro-note">Upload each document below as a <strong>separate file</strong>. <strong>Do not combine documents into one PDF.</strong> Each file is logged to your file immediately upon upload. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>      </div>
     </div>
 
-    <!-- Upload Cards -->
     <div id="upload-list"></div>
 
-    <!-- Summary -->
     <div class="summary-card">
       <h3>Questions or Issues?</h3>
       <p>If you have trouble uploading or need to send documents another way, email them directly to <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a> with the property address in the subject line. Our team will log them to your file manually.</p>
@@ -299,23 +276,22 @@
       Your documents are private and used for LMS internal processing only.<br/>
       Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
     </div>
-
   </div>
 </main>
 
 <script>
   const DOCS = [
-    { id: 'listing_agreement', label: 'Listing Agreement',                   icon: '📋', required: true  },
-    { id: 'ss_addendum_asis',  label: 'SS Addendum to As-Is Contract',       icon: '📄', required: true  },
-    { id: 'mls_sheet',         label: 'MLS Sheet',                           icon: '🏠', required: true  },
-    { id: 'asis_contract',     label: 'As-Is Contract',                      icon: '✍️', required: true  },
-    { id: 'buyer_disclosure',  label: 'LMS Buyer Disclosure',                icon: '📑', required: true  },
-    { id: 'ss_addendum_la',    label: 'SS Addendum to Listing Agreement',    icon: '📝', required: true  },
+    { id: 'listing_agreement', label: 'Listing Agreement',                      icon: '📋', required: true },
+    { id: 'ss_addendum_asis',  label: 'SS Addendum to As-Is Contract',          icon: '📄', required: true },
+    { id: 'mls_sheet',         label: 'MLS Sheet',                              icon: '🏠', required: true },
+    { id: 'asis_contract',     label: 'As-Is Contract',                         icon: '✍️', required: true },
+    { id: 'buyer_disclosure',  label: 'LMS Buyer Disclosure',                   icon: '📑', required: true },
+    { id: 'ss_addendum_la',    label: 'SS Addendum to Listing Agreement',       icon: '📝', required: true },
     { id: 'proof_of_funds',    label: 'Buyer Proof of Funds / Approval Letter', icon: '💰', required: true },
   ];
 
-  let oppId = null;
-  const uploaded = {};
+  let oppId  = null;
+  let docStatus = {};
 
   function getOppId() {
     const parts = window.location.pathname.split('/');
@@ -328,9 +304,16 @@
     if (!oppId) { showError(); return; }
 
     try {
-      const res  = await fetch(`/api/offer-data?opp_id=${oppId}`);
-      if (!res.ok) throw new Error('not found');
-      const data = await res.json();
+      const [dataRes, statusRes] = await Promise.all([
+        fetch(`/api/offer-data?opp_id=${oppId}`),
+        fetch(`/api/offer-checklist?opp_id=${oppId}`)
+      ]);
+
+      if (!dataRes.ok) throw new Error('not found');
+
+      const data = await dataRes.json();
+      docStatus  = statusRes.ok ? (await statusRes.json()).status ?? {} : {};
+
       document.getElementById('file-ref-display').textContent = data.address || oppId;
       document.getElementById('loading-state').style.display  = 'none';
       document.getElementById('docs-content').style.display   = 'block';
@@ -347,28 +330,95 @@
 
   function renderUploadCards() {
     const container = document.getElementById('upload-list');
-    container.innerHTML = DOCS.map(doc => `
-      <div class="upload-card" id="card-${doc.id}">
-        <div class="upload-card-header">
-          <div class="upload-doc-name">
-            <span class="doc-icon">${doc.icon}</span>
-            ${doc.label}${doc.required ? ' <span style="color:var(--danger);font-size:12px">*</span>' : ''}
+    container.innerHTML = DOCS.map(doc => {
+      const received = !!docStatus[doc.id];
+      return `
+        <div class="upload-card ${received ? 'done' : ''}" id="card-${doc.id}">
+          <div class="upload-card-header">
+            <div class="upload-doc-name">
+              <span class="doc-icon">${doc.icon}</span>
+              ${doc.label}${doc.required ? ' <span style="color:var(--danger);font-size:12px">*</span>' : ''}
+            </div>
+            <div class="header-right">
+              <span class="upload-status ${received ? 'status-done' : 'status-pending'}" id="status-${doc.id}">
+                ${received ? 'RECEIVED' : 'PENDING'}
+              </span>
+              <button class="toggle-btn ${received ? 'unmark' : 'mark'}"
+                      id="toggle-${doc.id}"
+                      onclick="handleToggle('${doc.id}')">
+                ${received ? 'Unmark' : 'Mark received'}
+              </button>
+            </div>
           </div>
-          <span class="upload-status status-pending" id="status-${doc.id}">PENDING</span>
-        </div>
-        <div class="upload-card-body">
-          <div class="upload-zone" id="zone-${doc.id}">
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="handleUpload('${doc.id}', this)"/>
-            <div class="upload-zone-icon">📤</div>
-            <div class="upload-zone-label">Click to upload or drag and drop</div>
-            <div class="upload-zone-sub">PDF, JPG, PNG, DOC, DOCX — Max 20MB</div>
+          <div class="upload-card-body">
+            <div class="upload-zone" id="zone-${doc.id}" ${received ? 'style="display:none"' : ''}>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="handleUpload('${doc.id}', this)"/>
+              <div class="upload-zone-icon">📤</div>
+              <div class="upload-zone-label">Click to upload or drag and drop</div>
+              <div class="upload-zone-sub">PDF, JPG, PNG, DOC, DOCX — Max 20MB</div>
+            </div>
+            <div class="upload-progress" id="progress-${doc.id}">⏳ Uploading…</div>
+            <div class="upload-success"  id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
+              ${received ? '✅ Document received and logged to your file.' : ''}
+            </div>
+            <div class="upload-error" id="error-${doc.id}"></div>
           </div>
-          <div class="upload-progress" id="progress-${doc.id}">⏳ Uploading…</div>
-          <div class="upload-success"  id="success-${doc.id}"></div>
-          <div class="upload-error"    id="error-${doc.id}"></div>
-        </div>
-      </div>
-    `).join('');
+        </div>`;
+    }).join('');
+  }
+
+  async function handleToggle(docId) {
+    const btn      = document.getElementById(`toggle-${docId}`);
+    const current  = docStatus[docId] ?? false;
+    const next     = !current;
+
+    btn.disabled   = true;
+
+    try {
+      const res  = await fetch('/api/offer-checklist', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ opp_id: oppId, item_id: docId, received: next })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Update failed');
+
+      docStatus[docId] = next;
+      applyStatus(docId, next);
+    } catch (err) {
+      console.error('Toggle failed:', err.message);
+      alert('Could not update status. Please try again.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function applyStatus(docId, received) {
+    const card    = document.getElementById(`card-${docId}`);
+    const status  = document.getElementById(`status-${docId}`);
+    const toggle  = document.getElementById(`toggle-${docId}`);
+    const zone    = document.getElementById(`zone-${docId}`);
+    const success = document.getElementById(`success-${docId}`);
+
+    if (received) {
+      card.classList.add('done');
+      status.textContent  = 'RECEIVED';
+      status.className    = 'upload-status status-done';
+      toggle.textContent  = 'Unmark';
+      toggle.className    = 'toggle-btn unmark';
+      zone.style.display  = 'none';
+      success.textContent = '✅ Document received and logged to your file.';
+      success.style.display = 'block';
+    } else {
+      card.classList.remove('done');
+      status.textContent  = 'PENDING';
+      status.className    = 'upload-status status-pending';
+      toggle.textContent  = 'Mark received';
+      toggle.className    = 'toggle-btn mark';
+      zone.style.display  = 'block';
+      success.textContent = '';
+      success.style.display = 'none';
+    }
   }
 
   async function handleUpload(docId, input) {
@@ -379,13 +429,10 @@
     const progress = document.getElementById(`progress-${docId}`);
     const success  = document.getElementById(`success-${docId}`);
     const error    = document.getElementById(`error-${docId}`);
-    const status   = document.getElementById(`status-${docId}`);
-    const card     = document.getElementById(`card-${docId}`);
 
-    // Reset
-    success.style.display = 'none';
-    error.style.display   = 'none';
-    zone.style.display    = 'none';
+    success.style.display  = 'none';
+    error.style.display    = 'none';
+    zone.style.display     = 'none';
     progress.style.display = 'block';
 
     const formData = new FormData();
@@ -400,12 +447,8 @@
       progress.style.display = 'none';
 
       if (data.success) {
-        success.textContent   = `✅ ${data.message}`;
-        success.style.display = 'block';
-        status.textContent    = 'RECEIVED';
-        status.className      = 'upload-status status-done';
-        card.classList.add('done');
-        uploaded[docId]       = true;
+        docStatus[docId] = true;
+        applyStatus(docId, true);
       } else {
         throw new Error(data.error || 'Upload failed');
       }
