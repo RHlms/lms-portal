@@ -157,7 +157,6 @@
     .status-pending { background: rgba(0,168,198,0.12); color: var(--teal); }
     .status-done    { background: var(--success-dim); color: var(--success); }
 
-    /* Manual toggle button */
     .toggle-btn {
       font-size: 11px;
       font-family: 'Montserrat', sans-serif;
@@ -169,6 +168,7 @@
       background: transparent;
       transition: all 0.15s;
       white-space: nowrap;
+      display: none;
     }
     .toggle-btn.mark   { border-color: var(--success); color: var(--success); }
     .toggle-btn.mark:hover   { background: var(--success-dim); }
@@ -220,7 +220,6 @@
     @media (max-width:480px) {
       .main { padding:20px 14px 0; }
       .upload-card-body { padding:14px; }
-      .toggle-btn { display:none; }
     }
   </style>
 </head>
@@ -261,9 +260,10 @@
             <div class="file-ref-value" id="file-ref-display">—</div>
           </div>
         </div>
-<div style="background:#fff3cd;border:1.5px solid #f0a500;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;"><span style="font-size:20px;line-height:1">⚠️</span><div><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#7a4f00;margin-bottom:4px;">SUBMIT DOCUMENTS SEPARATELY</div><div style="font-size:13px;color:#7a4f00;line-height:1.5;">Do not combine documents into one PDF. Each document must be uploaded as its own separate file.</div></div></div>
-<p class="intro-note">Each file is logged to your file immediately upon upload. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>    
+        <div style="background:#fff3cd;border:1.5px solid #f0a500;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;"><span style="font-size:20px;line-height:1">⚠️</span><div><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#7a4f00;margin-bottom:4px;">SUBMIT DOCUMENTS SEPARATELY</div><div style="font-size:13px;color:#7a4f00;line-height:1.5;">Do not combine documents into one PDF. Each document must be uploaded as its own separate file.</div></div></div>
+        <p class="intro-note">Each file is logged to your file immediately upon upload. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>
       </div>
+    </div>
 
     <div id="upload-list"></div>
 
@@ -275,7 +275,8 @@
     <div class="footer">
       &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
       Your documents are private and used for LMS internal processing only.<br/>
-      Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a>
+      Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a><br/><br/>
+      <a href="#" onclick="promptStaffPin();return false;" style="color:var(--dim);font-size:11px;text-decoration:none;">Staff Access</a>
     </div>
   </div>
 </main>
@@ -291,8 +292,29 @@
     { id: 'proof_of_funds',    label: 'Buyer Proof of Funds / Approval Letter', icon: '💰', required: true },
   ];
 
-  let oppId  = null;
-  let docStatus = {};
+  let oppId        = null;
+  let docStatus    = {};
+  let staffUnlocked = false;
+
+  async function hashPin(pin) {
+    const msgBuffer  = new TextEncoder().encode(pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function promptStaffPin() {
+    const pin = prompt('Staff PIN:');
+    if (!pin) return;
+    const hashed  = await hashPin(pin);
+    const correct = await hashPin('4567');
+    if (hashed === correct) {
+      staffUnlocked = true;
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.style.display = 'inline-flex';
+      });
+    }
+  }
 
   function getOppId() {
     const parts = window.location.pathname.split('/');
@@ -369,11 +391,10 @@
   }
 
   async function handleToggle(docId) {
-    const btn      = document.getElementById(`toggle-${docId}`);
-    const current  = docStatus[docId] ?? false;
-    const next     = !current;
-
-    btn.disabled   = true;
+    const btn     = document.getElementById(`toggle-${docId}`);
+    const current = docStatus[docId] ?? false;
+    const next    = !current;
+    btn.disabled  = true;
 
     try {
       const res  = await fetch('/api/offer-checklist', {
@@ -403,21 +424,23 @@
 
     if (received) {
       card.classList.add('done');
-      status.textContent  = 'RECEIVED';
-      status.className    = 'upload-status status-done';
-      toggle.textContent  = 'Unmark';
-      toggle.className    = 'toggle-btn unmark';
-      zone.style.display  = 'none';
-      success.textContent = '✅ Document received and logged to your file.';
+      status.textContent    = 'RECEIVED';
+      status.className      = 'upload-status status-done';
+      toggle.textContent    = 'Unmark';
+      toggle.className      = 'toggle-btn unmark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'none';
+      success.textContent   = '✅ Document received and logged to your file.';
       success.style.display = 'block';
     } else {
       card.classList.remove('done');
-      status.textContent  = 'PENDING';
-      status.className    = 'upload-status status-pending';
-      toggle.textContent  = 'Mark received';
-      toggle.className    = 'toggle-btn mark';
-      zone.style.display  = 'block';
-      success.textContent = '';
+      status.textContent    = 'PENDING';
+      status.className      = 'upload-status status-pending';
+      toggle.textContent    = 'Mark received';
+      toggle.className      = 'toggle-btn mark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'block';
+      success.textContent   = '';
       success.style.display = 'none';
     }
   }
