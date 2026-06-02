@@ -654,11 +654,13 @@ return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
         if (!res.ok) throw new Error(result.error || 'Submission failed');
 
         setStatus('success', '✅ Offer Intake Form submitted successfully! LMS has been notified.');
-        btn.textContent = '✅ Submitted';
-        btn.style.background = '#38a169';
+btn.textContent = '✅ Submitted';
+btn.style.background = '#38a169';
 
-        // Scroll to success
-        document.getElementById('statusMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+// Redirect to offer docs upload portal
+setTimeout(() => {
+  window.location.href = `/offer-docs/${oppId}`;
+}, 1500);
 
       } catch (err) {
         setStatus('error', `Submission error: ${err.message}. Please try again or contact LMS.`);
