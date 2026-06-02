@@ -37,7 +37,6 @@ async function getOpp(oppId) {
   const list = data?.opportunities ?? data?.data ?? [];
 const opp  = list.find(o => o.id === oppId);
 if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
-if (req.query.debug) return res.status(200).json({ raw_opp: opp });
 return opp;
 
 async function setField(oppId, fieldKey, received) {
@@ -64,7 +63,8 @@ export default async function handler(req, res) {
 
     try {
       const opp = await getOpp(opp_id);
-      const cf  = opp?.customFields ?? [];
+if (req.query.debug) return res.status(200).json({ raw_opp: opp });
+const cf  = opp?.customFields ?? [];
 
       const status = {};
 for (const [id, def] of Object.entries(FIELDS)) {
