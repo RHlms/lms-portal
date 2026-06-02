@@ -67,11 +67,15 @@ export default async function handler(req, res) {
       const cf  = opp?.customFields ?? [];
 
       const status = {};
-      for (const [id, key] of Object.entries(FIELDS)) {
-        const field  = cf.find(f => f.key === key || f.fieldKey === key);
-        const val    = field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
-        status[id]   = isReceived(val);
-      }
+for (const [id, def] of Object.entries(FIELDS)) {
+  const field = cf.find(f =>
+    f.id === def.id ||
+    f.key === def.key ||
+    f.fieldKey === def.key
+  );
+  const val   = field?.fieldValue ?? field?.value ?? field?.field_value ?? [];
+  status[id]  = isReceived(val);
+}
 
       return res.status(200).json({ opp_id, status });
     } catch (err) {
