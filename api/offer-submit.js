@@ -129,7 +129,7 @@ export default async function handler(req, res) {
       { key: 'buyeragent__tc_phone',                   value: body.oif_buyer_agent___tc_phone },
       { key: 'buyeragent__tc_email',                   value: body.oif_buyer_agent___tc_email },
       // Auto-check OIF received
-      { key: 'offer_intake_form',                      value: ['Offer Intake Form'] },
+      { key: 'offer_docs_oif_received',                value: ['Received'] },
     ].filter(f => f.value !== undefined && f.value !== '');
 
     const oppUpdate = await fetch(`https://services.leadconnectorhq.com/opportunities/${opp_id}`, {
