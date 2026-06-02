@@ -35,10 +35,10 @@ async function getOpp(oppId) {
   if (!res.ok) throw new Error(`GHL search ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const list = data?.opportunities ?? data?.data ?? [];
-  const opp  = list.find(o => o.id === oppId);
-  if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
-  return opp;
-}
+const opp  = list.find(o => o.id === oppId);
+if (!opp) throw new Error(`Opp ${oppId} not found in search results`);
+if (req.query.debug) return res.status(200).json({ raw_opp: opp });
+return opp;
 
 async function setField(oppId, fieldKey, received) {
   const res = await fetch(`${BASE}/opportunities/${oppId}`, {
