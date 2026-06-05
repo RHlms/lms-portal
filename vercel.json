@@ -1,5 +1,6 @@
 {
   "routes": [
+    { "src": "/lms-icon.png", "dest": "/lms-icon.png" },
     { "src": "/file/(.*)",       "dest": "/index.html"      },
     { "src": "/sign/(.*)",       "dest": "/sign.html"       },
     { "src": "/intake/(.*)",     "dest": "/intake.html"     },
