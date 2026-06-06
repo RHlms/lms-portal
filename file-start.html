@@ -1,1 +1,440 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>File Start Form | Loan Mitigation Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#2d637d;--teal-dark:#1e4a5e;--teal-light:#3a7a96;
+  --orange:#cc5500;--gray-bg:#f0f4f7;--gray-mid:#d1dde8;
+  --gray-text:#4a6a85;--white:#ffffff;--dark:#1a2e3d;
+  --danger:#ef4444;--radius:12px;
+  --fh:'Montserrat',sans-serif;--fb:'Open Sans',sans-serif;
+}
+html,body{min-height:100%;background:var(--gray-bg);font-family:var(--fb);color:var(--dark);font-size:15px;line-height:1.6}
+img{max-width:100%;display:block}
+
+.page-header{background:var(--teal);padding:16px 20px 14px;text-align:center;border-bottom:3px solid rgba(255,255,255,0.15)}
+.page-header-eyebrow{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:6px}
+.page-header-logo{height:42px;width:auto;margin:0 auto}
+.form-title-bar{background:var(--teal-dark);padding:14px 20px;text-align:center}
+.form-title-bar h1{font-family:var(--fh);font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--white)}
+
+.form-wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+
+.section-card{background:var(--white);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;box-shadow:0 2px 8px rgba(45,99,125,0.08)}
+.section-header{background:var(--teal);display:flex;align-items:center;gap:12px;padding:14px 20px}
+.section-num{display:flex;align-items:center;justify-content:center;width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(255,255,255,0.2);font-family:var(--fh);font-size:13px;font-weight:800;color:var(--white)}
+.section-header h2{font-family:var(--fh);font-size:13px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--white)}
+.section-body{padding:20px}
+.section-note{font-size:13px;color:var(--gray-text);margin-bottom:14px}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.field-row.single{grid-template-columns:1fr}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-label{font-family:var(--fh);font-size:11px;font-weight:700;color:var(--gray-text);letter-spacing:0.04em;display:flex;align-items:center;gap:6px}
+.req{color:var(--danger);font-size:13px;line-height:1}
+
+input[type=text],input[type=email],input[type=tel],input[type=date],textarea,select{
+  width:100%;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:8px;
+  font-family:var(--fb);font-size:14px;color:var(--dark);background:var(--white);
+  transition:border-color 0.2s,box-shadow 0.2s;outline:none;appearance:none
+}
+input:focus,textarea:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,99,125,0.12)}
+textarea{resize:vertical;min-height:80px}
+
+.radio-group{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.radio-opt{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--dark);cursor:pointer}
+.radio-opt input[type=radio]{width:16px;height:16px;min-width:16px;accent-color:var(--teal);cursor:pointer;border:none;padding:0}
+
+.conditional{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-mid)}
+.conditional.visible{display:block}
+
+.consent-box{background:var(--gray-bg);border-radius:8px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;margin-bottom:20px}
+.consent-box input[type=checkbox]{width:18px;height:18px;min-width:18px;accent-color:var(--teal);margin-top:2px;cursor:pointer}
+.consent-text{font-size:12px;color:var(--gray-text);line-height:1.6}
+.consent-text strong{color:var(--dark)}
+
+.submit-btn{width:100%;background:var(--teal);color:var(--white);font-family:var(--fh);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:16px 24px;border:none;border-radius:10px;cursor:pointer;transition:background 0.2s,transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.submit-btn:hover{background:var(--teal-dark);transform:translateY(-1px)}
+.submit-btn:disabled{background:var(--gray-mid);cursor:not-allowed;transform:none}
+
+.creds-bar{text-align:center;padding:24px 16px 8px;opacity:0.7}
+.creds-bar img{height:48px;width:auto;margin:0 auto}
+
+.result-msg{display:none;border-radius:10px;padding:16px 20px;margin-bottom:20px;font-family:var(--fh);font-size:14px;font-weight:600;text-align:center}
+.result-msg.success{background:#dcfce7;color:#166534;border:1.5px solid #86efac}
+.result-msg.error{background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5}
+.result-msg.visible{display:block}
+
+@media(max-width:560px){.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-eyebrow">Loan Mitigation Services</div>
+  <img class="page-header-logo" src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="LMS"/>
+</div>
+<div class="form-title-bar"><h1>File Start Form</h1></div>
+
+<div class="form-wrap">
+  <div id="resultMsg" class="result-msg"></div>
+  <form id="fsForm" novalidate>
+
+    <!-- I. LISTING AGENT -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">I</div><h2>Listing Agent Information</h2></div>
+      <div class="section-body">
+        <div class="field-row single"><div class="field-group">
+          <label class="field-label">Company / Brokerage Name <span class="req">*</span></label>
+          <input type="text" name="fs_submitter_companybrokerage_name" required placeholder="Brokerage name"/>
+        </div></div>
+        <div class="field-row single"><div class="field-group">
+          <label class="field-label">Full Name <span class="req">*</span></label>
+          <input type="text" name="fs_submitter_full_name" required placeholder="Your full name"/>
+        </div></div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Phone Number <span class="req">*</span></label>
+            <input type="tel" name="fs_submitter_phone_number" required placeholder="(xxx) xxx-xxxx"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email <span class="req">*</span></label>
+            <input type="email" name="fs_submitter_email" required placeholder="agent@brokerage.com"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- II. CO-LISTING AGENT -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">II</div><h2>Co-Listing Agent?</h2></div>
+      <div class="section-body">
+        <p class="section-note">If you would like them copied on notifications, please enter contact info below.</p>
+        <div class="field-group">
+          <label class="field-label">Is there a Co-Listing Agent? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_colisting_agent_" value="Yes" onchange="toggleSection('coLA',this,'Yes')"/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_colisting_agent_" value="No" onchange="toggleSection('coLA',this,'Yes')" checked/> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="coLA">
+          <div class="field-row single"><div class="field-group">
+            <label class="field-label">Co-Listing Agent Company / Brokerage Name</label>
+            <input type="text" name="fs_colisting_agent_companybrokerage_name" placeholder="Brokerage name"/>
+          </div></div>
+          <div class="field-row single"><div class="field-group">
+            <label class="field-label">Co-Listing Agent Full Name</label>
+            <input type="text" name="fs_colisting_agent_full_name" placeholder="Full name"/>
+          </div></div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Co-Listing Agent Phone</label>
+              <input type="tel" name="fs_colisting_agent_phone" placeholder="(xxx) xxx-xxxx"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Co-Listing Agent Email</label>
+              <input type="email" name="colisting_agent_email" placeholder="email@brokerage.com"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- III. TRANSACTION COORDINATOR -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">III</div><h2>Transaction Coordinator (Listing Agent)?</h2></div>
+      <div class="section-body">
+        <p class="section-note">If you would like them copied on notifications, please enter contact info below.</p>
+        <div class="field-group">
+          <label class="field-label">Is there a Transaction Coordinator (TC) for Listing Agent? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_is_there_a_transaction_coordinator_tc_for_listing_agent_" value="Yes" onchange="toggleSection('tcLA',this,'Yes')"/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_is_there_a_transaction_coordinator_tc_for_listing_agent_" value="No" onchange="toggleSection('tcLA',this,'Yes')" checked/> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="tcLA">
+          <div class="field-row single"><div class="field-group">
+            <label class="field-label">Transaction Coordinator — Company / Brokerage Name</label>
+            <input type="text" name="fs_transaction_coordinator__company_name" placeholder="Company name"/>
+          </div></div>
+          <div class="field-row single"><div class="field-group">
+            <label class="field-label">Transaction Coordinator — Name</label>
+            <input type="text" name="fs_transaction_coordinator__name" placeholder="Full name"/>
+          </div></div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Transaction Coordinator — Phone</label>
+              <input type="tel" name="fs_transaction_coordinator__phone" placeholder="(xxx) xxx-xxxx"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Transaction Coordinator — Email</label>
+              <input type="email" name="fs_transaction_coordinator__email" placeholder="tc@company.com"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IV. SELLER #1 -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">IV</div><h2>Seller #1 Information</h2></div>
+      <div class="section-body">
+        <p class="section-note">This creates the primary contact record for the file.</p>
+        <div class="field-row single"><div class="field-group">
+          <label class="field-label">Seller Full Name <span class="req">*</span></label>
+          <input type="text" name="fs_seller_full_name" required placeholder="Full legal name"/>
+        </div></div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Seller Email <span class="req">*</span></label>
+            <input type="email" name="fs_seller_email" required placeholder="seller@email.com"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Seller Phone <span class="req">*</span></label>
+            <input type="tel" name="fs_seller_phone" required placeholder="(xxx) xxx-xxxx"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V. CO-BORROWER -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">V</div><h2>Seller #2 — Co-Borrower Information</h2></div>
+      <div class="section-body">
+        <p class="section-note">If applicable; or if Power of Attorney, please add here.</p>
+        <div class="field-group">
+          <label class="field-label">Is there a Co-Borrower? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_seller__power_of_attorney" value="Yes" onchange="toggleSection('coBorrower',this,'Yes')"/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_seller__power_of_attorney" value="No" onchange="toggleSection('coBorrower',this,'Yes')" checked/> No</label>
+            <label class="radio-opt"><input type="radio" name="fs_seller__power_of_attorney" value="Unsure" onchange="toggleSection('coBorrower',this,'Yes')"/> Unsure</label>
+          </div>
+        </div>
+        <div class="conditional" id="coBorrower">
+          <div class="field-row single"><div class="field-group">
+            <label class="field-label">Co-Borrower Full Name</label>
+            <input type="text" name="fs_seller__poa_full_name" placeholder="Full legal name"/>
+          </div></div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Co-Borrower Phone</label>
+              <input type="tel" name="fs_coborrower_phone" placeholder="(xxx) xxx-xxxx"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Co-Borrower Email</label>
+              <input type="email" name="fs_coborrower_email" placeholder="email@email.com"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VI. PROPERTY -->
+    <div class="section-card">
+      <div class="section-header"><div class="section-num">VI</div><h2>Property Information</h2></div>
+      <div class="section-body">
+        <div class="field-row single"><div class="field-group">
+          <label class="field-label">Street Address <span class="req">*</span></label>
+          <input type="text" name="fs_subject_street_address" required placeholder="123 Main Street"/>
+        </div></div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">City <span class="req">*</span></label>
+            <input type="text" name="fs_subject_city" required placeholder="City"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">State <span class="req">*</span></label>
+            <input type="text" name="fs_subject_state" required placeholder="FL"/>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Postal Code <span class="req">*</span></label>
+            <input type="text" name="fs_subject_zip" required placeholder="32751"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Subject County <span class="req">*</span></label>
+            <input type="text" name="fs_subject_county" required placeholder="Orange"/>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Property Type <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_property_type" value="Single Family (SFR)" required/> Single Family (SFR)</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_type" value="Condo/Townhome"/> Condo/Townhome</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_type" value="Multi-Family (1-4 units)"/> Multi-Family (1-4 units)</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_type" value="Lot/Land"/> Lot/Land</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_type" value="Commercial"/> Commercial</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Property Use <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_property_use" value="Personal" required/> Personal</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_use" value="Investment/Vacation"/> Investment/Vacation</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_use" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Property Listed FOR SALE? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_property_listed_for_sale" value="Yes" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_property_listed_for_sale" value="No, not yet"/> No, not yet</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Current Buyer Offer? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_current_buyer_offer" value="Yes" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_current_buyer_offer" value="No, not yet"/> No, not yet</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Pending Foreclosure Sale? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_pending_foreclosure_sale" value="Yes" onchange="document.getElementById('fcDateRow').style.display='block'" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_pending_foreclosure_sale" value="No" onchange="document.getElementById('fcDateRow').style.display='none'"/> No</label>
+            <label class="radio-opt"><input type="radio" name="fs_pending_foreclosure_sale" value="Unsure" onchange="document.getElementById('fcDateRow').style.display='none'"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="field-row single" id="fcDateRow" style="display:none;margin-bottom:14px">
+          <div class="field-group">
+            <label class="field-label">Pending Foreclosure Sale Date</label>
+            <input type="date" name="fs_pending_foreclosure_sale_date"/>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Is there a Solar Lease or Loan? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_solar_lease_or_loan" value="Yes" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_solar_lease_or_loan" value="No"/> No</label>
+            <label class="radio-opt"><input type="radio" name="fs_solar_lease_or_loan" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Seller/Homeowner Committed to Short-Sale? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_seller_committed_to_short_sale" value="Yes" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_seller_committed_to_short_sale" value="Unsure"/> Unsure</label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Seller/Homeowner Aware of LMS as a Short-Sale Service? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="fs_seller_aware_of_lms" value="Yes" required/> Yes</label>
+            <label class="radio-opt"><input type="radio" name="fs_seller_aware_of_lms" value="No, not yet (consult needed)"/> No, not yet (consult needed)</label>
+          </div>
+        </div>
+
+        <div class="field-row single" style="margin-bottom:14px"><div class="field-group">
+          <label class="field-label">Seller Additional Notes</label>
+          <textarea name="fs_seller_additional_notes" placeholder="Any additional information about this file..."></textarea>
+        </div></div>
+
+        <div class="field-row single"><div class="field-group">
+          <label class="field-label">Referred By . . .</label>
+          <input type="text" name="fs_referred_by" placeholder="Name or source"/>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- CONSENT -->
+    <div class="consent-box">
+      <input type="checkbox" id="smsConsent" name="smsConsent" required/>
+      <label class="consent-text" for="smsConsent">
+        By submitting this form, you agree to receive SMS or email messages from LMS related to your short-sale file, including confirmation, status updates, and document requests. <strong>Message and data rates may apply.</strong> Reply STOP to unsubscribe.
+      </label>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">
+      <span id="submitLabel">SUBMIT FILE START FORM →</span>
+    </button>
+
+  </form>
+
+  <div class="creds-bar">
+    <img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/686418d1dac0bb38c56a50d3.png" alt="CDPE | REALTOR | MLS"/>
+  </div>
+</div>
+
+<script>
+function toggleSection(id, input, showVal) {
+  const el = document.getElementById(id);
+  el.classList.toggle('visible', input.value === showVal);
+}
+
+document.getElementById('fsForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const label = document.getElementById('submitLabel');
+  const msg = document.getElementById('resultMsg');
+
+  // Validation
+  let valid = true;
+  this.querySelectorAll('[required]').forEach(f => {
+    if (f.type === 'radio') {
+      const checked = [...document.querySelectorAll('input[name="'+f.name+'"]')].some(r=>r.checked);
+      if (!checked) { valid = false; }
+    } else if (!f.value.trim()) {
+      valid = false; f.style.borderColor = 'var(--danger)';
+    }
+  });
+  if (!document.getElementById('smsConsent').checked) valid = false;
+
+  if (!valid) {
+    msg.className = 'result-msg error visible';
+    msg.textContent = 'Please complete all required fields before submitting.';
+    msg.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  btn.disabled = true;
+  label.textContent = 'SUBMITTING...';
+
+  const data = {};
+  new FormData(this).forEach((v,k) => { if(k!=='smsConsent') data[k]=v; });
+
+  try {
+    const res = await fetch('/api/file-start-submit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      msg.className = 'result-msg success visible';
+      msg.textContent = '✓ File Start Form submitted successfully! Your LMS team will be in touch shortly.';
+      document.getElementById('fsForm').style.display = 'none';
+    } else { throw new Error(json.error||'Submission failed'); }
+  } catch(err) {
+    msg.className = 'result-msg error visible';
+    msg.textContent = 'Something went wrong. Please try again or call (888) 460-4111.';
+    btn.disabled = false;
+    label.textContent = 'SUBMIT FILE START FORM →';
+  }
+  msg.scrollIntoView({behavior:'smooth',block:'center'});
+});
+
+document.querySelectorAll('input,textarea,select').forEach(el=>{
+  el.addEventListener('input',function(){this.style.borderColor='';this.style.outline='';});
+});
+</script>
+</body>
+</html>
