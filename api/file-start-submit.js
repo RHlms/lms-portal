@@ -76,8 +76,8 @@ export default async function handler(req, res) {
       ].filter(f => f.field_value !== '')
     };
 
-    // Upsert contact in GHL
-    const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
+    // Upsert contact in GHL (creates if new, updates if exists)
+    const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/upsert', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
