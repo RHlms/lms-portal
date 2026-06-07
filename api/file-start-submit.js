@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         { key: 'fs_property_use', field_value: d.fs_property_use || '' },
         { key: 'fs_property_listed_for_sale', field_value: d.fs_property_listed_for_sale || '' },
         { key: 'fs_current_buyer_offer', field_value: d.fs_current_buyer_offer || '' },
-        { key: 'fs_pending_foreclosure_sale', field_value: d.fs_pending_foreclosure_sale || '' },
+        { key: 'pending_foreclosure_sale', field_value: d.fs_pending_foreclosure_sale || '' },
         { key: 'fs_pending_foreclosure_sale_date', field_value: d.fs_pending_foreclosure_sale_date || '' },
         { key: 'fs_is_there_a_solar_lease_or_loan', field_value: d.fs_solar_lease_or_loan || '' },
         { key: 'fs_sellerhomeowner_committed_to_shortsale', field_value: d.fs_seller_committed_to_short_sale || '' },
