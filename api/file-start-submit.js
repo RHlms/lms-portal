@@ -28,6 +28,10 @@ export default async function handler(req, res) {
       lastName,
       email: d.fs_seller_email || '',
       phone: d.fs_seller_phone || '',
+      address1: d.fs_subject_street_address || '',
+      city: d.fs_subject_city || '',
+      state: d.fs_subject_state || '',
+      postalCode: d.fs_subject_zip || '',
       tags: ['fs_form_submitted'],
       customFields: [
         // Listing Agent
