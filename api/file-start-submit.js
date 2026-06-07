@@ -56,15 +56,15 @@ export default async function handler(req, res) {
         { key: 'fs_seller_email', field_value: d.fs_seller_email || '' },
         { key: 'fs_seller_phone', field_value: d.fs_seller_phone || '' },
         // Co-Borrower
-        { key: 'fs_seller__power_of_attorney', field_value: d.fs_seller__power_of_attorney || 'No' },
-        { key: 'fs_seller__poa_full_name', field_value: d.fs_seller__poa_full_name || '' },
+        { key: 'fs_coborrower', field_value: d.fs_seller__power_of_attorney || 'No' },
+        { key: 'fs_coborrower_full_name', field_value: d.fs_seller__poa_full_name || '' },
         { key: 'fs_coborrower_phone', field_value: d.fs_coborrower_phone || '' },
         { key: 'fs_coborrower_email', field_value: d.fs_coborrower_email || '' },
         // Property
         { key: 'fs_subject_street_address', field_value: d.fs_subject_street_address || '' },
         { key: 'fs_subject_city', field_value: d.fs_subject_city || '' },
         { key: 'fs_subject_state', field_value: d.fs_subject_state || '' },
-        { key: 'fs_subject_zip', field_value: d.fs_subject_zip || '' },
+        { key: 'fs_subject_zip_code', field_value: d.fs_subject_zip || '' },
         { key: 'fs_subject_county', field_value: d.fs_subject_county || '' },
         { key: 'fs_property_type', field_value: d.fs_property_type || '' },
         { key: 'fs_property_use', field_value: d.fs_property_use || '' },
@@ -72,11 +72,11 @@ export default async function handler(req, res) {
         { key: 'fs_current_buyer_offer', field_value: d.fs_current_buyer_offer || '' },
         { key: 'fs_pending_foreclosure_sale', field_value: d.fs_pending_foreclosure_sale || '' },
         { key: 'fs_pending_foreclosure_sale_date', field_value: d.fs_pending_foreclosure_sale_date || '' },
-        { key: 'fs_solar_lease_or_loan', field_value: d.fs_solar_lease_or_loan || '' },
-        { key: 'fs_seller_committed_to_short_sale', field_value: d.fs_seller_committed_to_short_sale || '' },
-        { key: 'fs_seller_aware_of_lms', field_value: d.fs_seller_aware_of_lms || '' },
+        { key: 'fs_is_there_a_solar_lease_or_loan', field_value: d.fs_solar_lease_or_loan || '' },
+        { key: 'fs_sellerhomeowner_committed_to_shortsale', field_value: d.fs_seller_committed_to_short_sale || '' },
+        { key: 'fs_sellerhomeowner_aware_of_lms_as_a_shortsale_service', field_value: d.fs_seller_aware_of_lms || '' },
         { key: 'fs_seller_additional_notes', field_value: d.fs_seller_additional_notes || '' },
-        { key: 'fs_referred_by', field_value: d.fs_referred_by || '' },
+        { key: 'fs_referred_by____', field_value: d.fs_referred_by || '' },
       ].filter(f => f.field_value !== '')
     };
 
