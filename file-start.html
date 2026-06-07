@@ -388,20 +388,37 @@ document.getElementById('fsForm').addEventListener('submit', async function(e) {
 
   // Validation
   let valid = true;
+  const failedFields = [];
+  const checkedRadios = new Set();
+
   this.querySelectorAll('[required]').forEach(f => {
-    if (f.offsetParent === null) return; // skip hidden fields
+    let el = f;
+    let hidden = false;
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') { hidden = true; break; }
+      el = el.parentElement;
+    }
+    if (hidden) return;
+
     if (f.type === 'radio') {
+      if (checkedRadios.has(f.name)) return;
+      checkedRadios.add(f.name);
       const checked = [...document.querySelectorAll('input[name="'+f.name+'"]')].some(r=>r.checked);
-      if (!checked) { valid = false; }
+      if (!checked) { valid = false; failedFields.push('Radio: ' + f.name); }
+    } else if (f.type === 'checkbox') {
+      if (!f.checked) { valid = false; failedFields.push('Checkbox: ' + (f.name || f.id)); }
     } else if (!f.value.trim()) {
       valid = false; f.style.borderColor = 'var(--danger)';
+      failedFields.push('Field: ' + (f.name || f.placeholder || 'unknown'));
     }
   });
-  if (!document.getElementById('smsConsent').checked) valid = false;
+
+  if (!document.getElementById('smsConsent').checked) { valid = false; failedFields.push('SMS consent'); }
 
   if (!valid) {
     msg.className = 'result-msg error visible';
-    msg.textContent = 'Please complete all required fields before submitting.';
+    msg.textContent = 'Missing: ' + failedFields.join(' | ');
     msg.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
