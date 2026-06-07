@@ -90,7 +90,7 @@ export default async function handler(req, res) {
     if (!contactRes.ok) {
       const err = await contactRes.text();
       console.error('GHL contact error:', err);
-      return res.status(500).json({ error: 'Failed to create contact in GHL' });
+      return res.status(500).json({ error: 'Failed to create contact in GHL', details: err });
     }
 
     const contactData = await contactRes.json();
