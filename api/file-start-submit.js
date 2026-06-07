@@ -77,11 +77,12 @@ export default async function handler(req, res) {
     };
 
     // Upsert contact in GHL
-    const contactRes = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+    const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28'
       },
       body: JSON.stringify(contactPayload)
     });
@@ -119,11 +120,12 @@ export default async function handler(req, res) {
         `Submitted: ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} EDT`
       ].filter(Boolean).join('\n');
 
-      await fetch(`https://rest.gohighlevel.com/v1/contacts/${contactId}/notes/`, {
+      await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/notes/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28'
         },
         body: JSON.stringify({ body: noteBody })
       });
