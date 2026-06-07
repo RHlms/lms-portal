@@ -438,7 +438,7 @@ document.getElementById('fsForm').addEventListener('submit', async function(e) {
     const json = await res.json();
     if (res.ok && json.success) {
       msg.className = 'result-msg success visible';
-      msg.textContent = '✓ File Start Form submitted successfully! Your LMS team will be in touch shortly.';
+      msg.textContent = '✓ File Start Form submitted successfully! Your LMS team will be in touch shortly.';msg.textContent = '✓ File Start Form submitted successfully! Please be on the lookout for your Introduction email. If you don\'t see it, check your SPAM folder and mark it as Not Spam to ensure you receive all future communications. Thank you!';
       document.getElementById('fsForm').style.display = 'none';
     } else { throw new Error(json.error||'Submission failed'); }
   } catch(err) {
