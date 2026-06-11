@@ -1,12 +1,12 @@
 // api/dashboard-data.js
 // Validates magic link token, returns all files for the contact
 
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
+const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
+const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
+const GHL_API_BASE = 'https://services.leadconnectorhq.com';
+const GHL_API_VERSION = '2021-07-28';
 
-// Map GHL pipeline stage names to plain English
 const STAGE_MAP = {
-  // INTAKE pipeline
   '1 - START': { label: 'Getting Started', status: 'active' },
   '2 - SELLER SERVICE AGREEMENT': { label: 'Service Agreement', status: 'active' },
   '3 - SELLER INTAKE': { label: 'Seller Intake', status: 'active' },
@@ -19,7 +19,6 @@ const STAGE_MAP = {
   '10 - OFFER INTAKE (Missing OIF)': { label: 'Action Needed', status: 'warning' },
   '11 - PACKAGE COMPLETE': { label: 'Package Complete', status: 'active' },
   '12 - SATISFIED': { label: 'Ready for Lender', status: 'active' },
-  // WORKING pipeline
   '1 - START - PACKAGE WORKING': { label: 'Package Working', status: 'active' },
   '2 - BUYER #2 NEEDED': { label: 'New Buyer Needed', status: 'warning' },
   '3 - START - BUYER #2': { label: 'New Buyer Intake', status: 'active' },
@@ -54,99 +53,82 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { token, type } = req.query;
+  const { token, contact: contactId, type } = req.query;
 
-  if (!token) {
-    return res.status(400).json({ error: 'Token required' });
+  if (!token || !contactId) {
+    return res.status(400).json({ error: 'Token and contact ID required' });
   }
 
   try {
-    // Search for contact with this token
-    const searchRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=1`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        }
+    // Step 1: Fetch contact directly by ID
+    const contactRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
       }
-    );
+    });
 
-    // Use the search endpoint with custom field filter
-    const tokenSearchRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&filters[0][field]=portal_login_token&filters[0][operator]=eq&filters[0][value]=${encodeURIComponent(token)}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        }
-      }
-    );
-
-    let contact = null;
-
-    if (tokenSearchRes.ok) {
-      const tokenData = await tokenSearchRes.json();
-      const contacts = tokenData.contacts || tokenData.data || [];
-      if (contacts.length > 0) {
-        contact = contacts[0];
-      }
-    }
-
-    if (!contact) {
+    if (!contactRes.ok) {
       return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
     }
 
-    // Check expiry
+    const contactData = await contactRes.json();
+    const contact = contactData.contact || contactData;
     const customFields = contact.customFields || [];
-    const expiryField = customFields.find(f => f.key === 'portal_login_expiry' || f.fieldKey === 'contact.portal_login_expiry');
-    const expiry = expiryField ? parseInt(expiryField.value || expiryField.fieldValue) : 0;
+
+    // Step 2: Validate token matches
+    const tokenField = customFields.find(f =>
+      f.key === 'magic_link_token' ||
+      f.fieldKey === 'contact.magic_link_token' ||
+      f.id === 'magic_link_token'
+    );
+    const storedToken = tokenField
+      ? (tokenField.value ?? tokenField.fieldValue ?? tokenField.fieldValueArray?.[0] ?? '')
+      : '';
+
+    if (!storedToken || storedToken !== token) {
+      return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
+    }
+
+    // Step 3: Validate expiry
+    const expiryField = customFields.find(f =>
+      f.key === 'portal_login_expiry' ||
+      f.fieldKey === 'contact.portal_login_expiry' ||
+      f.id === 'portal_login_expiry'
+    );
+    const expiry = expiryField
+      ? parseInt(expiryField.value ?? expiryField.fieldValue ?? '0')
+      : 0;
 
     if (!expiry || Date.now() > expiry) {
       return res.status(401).json({ error: 'This link has expired. Please request a new one.' });
     }
 
-    const contactId = contact.id;
-    const email = contact.email;
+    // Step 4: Clear the token (single use)
+    await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        customFields: [
+          { key: 'magic_link_token', field_value: '' },
+          { key: 'portal_login_expiry', field_value: '' }
+        ]
+      })
+    });
 
-    // Clear the token (single use)
-    await fetch(
-      `https://services.leadconnectorhq.com/contacts/${contactId}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        },
-        body: JSON.stringify({
-          customFields: [
-            { key: 'portal_login_token', field_value: '' },
-            { key: 'portal_login_expiry', field_value: '' }
-          ]
-        })
-      }
-    );
-
-    // Get submitter email from custom fields
-    const submitterEmailField = customFields.find(f =>
-      f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
-    );
-    const submitterEmail = submitterEmailField
-      ? (submitterEmailField.value || submitterEmailField.fieldValue)
-      : email;
-
-    // Fetch all opportunities for this location and filter by submitter email
+    // Step 5: Fetch opportunities for this contact
     const oppsRes = await fetch(
-      `https://services.leadconnectorhq.com/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${contactId}&limit=50`,
+      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${contactId}&limit=50`,
       {
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
         }
       }
     );
@@ -158,15 +140,22 @@ export default async function handler(req, res) {
       opportunities = oppsData.opportunities || [];
     }
 
-    // If agent — also search by fs_submitter_email across all opps
+    // Step 6: If agent — also search by fs_submitter_email
+    const submitterEmailField = customFields.find(f =>
+      f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
+    );
+    const submitterEmail = submitterEmailField
+      ? (submitterEmailField.value ?? submitterEmailField.fieldValue ?? '')
+      : contact.email;
+
     if (type === 'agent' && submitterEmail) {
       const agentOppsRes = await fetch(
-        `https://services.leadconnectorhq.com/opportunities/search?location_id=${GHL_LOCATION_ID}&limit=100`,
+        `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&limit=100`,
         {
           headers: {
             'Authorization': `Bearer ${GHL_API_KEY}`,
-            'Content-Type': 'application/json',
-            'Version': '2021-07-28'
+            'Version': GHL_API_VERSION,
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -174,42 +163,34 @@ export default async function handler(req, res) {
       if (agentOppsRes.ok) {
         const agentOppsData = await agentOppsRes.json();
         const allOpps = agentOppsData.opportunities || [];
-
-        // Filter opps where the contact has fs_submitter_email matching
         const agentOpps = allOpps.filter(opp => {
-          const oppContact = opp.contact || {};
-          const fields = oppContact.customFields || [];
+          const fields = opp.contact?.customFields || [];
           const emailField = fields.find(f =>
             f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
           );
-          const val = emailField ? (emailField.value || emailField.fieldValue || '') : '';
+          const val = emailField ? (emailField.value ?? emailField.fieldValue ?? '') : '';
           return val.toLowerCase() === submitterEmail.toLowerCase();
         });
-
-        // Merge and deduplicate
         const seen = new Set(opportunities.map(o => o.id));
         agentOpps.forEach(o => { if (!seen.has(o.id)) opportunities.push(o); });
       }
     }
 
-    // Format opportunities
+    // Step 7: Format files
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || opp.status || '';
       const stageInfo = getStageInfo(stageName);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
-
-      // Extract address from opp name (format: "123 Main St - LastName - 26")
       const nameParts = (opp.name || '').split(' - ');
       const address = nameParts[0] || opp.name || 'Unknown Address';
-
-      // Get portal URL from opp custom fields
       const oppFields = opp.customFields || [];
       const portalField = oppFields.find(f =>
-        f.key === 'seller_portal_link' || f.fieldKey === 'opportunity.seller_portal_link'
+        f.key === 'seller_portal_link' ||
+        f.fieldKey === 'opportunity.seller_portal_link'
       );
-      const portalUrl = portalField ? (portalField.value || portalField.fieldValue) : null;
+      const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
 
       return {
         id: opp.id,
@@ -226,7 +207,6 @@ export default async function handler(req, res) {
       };
     });
 
-    // Sort: active first, then closed by date
     files.sort((a, b) => {
       if (a.isClosed && !b.isClosed) return 1;
       if (!a.isClosed && b.isClosed) return -1;
@@ -246,6 +226,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('Dashboard data error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error', detail: err.message });
   }
 }
