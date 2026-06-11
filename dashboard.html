@@ -39,8 +39,9 @@ html,body{min-height:100vh;background:var(--gray-bg);font-family:var(--fb);color
 .error-icon{font-size:40px;margin-bottom:16px;}
 .error-card h2{font-family:var(--fh);font-size:18px;font-weight:800;color:var(--dark);margin-bottom:10px;}
 .error-card p{font-size:14px;color:var(--gray-text);line-height:1.7;margin-bottom:24px;}
-.btn-teal{display:inline-block;background:var(--teal);color:var(--white);font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:12px 24px;border-radius:8px;text-decoration:none;transition:background 0.2s;}
+.btn-teal{display:inline-block;background:var(--teal);color:var(--white);font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:12px 24px;border-radius:8px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s;}
 .btn-teal:hover{background:var(--teal-dark);}
+.btn-teal:disabled{opacity:0.6;cursor:default;}
 
 /* MAIN */
 .dash-main{max-width:900px;margin:0 auto;padding:32px 20px 64px;}
@@ -143,7 +144,7 @@ html,body{min-height:100vh;background:var(--gray-bg);font-family:var(--fb);color
       <div class="error-icon">🔒</div>
       <h2 id="errorTitle">Link Expired</h2>
       <p id="errorMsg">This link has expired or is no longer valid. Please request a new one.</p>
-      <a href="/login" class="btn-teal">Request New Link</a>
+      <button onclick="requestNewLink()" class="btn-teal" id="requestLinkBtn">Request New Link</button>
     </div>
   </div>
 </div>
@@ -197,7 +198,7 @@ var allFiles = [];
 
 function getParams() {
   const p = new URLSearchParams(window.location.search);
-  return { token: p.get('token'), type: p.get('type') || 'agent' };
+  return { token: p.get('token'), contact: p.get('contact'), type: p.get('type') || 'agent' };
 }
 
 function showError(title, msg) {
@@ -302,15 +303,46 @@ function showTab(tab) {
   }
 }
 
+async function requestNewLink() {
+  const p = new URLSearchParams(window.location.search);
+  const contactId = p.get('contact');
+  const btn = document.getElementById('requestLinkBtn');
+
+  if (!contactId) {
+    window.location.href = '/login';
+    return;
+  }
+
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/send-magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contactId: contactId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.textContent = '✓ Check Your Email';
+      document.getElementById('errorMsg').textContent = 'A new login link has been sent to your email. Check your inbox.';
+    } else {
+      btn.textContent = 'Request New Link';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    window.location.href = '/login';
+  }
+}
+
 async function init() {
-  const { token, type } = getParams();
+  const { token, contact, type } = getParams();
 
   if (!token) {
     showError('No Access Link', 'Please use the link sent to your email to access this page.');
     return;
   }
 
-  // If seller with only one file — redirect straight to their file portal
   try {
     const res = await fetch(`/api/dashboard-data?token=${encodeURIComponent(token)}&type=${type}`);
     const data = await res.json();
@@ -321,9 +353,8 @@ async function init() {
     }
 
     allFiles = data.files || [];
-    const contact = data.contact || {};
+    const contactData = data.contact || {};
 
-    // Seller with one file — redirect directly
     if (type === 'seller') {
       const activeFiles = allFiles.filter(f => !f.isClosed);
       if (activeFiles.length === 1 && activeFiles[0].portalUrl) {
@@ -332,8 +363,7 @@ async function init() {
       }
     }
 
-    // Set up dashboard
-    const name = contact.name || contact.email || 'Agent';
+    const name = contactData.name || contactData.email || 'Agent';
     const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('userName').textContent = 'Welcome, ' + name.split(' ')[0];
     document.getElementById('userAvatar').textContent = initials;
