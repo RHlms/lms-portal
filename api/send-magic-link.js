@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         locationId: GHL_LOCATION_ID,
         filters: [{ field: 'email', operator: 'eq', value: email }],
-        pageLimit: 5   // ← FIXED: was 'limit'
+        pageLimit: 5
       })
     });
 
@@ -42,21 +42,17 @@ export default async function handler(req, res) {
     const contacts = searchData.contacts || [];
 
     if (contacts.length === 0) {
-      // Don't reveal whether email exists — generic message
       return res.status(200).json({ success: true, message: 'If that email is on file, a login link has been sent.' });
     }
 
     const contact = contacts[0];
     const contactId = contact.id;
 
-    // Step 2: Generate a secure token
+    // Step 2: Generate secure token + expiry
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
 
-    // Step 3: Store token on the GHL contact as a custom field
-    // Custom field key: magic_link_token (store token|expires as pipe-delimited string)
-    const tokenValue = `${token}|${expires}`;
-
+    // Step 3: Store token and expiry as separate fields on the GHL contact
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -66,7 +62,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         customFields: [
-          { key: 'magic_link_token', field_value: tokenValue }
+          { key: 'magic_link_token', field_value: token },
+          { key: 'portal_login_expiry', field_value: String(expires) }
         ]
       })
     });
@@ -78,13 +75,10 @@ export default async function handler(req, res) {
     }
 
     // Step 4: Build the magic link
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'https://documents.shortsalestart.com';
-
+    const baseUrl = 'https://documents.shortsalestart.com';
     const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
 
-    // Step 5: Send magic link via GHL email
+    // Step 5: Send magic link via GHL outbound email
     const emailRes = await fetch(`${GHL_API_BASE}/conversations/messages/outbound`, {
       method: 'POST',
       headers: {
@@ -100,23 +94,26 @@ export default async function handler(req, res) {
         fromEmail: 'noreply@shortsalestart.com',
         subject: 'Your LMS Portal Login Link',
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
-            <img src="https://shortsalestart.com/wp-content/uploads/2024/01/lms-logo.png"
-                 alt="LMS" style="height: 40px; margin-bottom: 24px;" />
-            <h2 style="color: #0d2033; margin: 0 0 16px;">Your Secure Login Link</h2>
-            <p style="color: #444; margin: 0 0 24px; line-height: 1.5;">
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
+            <div style="margin-bottom: 24px;">
+              <span style="font-size: 20px; font-weight: 700; color: #0d2033; letter-spacing: 0.5px;">
+                SHORT<span style="color: #00A8C6;">SALE</span>START
+              </span>
+            </div>
+            <h2 style="color: #0d2033; margin: 0 0 16px; font-size: 22px;">Your Secure Login Link</h2>
+            <p style="color: #444; margin: 0 0 24px; line-height: 1.6;">
               Click the button below to access your LMS client portal.
               This link expires in <strong>15 minutes</strong>.
             </p>
             <a href="${magicLink}"
-               style="display: inline-block; background: #cc5500; color: #fff;
-                      text-decoration: none; padding: 14px 28px; border-radius: 6px;
-                      font-weight: bold; font-size: 16px;">
-              Open My Portal
+               style="display: inline-block; background: #cc5500; color: #ffffff;
+                      text-decoration: none; padding: 14px 32px; border-radius: 6px;
+                      font-weight: bold; font-size: 16px; letter-spacing: 0.3px;">
+              Open My Portal →
             </a>
-            <p style="color: #999; font-size: 12px; margin: 32px 0 0; line-height: 1.5;">
+            <p style="color: #888; font-size: 13px; margin: 32px 0 0; line-height: 1.6; border-top: 1px solid #eee; padding-top: 24px;">
               If you didn't request this link, you can safely ignore this email.<br>
-              Loan Mitigation Services LLC · shortsalestart.com
+              Loan Mitigation Services LLC &nbsp;·&nbsp; shortsalestart.com
             </p>
           </div>
         `
