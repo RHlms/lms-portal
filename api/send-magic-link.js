@@ -52,7 +52,11 @@ export default async function handler(req, res) {
     const token = crypto.randomBytes(32).toString('hex');
     const expires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
 
-    // Step 3: Store token and expiry on the GHL contact
+    // Step 3: Build the magic link
+    const baseUrl = 'https://documents.shortsalestart.com';
+    const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
+
+    // Step 4: Store token, expiry, full URL — then fire workflow via tag
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -63,65 +67,17 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         customFields: [
           { key: 'magic_link_token', field_value: token },
-          { key: 'portal_login_expiry', field_value: String(expires) }
-        ]
+          { key: 'portal_login_expiry', field_value: String(expires) },
+          { key: 'magic_link_url', field_value: magicLink }
+        ],
+        tags: ['send_magic_link']
       })
     });
 
     if (!updateRes.ok) {
       const updateData = await updateRes.json();
-      console.error('GHL update error:', updateData);
-      return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
-    }
-
-    // Step 4: Build the magic link
-    const baseUrl = 'https://documents.shortsalestart.com';
-    const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
-
-    // Step 5: Send magic link via GHL email
-    const emailRes = await fetch(`${GHL_API_BASE}/conversations/messages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GHL_API_KEY}`,
-        'Version': GHL_API_VERSION,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        type: 'Email',
-        contactId: contactId,
-        locationId: GHL_LOCATION_ID,
-        subject: 'Your LMS Portal Login Link',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
-            <div style="margin-bottom: 24px;">
-              <span style="font-size: 20px; font-weight: 700; color: #0d2033; letter-spacing: 0.5px;">
-                SHORT<span style="color: #00A8C6;">SALE</span>START
-              </span>
-            </div>
-            <h2 style="color: #0d2033; margin: 0 0 16px; font-size: 22px;">Your Secure Login Link</h2>
-            <p style="color: #444; margin: 0 0 24px; line-height: 1.6;">
-              Click the button below to access your LMS client portal.
-              This link expires in <strong>15 minutes</strong>.
-            </p>
-            <a href="${magicLink}"
-               style="display: inline-block; background: #cc5500; color: #ffffff;
-                      text-decoration: none; padding: 14px 32px; border-radius: 6px;
-                      font-weight: bold; font-size: 16px; letter-spacing: 0.3px;">
-              Open My Portal →
-            </a>
-            <p style="color: #888; font-size: 13px; margin: 32px 0 0; line-height: 1.6; border-top: 1px solid #eee; padding-top: 24px;">
-              If you didn't request this link, you can safely ignore this email.<br>
-              Loan Mitigation Services LLC &nbsp;·&nbsp; shortsalestart.com
-            </p>
-          </div>
-        `
-      })
-    });
-
-    if (!emailRes.ok) {
-      const emailData = await emailRes.json();
-      console.error('GHL email error:', JSON.stringify(emailData));
-      return res.status(500).json({ error: 'Failed to send login email.', detail: emailData });
+      console.error('GHL update error:', JSON.stringify(updateData));
+      return res.status(500).json({ error: 'Failed to trigger login email.', detail: updateData });
     }
 
     return res.status(200).json({
