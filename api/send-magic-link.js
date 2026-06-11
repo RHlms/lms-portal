@@ -11,43 +11,44 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email } = req.body;
+  const { email, contactId } = req.body;
 
-  if (!email || !email.includes('@')) {
-    return res.status(400).json({ error: 'Valid email required' });
+  if (!email && !contactId) {
+    return res.status(400).json({ error: 'Email or contact ID required' });
   }
 
   try {
-    // Step 1: Search for contact by email
-    const searchRes = await fetch(`${GHL_API_BASE}/contacts/search`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GHL_API_KEY}`,
-        'Version': GHL_API_VERSION,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        locationId: GHL_LOCATION_ID,
-        filters: [{ field: 'email', operator: 'eq', value: email }],
-        pageLimit: 5
-      })
-    });
+    // Step 1: Get contact — by ID directly or search by email
+    let resolvedContactId = contactId || null;
 
-    const searchData = await searchRes.json();
+    if (!resolvedContactId) {
+      const searchRes = await fetch(`${GHL_API_BASE}/contacts/search`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          locationId: GHL_LOCATION_ID,
+          filters: [{ field: 'email', operator: 'eq', value: email }],
+          pageLimit: 5
+        })
+      });
 
-    if (!searchRes.ok) {
-      console.error('GHL search error:', searchData);
-      return res.status(400).json({ error: 'Could not verify email address.', detail: searchData });
+      const searchData = await searchRes.json();
+
+      if (!searchRes.ok) {
+        console.error('GHL search error:', searchData);
+        return res.status(400).json({ error: 'Could not verify email address.', detail: searchData });
+      }
+
+      const contacts = searchData.contacts || [];
+      if (contacts.length === 0) {
+        return res.status(200).json({ success: true, message: 'If that email is on file, a login link has been sent.' });
+      }
+      resolvedContactId = contacts[0].id;
     }
-
-    const contacts = searchData.contacts || [];
-
-    if (contacts.length === 0) {
-      return res.status(200).json({ success: true, message: 'If that email is on file, a login link has been sent.' });
-    }
-
-    const contact = contacts[0];
-    const contactId = contact.id;
 
     // Step 2: Generate secure token + expiry
     const token = crypto.randomBytes(32).toString('hex');
@@ -55,10 +56,10 @@ export default async function handler(req, res) {
 
     // Step 3: Build the magic link
     const baseUrl = 'https://documents.shortsalestart.com';
-    const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
+    const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${resolvedContactId}`;
 
     // Step 4: Store token, expiry, and magic link URL on contact
-    const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
+    const updateRes = await fetch(`${GHL_API_BASE}/contacts/${resolvedContactId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -81,7 +82,7 @@ export default async function handler(req, res) {
     }
 
     // Step 5: Enroll contact directly into magic link workflow
-    const workflowRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/workflow/${MAGIC_LINK_WORKFLOW_ID}`, {
+    const workflowRes = await fetch(`${GHL_API_BASE}/contacts/${resolvedContactId}/workflow/${MAGIC_LINK_WORKFLOW_ID}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to trigger login email.', detail: workflowData });
     }
 
-    console.log('Workflow enrolled successfully for contact:', contactId);
+    console.log('Workflow enrolled successfully for contact:', resolvedContactId);
 
     return res.status(200).json({
       success: true,
