@@ -26,15 +26,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Search for contact by email using v2 search endpoint
+    // Search for contact by email using v2 POST search endpoint
     const searchRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(email)}`,
+      `https://services.leadconnectorhq.com/contacts/search`,
       {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
           'Content-Type': 'application/json',
           'Version': '2021-07-28'
-        }
+        },
+        body: JSON.stringify({
+          locationId: GHL_LOCATION_ID,
+          filters: [
+            {
+              field: 'email',
+              operator: 'eq',
+              value: email
+            }
+          ],
+          limit: 5
+        })
       }
     );
 
