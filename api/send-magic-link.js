@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     const token = crypto.randomBytes(32).toString('hex');
     const expires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
 
-    // Step 3: Store token and expiry as separate fields on the GHL contact
+    // Step 3: Store token and expiry on the GHL contact
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -71,15 +71,15 @@ export default async function handler(req, res) {
     if (!updateRes.ok) {
       const updateData = await updateRes.json();
       console.error('GHL update error:', updateData);
-      return res.status(500).json({ error: 'Failed to store login token.' });
+      return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
     }
 
     // Step 4: Build the magic link
     const baseUrl = 'https://documents.shortsalestart.com';
     const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
 
-    // Step 5: Send magic link via GHL outbound email
-    const emailRes = await fetch(`${GHL_API_BASE}/conversations/messages/outbound`, {
+    // Step 5: Send magic link via GHL email
+    const emailRes = await fetch(`${GHL_API_BASE}/conversations/messages`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -90,8 +90,6 @@ export default async function handler(req, res) {
         type: 'Email',
         contactId: contactId,
         locationId: GHL_LOCATION_ID,
-        fromName: 'ShortSaleStart',
-        fromEmail: 'noreply@shortsalestart.com',
         subject: 'Your LMS Portal Login Link',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
@@ -122,8 +120,8 @@ export default async function handler(req, res) {
 
     if (!emailRes.ok) {
       const emailData = await emailRes.json();
-      console.error('GHL email error:', emailData);
-      return res.status(500).json({ error: 'Failed to send login email.' });
+      console.error('GHL email error:', JSON.stringify(emailData));
+      return res.status(500).json({ error: 'Failed to send login email.', detail: emailData });
     }
 
     return res.status(200).json({
@@ -133,6 +131,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('send-magic-link error:', err);
-    return res.status(500).json({ error: 'Internal server error.' });
+    return res.status(500).json({ error: 'Internal server error.', detail: err.message });
   }
 }
