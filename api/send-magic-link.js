@@ -4,6 +4,7 @@ const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
 const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
+const MAGIC_LINK_WORKFLOW_ID = '0b6fb4a2-613a-4f9b-a815-de9af9b32b9f';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
     const baseUrl = 'https://documents.shortsalestart.com';
     const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
 
-    // Step 4: Store fields + apply tag in single PUT call
+    // Step 4: Store token, expiry, and magic link URL on contact
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -65,7 +66,6 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        tags: ['send_magic_link'],
         customFields: [
           { key: 'magic_link_token', field_value: token },
           { key: 'portal_login_expiry', field_value: String(expires) },
@@ -77,11 +77,27 @@ export default async function handler(req, res) {
     if (!updateRes.ok) {
       const updateData = await updateRes.json();
       console.error('GHL update error:', JSON.stringify(updateData));
-      return res.status(500).json({ error: 'Failed to update contact.', detail: updateData });
+      return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
     }
 
-    const updateData = await updateRes.json();
-    console.log('GHL update response:', JSON.stringify(updateData));
+    // Step 5: Enroll contact directly into magic link workflow
+    const workflowRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/workflow/${MAGIC_LINK_WORKFLOW_ID}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
+
+    if (!workflowRes.ok) {
+      const workflowData = await workflowRes.json();
+      console.error('GHL workflow error:', JSON.stringify(workflowData));
+      return res.status(500).json({ error: 'Failed to trigger login email.', detail: workflowData });
+    }
+
+    console.log('Workflow enrolled successfully for contact:', contactId);
 
     return res.status(200).json({
       success: true,
