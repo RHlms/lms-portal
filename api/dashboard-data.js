@@ -81,7 +81,7 @@ export default async function handler(req, res) {
     const tokenField = customFields.find(f =>
       f.key === 'magic_link_token' ||
       f.fieldKey === 'contact.magic_link_token' ||
-      f.id === 'magic_link_token'
+      f.id === 'f2pXGEfkPAQ5y1anxDvJ'
     );
 
     console.log('Token field found:', JSON.stringify(tokenField));
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
     const expiryField = customFields.find(f =>
       f.key === 'portal_login_expiry' ||
       f.fieldKey === 'contact.portal_login_expiry' ||
-      f.id === 'portal_login_expiry'
+      f.id === 'vMe7FP4EofPYZ0nu1FhO'
     );
     const expiry = expiryField
       ? parseInt(expiryField.value ?? expiryField.fieldValue ?? '0')
