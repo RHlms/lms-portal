@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     const baseUrl = 'https://documents.shortsalestart.com';
     const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
 
-    // Step 4a: Store token, expiry, and magic link URL
+    // Step 4: Store fields + apply tag in single PUT call
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -65,6 +65,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        tags: ['send_magic_link'],
         customFields: [
           { key: 'magic_link_token', field_value: token },
           { key: 'portal_login_expiry', field_value: String(expires) },
@@ -76,27 +77,11 @@ export default async function handler(req, res) {
     if (!updateRes.ok) {
       const updateData = await updateRes.json();
       console.error('GHL update error:', JSON.stringify(updateData));
-      return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
+      return res.status(500).json({ error: 'Failed to update contact.', detail: updateData });
     }
 
-    // Step 4b: Apply tag via dedicated tags endpoint
-    const tagRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/tags`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GHL_API_KEY}`,
-        'Version': GHL_API_VERSION,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        tags: ['send_magic_link']
-      })
-    });
-
-    if (!tagRes.ok) {
-      const tagData = await tagRes.json();
-      console.error('GHL tag error:', JSON.stringify(tagData));
-      return res.status(500).json({ error: 'Failed to apply login tag.', detail: tagData });
-    }
+    const updateData = await updateRes.json();
+    console.log('GHL update response:', JSON.stringify(updateData));
 
     return res.status(200).json({
       success: true,
