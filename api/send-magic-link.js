@@ -1,149 +1,141 @@
-// api/send-magic-link.js
-// Receives email + userType, looks up GHL contact, generates magic link token, sends email
+import crypto from 'crypto';
 
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
-const PORTAL_BASE_URL = 'https://documents.shortsalestart.com';
-
-function generateToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 48; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
-}
+const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
+const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
+const GHL_API_BASE = 'https://services.leadconnectorhq.com';
+const GHL_API_VERSION = '2021-07-28';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, userType } = req.body;
+  const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
   }
 
   try {
-    // Search for contact by email using v2 POST search endpoint
-    const searchRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/search`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        },
-        body: JSON.stringify({
-          locationId: GHL_LOCATION_ID,
-          filters: [
-            {
-              field: 'email',
-              operator: 'eq',
-              value: email
-            }
-          ],
-          limit: 5
-        })
-      }
-    );
-
-    if (!searchRes.ok) {
-      const err = await searchRes.text();
-      console.error('GHL search error:', err);
-      return res.status(500).json({ error: 'Failed to search contacts', details: err });
-    }
+    // Step 1: Search for contact by email
+    const searchRes = await fetch(`${GHL_API_BASE}/contacts/search`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        locationId: GHL_LOCATION_ID,
+        filters: [{ field: 'email', operator: 'eq', value: email }],
+        pageLimit: 5   // ← FIXED: was 'limit'
+      })
+    });
 
     const searchData = await searchRes.json();
-    const contacts = searchData.contacts || searchData.data || [];
 
-    // Find exact email match
-    const contact = contacts.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
-
-    if (!contact) {
-      return res.status(404).json({ error: 'No account found' });
+    if (!searchRes.ok) {
+      console.error('GHL search error:', searchData);
+      return res.status(400).json({ error: 'Could not verify email address.', detail: searchData });
     }
 
+    const contacts = searchData.contacts || [];
+
+    if (contacts.length === 0) {
+      // Don't reveal whether email exists — generic message
+      return res.status(200).json({ success: true, message: 'If that email is on file, a login link has been sent.' });
+    }
+
+    const contact = contacts[0];
     const contactId = contact.id;
 
-    // Generate token and expiry (15 minutes from now)
-    const token = generateToken();
-    const expiry = Date.now() + (15 * 60 * 1000);
+    // Step 2: Generate a secure token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
 
-    // Store token + expiry on GHL contact
-    const updateRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/${contactId}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        },
-        body: JSON.stringify({
-          customFields: [
-            { key: 'portal_login_token', field_value: token },
-            { key: 'portal_login_expiry', field_value: String(expiry) }
-          ]
-        })
-      }
-    );
+    // Step 3: Store token on the GHL contact as a custom field
+    // Custom field key: magic_link_token (store token|expires as pipe-delimited string)
+    const tokenValue = `${token}|${expires}`;
+
+    const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        customFields: [
+          { key: 'magic_link_token', field_value: tokenValue }
+        ]
+      })
+    });
 
     if (!updateRes.ok) {
-      const err = await updateRes.text();
-      console.error('GHL update error:', err);
-      return res.status(500).json({ error: 'Failed to store token', details: err });
+      const updateData = await updateRes.json();
+      console.error('GHL update error:', updateData);
+      return res.status(500).json({ error: 'Failed to store login token.' });
     }
 
-    // Build magic link
-    const magicLink = `${PORTAL_BASE_URL}/dashboard?token=${token}&type=${userType || 'agent'}`;
+    // Step 4: Build the magic link
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'https://documents.shortsalestart.com';
 
-    // Send email via GHL
-    const emailRes = await fetch(
-      `https://services.leadconnectorhq.com/conversations/messages/outbound`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        },
-        body: JSON.stringify({
-          type: 'Email',
-          contactId: contactId,
-          locationId: GHL_LOCATION_ID,
-          fromName: 'Loan Mitigation Services',
-          from: 'rh@shortsalestart.com',
-          subject: 'Your Secure LMS Portal Link',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
-              <img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="Loan Mitigation Services" style="height: 48px; margin-bottom: 32px;"/>
-              <h2 style="font-size: 22px; color: #1a2e3d; margin: 0 0 12px;">Your Secure Portal Link</h2>
-              <p style="font-size: 15px; color: #4a6a85; line-height: 1.7; margin: 0 0 28px;">Click the button below to access your LMS file portal. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
-              <a href="${magicLink}" style="display: inline-block; background: #2d637d; color: white; font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; letter-spacing: 0.06em; text-transform: uppercase; padding: 14px 32px; border-radius: 8px; text-decoration: none; margin-bottom: 28px;">Access My Files →</a>
-              <p style="font-size: 13px; color: #4a6a85; line-height: 1.6; margin: 0 0 8px;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="font-size: 12px; color: #2d637d; word-break: break-all; margin: 0 0 28px;">${magicLink}</p>
-              <div style="border-top: 1px solid #d1dde8; padding-top: 20px;">
-                <p style="font-size: 12px; color: #888; margin: 0;">If you didn't request this link, you can safely ignore this email. Questions? Call us at (888) 460-4111.</p>
-              </div>
-            </div>
-          `
-        })
-      }
-    );
+    const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
+
+    // Step 5: Send magic link via GHL email
+    const emailRes = await fetch(`${GHL_API_BASE}/conversations/messages/outbound`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'Email',
+        contactId: contactId,
+        locationId: GHL_LOCATION_ID,
+        fromName: 'ShortSaleStart',
+        fromEmail: 'noreply@shortsalestart.com',
+        subject: 'Your LMS Portal Login Link',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
+            <img src="https://shortsalestart.com/wp-content/uploads/2024/01/lms-logo.png"
+                 alt="LMS" style="height: 40px; margin-bottom: 24px;" />
+            <h2 style="color: #0d2033; margin: 0 0 16px;">Your Secure Login Link</h2>
+            <p style="color: #444; margin: 0 0 24px; line-height: 1.5;">
+              Click the button below to access your LMS client portal.
+              This link expires in <strong>15 minutes</strong>.
+            </p>
+            <a href="${magicLink}"
+               style="display: inline-block; background: #cc5500; color: #fff;
+                      text-decoration: none; padding: 14px 28px; border-radius: 6px;
+                      font-weight: bold; font-size: 16px;">
+              Open My Portal
+            </a>
+            <p style="color: #999; font-size: 12px; margin: 32px 0 0; line-height: 1.5;">
+              If you didn't request this link, you can safely ignore this email.<br>
+              Loan Mitigation Services LLC · shortsalestart.com
+            </p>
+          </div>
+        `
+      })
+    });
 
     if (!emailRes.ok) {
-      const err = await emailRes.text();
-      console.error('GHL email error:', err);
-      return res.status(500).json({ error: 'Failed to send email', details: err });
+      const emailData = await emailRes.json();
+      console.error('GHL email error:', emailData);
+      return res.status(500).json({ error: 'Failed to send login email.' });
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      success: true,
+      message: 'If that email is on file, a login link has been sent.'
+    });
 
   } catch (err) {
-    console.error('Magic link error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('send-magic-link error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 }
