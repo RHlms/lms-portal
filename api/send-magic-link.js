@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     const baseUrl = 'https://documents.shortsalestart.com';
     const magicLink = `${baseUrl}/dashboard?token=${token}&contact=${contactId}`;
 
-    // Step 4: Store token, expiry, full URL — then fire workflow via tag
+    // Step 4a: Store token, expiry, and magic link URL
     const updateRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -69,24 +69,31 @@ export default async function handler(req, res) {
           { key: 'magic_link_token', field_value: token },
           { key: 'portal_login_expiry', field_value: String(expires) },
           { key: 'magic_link_url', field_value: magicLink }
-        ],
-        tags: ['send_magic_link']
+        ]
       })
     });
 
     if (!updateRes.ok) {
       const updateData = await updateRes.json();
       console.error('GHL update error:', JSON.stringify(updateData));
-      return res.status(500).json({ error: 'Failed to trigger login email.', detail: updateData });
+      return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'If that email is on file, a login link has been sent.'
+    // Step 4b: Apply tag via dedicated tags endpoint
+    const tagRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/tags`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        tags: ['send_magic_link']
+      })
     });
 
-  } catch (err) {
-    console.error('send-magic-link error:', err);
-    return res.status(500).json({ error: 'Internal server error.', detail: err.message });
-  }
-}
+    if (!tagRes.ok) {
+      const tagData = await tagRes.json();
+      console.error('GHL tag error:', JSON.stringify(tagData));
+      return res.status(500).json({ error: 'Failed to apply login tag.', detail: tagData });
+    }
