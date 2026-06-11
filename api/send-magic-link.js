@@ -26,9 +26,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Look up contact by email in GHL
+    // Search for contact by email using v2 search endpoint
     const searchRes = await fetch(
-      `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email)}&limit=1`,
+      `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(email)}`,
       {
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -41,24 +41,26 @@ export default async function handler(req, res) {
     if (!searchRes.ok) {
       const err = await searchRes.text();
       console.error('GHL search error:', err);
-      return res.status(500).json({ error: 'Failed to search contacts' });
+      return res.status(500).json({ error: 'Failed to search contacts', details: err });
     }
 
     const searchData = await searchRes.json();
-    const contacts = searchData.contacts || [];
+    const contacts = searchData.contacts || searchData.data || [];
 
-    if (contacts.length === 0) {
+    // Find exact email match
+    const contact = contacts.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+
+    if (!contact) {
       return res.status(404).json({ error: 'No account found' });
     }
 
-    const contact = contacts[0];
     const contactId = contact.id;
 
     // Generate token and expiry (15 minutes from now)
     const token = generateToken();
     const expiry = Date.now() + (15 * 60 * 1000);
 
-    // Store token + expiry + userType on GHL contact
+    // Store token + expiry on GHL contact
     const updateRes = await fetch(
       `https://services.leadconnectorhq.com/contacts/${contactId}`,
       {
@@ -80,7 +82,7 @@ export default async function handler(req, res) {
     if (!updateRes.ok) {
       const err = await updateRes.text();
       console.error('GHL update error:', err);
-      return res.status(500).json({ error: 'Failed to store token' });
+      return res.status(500).json({ error: 'Failed to store token', details: err });
     }
 
     // Build magic link
@@ -123,7 +125,7 @@ export default async function handler(req, res) {
     if (!emailRes.ok) {
       const err = await emailRes.text();
       console.error('GHL email error:', err);
-      return res.status(500).json({ error: 'Failed to send email' });
+      return res.status(500).json({ error: 'Failed to send email', details: err });
     }
 
     return res.status(200).json({ success: true });
