@@ -50,7 +50,7 @@ export default async function handler(req, res) {
 
     // Step 2: Generate secure token + expiry
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+    const expires = Date.now() + 15 * 60 * 1000;
 
     // Step 3: Build the magic link
     const baseUrl = 'https://documents.shortsalestart.com';
@@ -97,3 +97,14 @@ export default async function handler(req, res) {
       console.error('GHL tag error:', JSON.stringify(tagData));
       return res.status(500).json({ error: 'Failed to apply login tag.', detail: tagData });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: 'If that email is on file, a login link has been sent.'
+    });
+
+  } catch (err) {
+    console.error('send-magic-link error:', err);
+    return res.status(500).json({ error: 'Internal server error.', detail: err.message });
+  }
+}
