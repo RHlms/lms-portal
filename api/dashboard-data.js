@@ -57,7 +57,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Fetch contact directly by ID
     const contactRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -76,11 +75,9 @@ export default async function handler(req, res) {
     const contact = contactData.contact || contactData;
     const customFields = contact.customFields || [];
 
-    // DEBUG
     console.log('Token from URL:', token);
-    console.log('All custom field keys:', customFields.map(f => ({ key: f.key, fieldKey: f.fieldKey, id: f.id, value: f.value, fieldValue: f.fieldValue })));
+    console.log('All custom field keys:', JSON.stringify(customFields.map(f => ({ key: f.key, fieldKey: f.fieldKey, id: f.id, value: f.value, fieldValue: f.fieldValue }))));
 
-    // Step 2: Validate token matches
     const tokenField = customFields.find(f =>
       f.key === 'magic_link_token' ||
       f.fieldKey === 'contact.magic_link_token' ||
@@ -100,7 +97,6 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.', debug: { storedToken: storedToken?.substring(0, 8), tokenStart: token?.substring(0, 8) } });
     }
 
-    // Step 3: Validate expiry
     const expiryField = customFields.find(f =>
       f.key === 'portal_login_expiry' ||
       f.fieldKey === 'contact.portal_login_expiry' ||
@@ -116,7 +112,6 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'This link has expired. Please request a new one.' });
     }
 
-    // Step 4: Clear the token (single use)
     await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -132,7 +127,6 @@ export default async function handler(req, res) {
       })
     });
 
-    // Step 5: Fetch opportunities for this contact
     const oppsRes = await fetch(
       `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${contactId}&limit=50`,
       {
@@ -150,7 +144,6 @@ export default async function handler(req, res) {
       opportunities = oppsData.opportunities || [];
     }
 
-    // Step 6: If agent — also search by fs_submitter_email
     const submitterEmailField = customFields.find(f =>
       f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
     );
@@ -186,8 +179,55 @@ export default async function handler(req, res) {
       }
     }
 
-    // Step 7: Format files
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || opp.status || '';
       const stageInfo = getStageInfo(stageName);
-      const createdAt = opp.creat
+      const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
+      const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
+      const nameParts = (opp.name || '').split(' - ');
+      const address = nameParts[0] || opp.name || 'Unknown Address';
+      const oppFields = opp.customFields || [];
+      const portalField = oppFields.find(f =>
+        f.key === 'seller_portal_link' ||
+        f.fieldKey === 'opportunity.seller_portal_link'
+      );
+      const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
+
+      return {
+        id: opp.id,
+        name: opp.name,
+        address,
+        stageName,
+        stageLabel: stageInfo.label,
+        stageStatus: stageInfo.status,
+        daysActive,
+        isClosed,
+        closedAt: isClosed ? opp.updatedAt : null,
+        portalUrl,
+        contactId: opp.contact?.id || contactId
+      };
+    });
+
+    files.sort((a, b) => {
+      if (a.isClosed && !b.isClosed) return 1;
+      if (!a.isClosed && b.isClosed) return -1;
+      return b.daysActive - a.daysActive;
+    });
+
+    return res.status(200).json({
+      success: true,
+      contact: {
+        id: contactId,
+        name: `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
+        email: contact.email,
+        type: type || 'agent'
+      },
+      files
+    });
+
+  } catch (err) {
+    console.error('Dashboard data error:', err);
+    return res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+}
