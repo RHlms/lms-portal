@@ -1,6 +1,3 @@
-// api/dashboard-data.js
-// Validates magic link token, returns all files for the contact
-
 const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
 const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
@@ -70,6 +67,8 @@ export default async function handler(req, res) {
     });
 
     if (!contactRes.ok) {
+      const errData = await contactRes.json();
+      console.error('Contact fetch failed:', JSON.stringify(errData));
       return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
     }
 
@@ -77,18 +76,28 @@ export default async function handler(req, res) {
     const contact = contactData.contact || contactData;
     const customFields = contact.customFields || [];
 
+    // DEBUG
+    console.log('Token from URL:', token);
+    console.log('All custom field keys:', customFields.map(f => ({ key: f.key, fieldKey: f.fieldKey, id: f.id, value: f.value, fieldValue: f.fieldValue })));
+
     // Step 2: Validate token matches
     const tokenField = customFields.find(f =>
       f.key === 'magic_link_token' ||
       f.fieldKey === 'contact.magic_link_token' ||
       f.id === 'magic_link_token'
     );
+
+    console.log('Token field found:', JSON.stringify(tokenField));
+
     const storedToken = tokenField
       ? (tokenField.value ?? tokenField.fieldValue ?? tokenField.fieldValueArray?.[0] ?? '')
       : '';
 
+    console.log('Stored token:', storedToken);
+    console.log('Tokens match:', storedToken === token);
+
     if (!storedToken || storedToken !== token) {
-      return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
+      return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.', debug: { storedToken: storedToken?.substring(0, 8), tokenStart: token?.substring(0, 8) } });
     }
 
     // Step 3: Validate expiry
@@ -100,6 +109,8 @@ export default async function handler(req, res) {
     const expiry = expiryField
       ? parseInt(expiryField.value ?? expiryField.fieldValue ?? '0')
       : 0;
+
+    console.log('Expiry:', expiry, 'Now:', Date.now(), 'Expired:', Date.now() > expiry);
 
     if (!expiry || Date.now() > expiry) {
       return res.status(401).json({ error: 'This link has expired. Please request a new one.' });
@@ -134,7 +145,6 @@ export default async function handler(req, res) {
     );
 
     let opportunities = [];
-
     if (oppsRes.ok) {
       const oppsData = await oppsRes.json();
       opportunities = oppsData.opportunities || [];
@@ -180,52 +190,4 @@ export default async function handler(req, res) {
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || opp.status || '';
       const stageInfo = getStageInfo(stageName);
-      const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
-      const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-      const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
-      const nameParts = (opp.name || '').split(' - ');
-      const address = nameParts[0] || opp.name || 'Unknown Address';
-      const oppFields = opp.customFields || [];
-      const portalField = oppFields.find(f =>
-        f.key === 'seller_portal_link' ||
-        f.fieldKey === 'opportunity.seller_portal_link'
-      );
-      const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
-
-      return {
-        id: opp.id,
-        name: opp.name,
-        address,
-        stageName,
-        stageLabel: stageInfo.label,
-        stageStatus: stageInfo.status,
-        daysActive,
-        isClosed,
-        closedAt: isClosed ? opp.updatedAt : null,
-        portalUrl,
-        contactId: opp.contact?.id || contactId
-      };
-    });
-
-    files.sort((a, b) => {
-      if (a.isClosed && !b.isClosed) return 1;
-      if (!a.isClosed && b.isClosed) return -1;
-      return b.daysActive - a.daysActive;
-    });
-
-    return res.status(200).json({
-      success: true,
-      contact: {
-        id: contactId,
-        name: `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
-        email: contact.email,
-        type: type || 'agent'
-      },
-      files
-    });
-
-  } catch (err) {
-    console.error('Dashboard data error:', err);
-    return res.status(500).json({ error: 'Server error', detail: err.message });
-  }
-}
+      const createdAt = opp.creat
