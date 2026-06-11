@@ -1,1 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Files | Loan Mitigation Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#2d637d;--teal-dark:#1e4a5e;--teal-light:#3a7a96;
+  --orange:#cc5500;--gray-bg:#f0f4f7;--gray-mid:#d1dde8;
+  --gray-text:#4a6a85;--white:#ffffff;--dark:#1a2e3d;
+  --success:#2d8c5e;--warning:#cc5500;--radius:12px;
+  --fh:'Montserrat',sans-serif;--fb:'Open Sans',sans-serif;
+}
+html,body{min-height:100vh;background:var(--gray-bg);font-family:var(--fb);color:var(--dark);font-size:15px;line-height:1.6;margin:0;padding:0;}
 
+/* HEADER */
+.dash-header{background:var(--teal);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.dash-logo img{height:38px;width:auto;}
+.dash-user{display:flex;align-items:center;gap:10px;}
+.dash-user-name{font-family:var(--fh);font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);}
+.dash-avatar{width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:800;color:var(--white);}
+.dash-logout{font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.6);text-decoration:none;padding:6px 12px;border:1px solid rgba(255,255,255,0.3);border-radius:6px;transition:all 0.2s;}
+.dash-logout:hover{color:var(--white);border-color:rgba(255,255,255,0.7);}
+
+/* LOADING */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;}
+.loading-spinner{width:40px;height:40px;border:3px solid var(--gray-mid);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--gray-text);letter-spacing:0.04em;}
+
+/* ERROR */
+.error-wrap{max-width:480px;margin:80px auto;padding:0 20px;text-align:center;}
+.error-card{background:var(--white);border-radius:var(--radius);padding:40px 32px;border:1px solid var(--gray-mid);}
+.error-icon{font-size:40px;margin-bottom:16px;}
+.error-card h2{font-family:var(--fh);font-size:18px;font-weight:800;color:var(--dark);margin-bottom:10px;}
+.error-card p{font-size:14px;color:var(--gray-text);line-height:1.7;margin-bottom:24px;}
+.btn-teal{display:inline-block;background:var(--teal);color:var(--white);font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:12px 24px;border-radius:8px;text-decoration:none;transition:background 0.2s;}
+.btn-teal:hover{background:var(--teal-dark);}
+
+/* MAIN */
+.dash-main{max-width:900px;margin:0 auto;padding:32px 20px 64px;}
+
+/* PAGE TITLE */
+.dash-title{margin-bottom:24px;}
+.dash-title h1{font-family:var(--fh);font-size:22px;font-weight:800;color:var(--dark);margin-bottom:4px;}
+.dash-title p{font-size:14px;color:var(--gray-text);}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--white);border-radius:8px;padding:4px;border:1px solid var(--gray-mid);width:fit-content;margin-bottom:28px;}
+.tab{padding:8px 24px;border-radius:6px;border:none;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--gray-text);transition:all 0.2s;}
+.tab.active{background:var(--teal);color:var(--white);}
+
+/* FILE CARDS GRID */
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px;}
+
+.file-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-mid);overflow:hidden;transition:box-shadow 0.2s;}
+.file-card:hover{box-shadow:0 4px 16px rgba(45,99,125,0.12);}
+.file-card-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.file-card-header.active-bg{background:var(--teal);}
+.file-card-header.warning-bg{background:var(--orange);}
+.file-card-header.success-bg{background:var(--success);}
+.file-card-status{font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--white);}
+.file-card-day{background:rgba(255,255,255,0.2);color:var(--white);font-family:var(--fh);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;}
+.file-card-body{padding:16px;}
+.file-address{font-family:var(--fh);font-size:15px;font-weight:800;color:var(--dark);margin-bottom:4px;}
+.file-city{font-size:13px;color:var(--gray-text);margin-bottom:14px;}
+.file-stage-label{font-family:var(--fh);font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+.file-stage-badge{border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:14px;}
+.file-stage-badge.active{background:#e8f2f6;color:var(--teal);}
+.file-stage-badge.warning{background:#fff4ee;color:var(--orange);}
+.file-stage-badge.success{background:#e6f9ef;color:var(--success);}
+.file-btns{display:flex;gap:8px;}
+.file-btn-primary{flex:1;background:var(--teal);color:var(--white);text-align:center;padding:9px 8px;border-radius:7px;font-family:var(--fh);font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.05em;transition:background 0.2s;}
+.file-btn-primary:hover{background:var(--teal-dark);}
+.file-btn-secondary{flex:1;background:var(--gray-bg);color:var(--teal);text-align:center;padding:9px 8px;border-radius:7px;font-family:var(--fh);font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.05em;border:1px solid var(--gray-mid);transition:background 0.2s;}
+.file-btn-secondary:hover{background:var(--gray-mid);}
+
+/* CLOSED LIST */
+.closed-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.closed-item{background:var(--white);border-radius:10px;border:1px solid var(--gray-mid);overflow:hidden;display:flex;align-items:stretch;}
+.closed-accent{width:5px;flex-shrink:0;}
+.closed-accent.won{background:var(--success);}
+.closed-accent.lost{background:var(--gray-mid);}
+.closed-body{flex:1;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.closed-address{font-family:var(--fh);font-size:15px;font-weight:800;color:var(--dark);margin-bottom:2px;}
+.closed-date{font-size:13px;color:var(--gray-text);}
+.closed-right{display:flex;align-items:center;gap:12px;}
+.closed-badge{font-family:var(--fh);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;}
+.closed-badge.won{background:#e6f9ef;color:var(--success);}
+.closed-badge.lost{background:var(--gray-bg);color:var(--gray-text);}
+.closed-view{background:var(--gray-bg);color:var(--teal);padding:7px 14px;border-radius:6px;font-family:var(--fh);font-size:11px;font-weight:700;text-decoration:none;border:1px solid var(--gray-mid);text-transform:uppercase;letter-spacing:0.05em;transition:background 0.2s;}
+.closed-view:hover{background:var(--gray-mid);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-state p{font-size:15px;color:var(--gray-text);margin-bottom:20px;}
+
+/* QUICK ACTIONS */
+.quick-actions{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-mid);padding:20px;margin-bottom:16px;}
+.quick-actions-title{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--gray-text);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;}
+.quick-btns{display:flex;gap:10px;flex-wrap:wrap;}
+.quick-btn{display:inline-block;font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:10px 18px;border-radius:7px;text-decoration:none;transition:background 0.2s;}
+.quick-btn-orange{background:var(--orange);color:var(--white);}
+.quick-btn-orange:hover{background:#aa4400;}
+.quick-btn-outline{background:var(--gray-bg);color:var(--teal);border:1px solid var(--gray-mid);}
+.quick-btn-outline:hover{background:var(--gray-mid);}
+
+/* FOOTER STRIP */
+.dash-footer{border-top:1px solid var(--gray-mid);padding-top:16px;text-align:center;}
+.dash-footer p{font-size:12px;color:var(--gray-text);margin:0 0 4px;}
+.dash-footer a{color:var(--teal);font-weight:600;text-decoration:none;}
+
+@media(max-width:600px){
+  .files-grid{grid-template-columns:1fr;}
+  .quick-btns{flex-direction:column;}
+  .dash-user-name{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="loadingState">
+  <div class="dash-header">
+    <div class="dash-logo"><img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="LMS"/></div>
+  </div>
+  <div class="loading-wrap">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading your files . . .</div>
+  </div>
+</div>
+
+<div id="errorState" style="display:none;">
+  <div class="dash-header">
+    <div class="dash-logo"><img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="LMS"/></div>
+  </div>
+  <div class="error-wrap">
+    <div class="error-card">
+      <div class="error-icon">🔒</div>
+      <h2 id="errorTitle">Link Expired</h2>
+      <p id="errorMsg">This link has expired or is no longer valid. Please request a new one.</p>
+      <a href="/login" class="btn-teal">Request New Link</a>
+    </div>
+  </div>
+</div>
+
+<div id="dashState" style="display:none;">
+  <div class="dash-header">
+    <div class="dash-logo"><img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="LMS"/></div>
+    <div class="dash-user">
+      <span class="dash-user-name" id="userName"></span>
+      <div class="dash-avatar" id="userAvatar"></div>
+      <a href="/login" class="dash-logout">Log Out</a>
+    </div>
+  </div>
+
+  <div class="dash-main">
+    <div class="dash-title">
+      <h1>My Files</h1>
+      <p id="dashSubtitle"></p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabActive" onclick="showTab('active')">Active</button>
+      <button class="tab" id="tabClosed" onclick="showTab('closed')">Closed</button>
+    </div>
+
+    <div id="activePanel">
+      <div class="files-grid" id="activeGrid"></div>
+      <div class="quick-actions">
+        <div class="quick-actions-title">Quick Actions</div>
+        <div class="quick-btns">
+          <a href="https://documents.shortsalestart.com/file-start" target="_blank" class="quick-btn quick-btn-orange">+ Start New File</a>
+          <a href="https://shortsalestart.com/#schedule" target="_blank" class="quick-btn quick-btn-outline">📅 Schedule Consult</a>
+          <a href="tel:8884604111" class="quick-btn quick-btn-outline">📞 (888) 460-4111</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="closedPanel" style="display:none;">
+      <div class="closed-list" id="closedList"></div>
+    </div>
+
+    <div class="dash-footer">
+      <p>Need help? Call <a href="tel:8884604111">(888) 460-4111</a> · Mon–Fri, 9am–5pm EST</p>
+      <p style="font-size:11px;color:#aaa;margin-top:4px;">Loan Mitigation Services, LLC · 151 Southhall Lane Ste 230, Maitland, FL 32751</p>
+    </div>
+  </div>
+</div>
+
+<script>
+var allFiles = [];
+
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  return { token: p.get('token'), type: p.get('type') || 'agent' };
+}
+
+function showError(title, msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+function getHeaderClass(status) {
+  if (status === 'warning') return 'warning-bg';
+  if (status === 'success' || status === 'closed-won') return 'success-bg';
+  return 'active-bg';
+}
+
+function getBadgeClass(status) {
+  if (status === 'warning') return 'warning';
+  if (status === 'success' || status === 'closed-won') return 'success';
+  return 'active';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderActiveFiles(files) {
+  const grid = document.getElementById('activeGrid');
+  const active = files.filter(f => !f.isClosed);
+  if (active.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>No active files found. Start a new file to get started.</p></div>';
+    return;
+  }
+  grid.innerHTML = active.map(f => `
+    <div class="file-card">
+      <div class="file-card-header ${getHeaderClass(f.stageStatus)}">
+        <span class="file-card-status">Active</span>
+        <span class="file-card-day">Day ${f.daysActive}</span>
+      </div>
+      <div class="file-card-body">
+        <div class="file-address">${f.address}</div>
+        <div class="file-stage-label">Current Stage</div>
+        <div class="file-stage-badge ${getBadgeClass(f.stageStatus)}">${f.stageStatus === 'warning' ? '⚠️ ' : f.stageStatus === 'success' ? '✅ ' : '📋 '}${f.stageLabel}</div>
+        <div class="file-btns">
+          ${f.portalUrl ? `<a href="${f.portalUrl}" class="file-btn-primary">View File</a>` : '<span class="file-btn-primary" style="opacity:0.4;cursor:default;">View File</span>'}
+          ${f.portalUrl ? `<a href="${f.portalUrl}" class="file-btn-secondary">Docs</a>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderClosedFiles(files) {
+  const list = document.getElementById('closedList');
+  const closed = files.filter(f => f.isClosed);
+  if (closed.length === 0) {
+    list.innerHTML = '<div class="empty-state"><p>No closed files yet.</p></div>';
+    return;
+  }
+  list.innerHTML = closed.map(f => {
+    const isWon = f.stageStatus === 'closed-won';
+    return `
+      <div class="closed-item">
+        <div class="closed-accent ${isWon ? 'won' : 'lost'}"></div>
+        <div class="closed-body">
+          <div>
+            <div class="closed-address">${f.address}</div>
+            <div class="closed-date">${f.closedAt ? 'Closed ' + formatDate(f.closedAt) : 'Closed'}</div>
+          </div>
+          <div class="closed-right">
+            <span class="closed-badge ${isWon ? 'won' : 'lost'}">${isWon ? '✓ Closed — Won' : 'Closed — Lost'}</span>
+            ${f.portalUrl ? `<a href="${f.portalUrl}" class="closed-view">View</a>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showTab(tab) {
+  const activePanel = document.getElementById('activePanel');
+  const closedPanel = document.getElementById('closedPanel');
+  const tabActive = document.getElementById('tabActive');
+  const tabClosed = document.getElementById('tabClosed');
+  const sub = document.getElementById('dashSubtitle');
+  const active = allFiles.filter(f => !f.isClosed);
+  const closed = allFiles.filter(f => f.isClosed);
+
+  if (tab === 'active') {
+    activePanel.style.display = 'block';
+    closedPanel.style.display = 'none';
+    tabActive.classList.add('active');
+    tabClosed.classList.remove('active');
+    sub.textContent = active.length + ' active file' + (active.length !== 1 ? 's' : '') + ' · Last updated just now';
+  } else {
+    activePanel.style.display = 'none';
+    closedPanel.style.display = 'block';
+    tabActive.classList.remove('active');
+    tabClosed.classList.add('active');
+    sub.textContent = closed.length + ' closed file' + (closed.length !== 1 ? 's' : '') + ' · All time';
+  }
+}
+
+async function init() {
+  const { token, type } = getParams();
+
+  if (!token) {
+    showError('No Access Link', 'Please use the link sent to your email to access this page.');
+    return;
+  }
+
+  // If seller with only one file — redirect straight to their file portal
+  try {
+    const res = await fetch(`/api/dashboard-data?token=${encodeURIComponent(token)}&type=${type}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      showError('Link Expired', data.error || 'This link has expired. Please request a new one.');
+      return;
+    }
+
+    allFiles = data.files || [];
+    const contact = data.contact || {};
+
+    // Seller with one file — redirect directly
+    if (type === 'seller') {
+      const activeFiles = allFiles.filter(f => !f.isClosed);
+      if (activeFiles.length === 1 && activeFiles[0].portalUrl) {
+        window.location.href = activeFiles[0].portalUrl;
+        return;
+      }
+    }
+
+    // Set up dashboard
+    const name = contact.name || contact.email || 'Agent';
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    document.getElementById('userName').textContent = 'Welcome, ' + name.split(' ')[0];
+    document.getElementById('userAvatar').textContent = initials;
+
+    const activeCount = allFiles.filter(f => !f.isClosed).length;
+    document.getElementById('dashSubtitle').textContent = activeCount + ' active file' + (activeCount !== 1 ? 's' : '') + ' · Last updated just now';
+
+    renderActiveFiles(allFiles);
+    renderClosedFiles(allFiles);
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashState').style.display = 'block';
+
+  } catch (err) {
+    console.error('Dashboard error:', err);
+    showError('Something Went Wrong', 'Please try again or call (888) 460-4111.');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
