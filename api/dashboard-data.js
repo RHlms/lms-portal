@@ -4,7 +4,6 @@ const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
 
 const STAGE_MAP = {
-  // INTAKE pipeline
   '1 - START':                        { label: 'Seller Intake', status: 'active' },
   '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake', status: 'active' },
   '3 - SELLER INTAKE — CHASE':        { label: 'Seller Intake', status: 'warning' },
@@ -15,7 +14,6 @@ const STAGE_MAP = {
   '7 - NO BUYER ⚠️':                  { label: 'Buyer Needed', status: 'warning' },
   '8 - BUYER ✅ - OIF ⚠️':            { label: 'Offer Intake', status: 'active' },
   '9 - OIF ✅':                       { label: 'Offer Intake', status: 'active' },
-  // WORKING pipeline — placeholder until next week
   'CLOSED-W':                         { label: 'Closed — Won', status: 'closed-won' },
   'CLOSED-L':                         { label: 'Closed — Lost', status: 'closed-lost' }
 };
@@ -24,7 +22,7 @@ function getStageInfo(stageName) {
   if (!stageName) return { label: 'In Progress', status: 'active' };
   const match = STAGE_MAP[stageName];
   if (match) return match;
-  if (stageName.toLowerCase().includes('closed-w') || (stageName.toLowerCase().includes('closed') && stageName.toLowerCase().includes('w'))) {
+  if (stageName.toLowerCase().includes('closed') && stageName.toLowerCase().includes('w')) {
     return { label: 'Closed — Won', status: 'closed-won' };
   }
   if (stageName.toLowerCase().includes('closed')) {
@@ -167,8 +165,17 @@ export default async function handler(req, res) {
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
-      const nameParts = (opp.name || '').split(' - ');
-      const address = nameParts[0] || opp.name || 'Unknown Address';
+
+      // Parse address — opp name format: "595 Trelago Way #102 — Ricardos - 2026"
+      // Split on em dash first, then fall back to hyphen
+      const oppName = opp.name || '';
+      let address = oppName;
+      if (oppName.includes('—')) {
+        address = oppName.split('—')[0].trim();
+      } else if (oppName.includes(' - ')) {
+        address = oppName.split(' - ')[0].trim();
+      }
+
       const oppFields = opp.customFields || [];
       const portalField = oppFields.find(f =>
         f.key === 'seller_portal_link' ||
@@ -176,9 +183,11 @@ export default async function handler(req, res) {
       );
       const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
 
+      console.log('Opp:', oppName, '| Stage raw:', stageName, '| Stage label:', stageInfo.label);
+
       return {
         id: opp.id,
-        name: opp.name,
+        name: oppName,
         address,
         stageName,
         stageLabel: stageInfo.label,
