@@ -3,6 +3,9 @@ const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
 
+const INTAKE_PIPELINE_ID = 'Zkblq5FENcSyXWKX5jZw';
+const WORKING_PIPELINE_ID = 'I3jlj4eYesOL3niHBXD6';
+
 const STAGE_MAP = {
   '1 - START':                        { label: 'Seller Intake', status: 'active' },
   '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake', status: 'active' },
@@ -104,9 +107,17 @@ export default async function handler(req, res) {
       })
     });
 
-    // Fetch opportunities for this contact
-    const oppsRes = await fetch(
-      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${contactId}&limit=50`,
+    // Get submitter email to find all agent opps
+    const submitterEmailField = customFields.find(f =>
+      f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
+    );
+    const submitterEmail = submitterEmailField
+      ? (submitterEmailField.value ?? submitterEmailField.fieldValue ?? '')
+      : contact.email;
+
+    // Fetch INTAKE pipeline opps by pipeline ID
+    const intakeRes = await fetch(
+      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${INTAKE_PIPELINE_ID}&limit=100`,
       {
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -116,58 +127,51 @@ export default async function handler(req, res) {
       }
     );
 
-    let opportunities = [];
-    if (oppsRes.ok) {
-      const oppsData = await oppsRes.json();
-      opportunities = oppsData.opportunities || [];
-    }
-
-    // If agent — also search by fs_submitter_email
-    const submitterEmailField = customFields.find(f =>
-      f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
-    );
-    const submitterEmail = submitterEmailField
-      ? (submitterEmailField.value ?? submitterEmailField.fieldValue ?? '')
-      : contact.email;
-
-    if (type === 'agent' && submitterEmail) {
-      const agentOppsRes = await fetch(
-        `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&limit=100`,
-        {
-          headers: {
-            'Authorization': `Bearer ${GHL_API_KEY}`,
-            'Version': GHL_API_VERSION,
-            'Content-Type': 'application/json'
-          }
+    // Fetch WORKING pipeline opps by pipeline ID
+    const workingRes = await fetch(
+      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${WORKING_PIPELINE_ID}&limit=100`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
         }
-      );
-
-      if (agentOppsRes.ok) {
-        const agentOppsData = await agentOppsRes.json();
-        const allOpps = agentOppsData.opportunities || [];
-        const agentOpps = allOpps.filter(opp => {
-          const fields = opp.contact?.customFields || [];
-          const emailField = fields.find(f =>
-            f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
-          );
-          const val = emailField ? (emailField.value ?? emailField.fieldValue ?? '') : '';
-          return val.toLowerCase() === submitterEmail.toLowerCase();
-        });
-        const seen = new Set(opportunities.map(o => o.id));
-        agentOpps.forEach(o => { if (!seen.has(o.id)) opportunities.push(o); });
       }
+    );
+
+    let allOpps = [];
+
+    if (intakeRes.ok) {
+      const intakeData = await intakeRes.json();
+      allOpps = allOpps.concat(intakeData.opportunities || []);
     }
+    if (workingRes.ok) {
+      const workingData = await workingRes.json();
+      allOpps = allOpps.concat(workingData.opportunities || []);
+    }
+
+    // Filter to opps belonging to this agent by fs_submitter_email
+    const agentEmail = submitterEmail.toLowerCase();
+    const opportunities = allOpps.filter(opp => {
+      const fields = opp.contact?.customFields || [];
+      const emailField = fields.find(f =>
+        f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
+      );
+      const val = emailField ? (emailField.value ?? emailField.fieldValue ?? '') : '';
+      return val.toLowerCase() === agentEmail;
+    });
+
+    console.log(`Found ${opportunities.length} opps for agent ${agentEmail}`);
 
     // Format files
     const files = opportunities.map(opp => {
-      const stageName = opp.pipelineStage?.name || opp.status || '';
+      const stageName = opp.pipelineStage?.name || '';
       const stageInfo = getStageInfo(stageName);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
 
-      // Parse address — opp name format: "595 Trelago Way #102 — Ricardos - 2026"
-      // Split on em dash first, then fall back to hyphen
+      // Parse address from opp name: "595 Trelago Way #102 — Ricardos - 2026"
       const oppName = opp.name || '';
       let address = oppName;
       if (oppName.includes('—')) {
