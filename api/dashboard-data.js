@@ -7,10 +7,6 @@ const INTAKE_PIPELINE_ID = 'Zkblq5FENcSyXWKX5jZw';
 const WORKING_PIPELINE_ID = 'I3jlj4eYesOL3niHBXD6';
 const FS_SUBMITTER_EMAIL_FIELD_ID = '41En9NacCj60yb7ykcTV';
 
-// Opportunity-level custom field ID for seller_portal_link
-// Set to null until confirmed from logs — will fall back to URL scan
-const SELLER_PORTAL_LINK_FIELD_ID = null;
-
 const STAGE_ID_MAP = {
   '51ff778c-a7ca-4af5-8840-45e5c9fdaabe': { label: 'Seller Intake', status: 'active' }
 };
@@ -44,7 +40,6 @@ function getStageInfo(stageName, stageId) {
   return { label: 'In Progress', status: 'active' };
 }
 
-// Extract value from GHL customFields array by field ID (primary) or key names (fallback)
 function getFieldValue(fields, { id, keys } = {}) {
   const field = fields.find(f => {
     if (id && f.id === id) return true;
@@ -62,7 +57,6 @@ function getFieldValue(fields, { id, keys } = {}) {
   return field.value ?? field.fieldValue ?? field.fieldValueArray?.[0] ?? null;
 }
 
-// Scan all fields for a value that looks like the portal URL
 function findPortalUrlByValue(fields) {
   for (const f of fields) {
     const val = f.value ?? f.fieldValue ?? f.fieldValueArray?.[0] ?? null;
@@ -240,24 +234,36 @@ export default async function handler(req, res) {
 
         if (submitterEmail.toLowerCase() !== agentEmail) return null;
 
-        // Pull portal URL from opp custom fields
-        // Try by known field ID first, then scan all field values for portal URL pattern
-        const oppFields = opp.customFields || [];
-        let portalUrl = SELLER_PORTAL_LINK_FIELD_ID
-          ? getFieldValue(oppFields, { id: SELLER_PORTAL_LINK_FIELD_ID })
-          : null;
-
-        if (!portalUrl) {
-          portalUrl = findPortalUrlByValue(oppFields);
+        // Fetch opp directly to get full custom field values
+        // (search endpoint returns field IDs only, no values)
+        let portalUrl = null;
+        try {
+          const oppDetailRes = await fetch(`${GHL_API_BASE}/opportunities/${opp.id}`, {
+            headers: {
+              'Authorization': `Bearer ${GHL_API_KEY}`,
+              'Version': GHL_API_VERSION,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (oppDetailRes.ok) {
+            const oppDetail = await oppDetailRes.json();
+            const oppFields = (oppDetail.opportunity || oppDetail).customFields || [];
+            portalUrl = findPortalUrlByValue(oppFields);
+            if (!portalUrl) {
+              console.log(`No portal URL found. Field count: ${oppFields.length}`);
+              oppFields.forEach(f => {
+                const val = f.value ?? f.fieldValue ?? f.fieldValueArray?.[0] ?? null;
+                if (val) console.log(`  Field ${f.id}: ${String(val).substring(0, 80)}`);
+              });
+            }
+          } else {
+            console.log(`Opp detail fetch failed: ${oppDetailRes.status}`);
+          }
+        } catch (e) {
+          console.log(`Opp detail fetch error: ${e.message}`);
         }
 
-        // Dump all non-null field values on matched opp to identify field IDs
         console.log(`Matched opp: ${opp.name} | Portal URL: ${portalUrl}`);
-        oppFields.forEach(f => {
-          const val = f.value ?? f.fieldValue ?? f.fieldValueArray?.[0] ?? null;
-          if (val) console.log(`  Field ${f.id}: ${val}`);
-        });
-
         return { ...opp, _portalUrl: portalUrl };
       }));
 
@@ -279,11 +285,10 @@ export default async function handler(req, res) {
       if (oppName.includes('—')) {
         address = oppName.split('—')[0].trim();
       } else if (oppName.includes(' - ')) {
-        address = oppName.split(' - ')[0].trim()
+        address = oppName.split(' - ')[0].trim();
       }
 
       const portalUrl = opp._portalUrl || null;
-
       console.log('File:', address, '| Label:', stageInfo.label, '| Portal:', portalUrl);
 
       return {
