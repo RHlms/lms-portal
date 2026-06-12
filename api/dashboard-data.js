@@ -46,6 +46,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Step 1: Fetch the logged-in contact by ID
     const contactRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -55,8 +56,7 @@ export default async function handler(req, res) {
     });
 
     if (!contactRes.ok) {
-      const errData = await contactRes.json();
-      console.error('Contact fetch failed:', JSON.stringify(errData));
+      console.error('Contact fetch failed');
       return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
     }
 
@@ -64,6 +64,7 @@ export default async function handler(req, res) {
     const contact = contactData.contact || contactData;
     const customFields = contact.customFields || [];
 
+    // Step 2: Validate token
     const tokenField = customFields.find(f =>
       f.key === 'magic_link_token' ||
       f.fieldKey === 'contact.magic_link_token' ||
@@ -78,6 +79,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
     }
 
+    // Step 3: Validate expiry
     const expiryField = customFields.find(f =>
       f.key === 'portal_login_expiry' ||
       f.fieldKey === 'contact.portal_login_expiry' ||
@@ -91,7 +93,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'This link has expired. Please request a new one.' });
     }
 
-    // Clear the token (single use)
+    // Step 4: Clear token (single use)
     await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -107,63 +109,63 @@ export default async function handler(req, res) {
       })
     });
 
-    // Get submitter email to find all agent opps
-    const submitterEmailField = customFields.find(f =>
-      f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
-    );
-    const submitterEmail = submitterEmailField
-      ? (submitterEmailField.value ?? submitterEmailField.fieldValue ?? '')
-      : contact.email;
+    // Step 5: Get agent email
+    const agentEmail = contact.email || '';
+    console.log('Agent email:', agentEmail);
 
-    // Fetch INTAKE pipeline opps by pipeline ID
-    const intakeRes = await fetch(
-      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${INTAKE_PIPELINE_ID}&limit=100`,
-      {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': GHL_API_VERSION,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    // Fetch WORKING pipeline opps by pipeline ID
-    const workingRes = await fetch(
-      `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${WORKING_PIPELINE_ID}&limit=100`,
-      {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': GHL_API_VERSION,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    let allOpps = [];
-
-    if (intakeRes.ok) {
-      const intakeData = await intakeRes.json();
-      allOpps = allOpps.concat(intakeData.opportunities || []);
-    }
-    if (workingRes.ok) {
-      const workingData = await workingRes.json();
-      allOpps = allOpps.concat(workingData.opportunities || []);
-    }
-
-    // Filter to opps belonging to this agent by fs_submitter_email
-    const agentEmail = submitterEmail.toLowerCase();
-    const opportunities = allOpps.filter(opp => {
-      const fields = opp.contact?.customFields || [];
-      const emailField = fields.find(f =>
-        f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
-      );
-      const val = emailField ? (emailField.value ?? emailField.fieldValue ?? '') : '';
-      return val.toLowerCase() === agentEmail;
+    // Step 6: Search for all seller contacts submitted by this agent
+    const sellerSearchRes = await fetch(`${GHL_API_BASE}/contacts/search`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Version': GHL_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        locationId: GHL_LOCATION_ID,
+        filters: [{ field: 'fs_submitter_email', operator: 'eq', value: agentEmail }],
+        pageLimit: 100
+      })
     });
 
-    console.log(`Found ${opportunities.length} opps for agent ${agentEmail}`);
+    let sellerContactIds = [];
 
-    // Format files
+    if (sellerSearchRes.ok) {
+      const sellerData = await sellerSearchRes.json();
+      const sellers = sellerData.contacts || [];
+      sellerContactIds = sellers.map(s => s.id);
+      console.log(`Found ${sellers.length} seller contacts for agent ${agentEmail}`);
+    }
+
+    // Always include the logged-in contact's own opps too
+    if (!sellerContactIds.includes(contactId)) {
+      sellerContactIds.push(contactId);
+    }
+
+    // Step 7: Fetch opps for each seller contact from INTAKE + WORKING pipelines
+    const oppPromises = sellerContactIds.map(cid =>
+      fetch(`${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${cid}&limit=50`, {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }).then(r => r.ok ? r.json() : { opportunities: [] })
+        .then(d => d.opportunities || [])
+    );
+
+    const oppResults = await Promise.all(oppPromises);
+    const allOpps = oppResults.flat();
+
+    // Filter to INTAKE and WORKING pipelines only
+    const opportunities = allOpps.filter(opp =>
+      opp.pipelineId === INTAKE_PIPELINE_ID ||
+      opp.pipelineId === WORKING_PIPELINE_ID
+    );
+
+    console.log(`Found ${opportunities.length} pipeline opps across ${sellerContactIds.length} contacts`);
+
+    // Step 8: Format files
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || '';
       const stageInfo = getStageInfo(stageName);
@@ -171,7 +173,6 @@ export default async function handler(req, res) {
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
 
-      // Parse address from opp name: "595 Trelago Way #102 — Ricardos - 2026"
       const oppName = opp.name || '';
       let address = oppName;
       if (oppName.includes('—')) {
@@ -187,7 +188,7 @@ export default async function handler(req, res) {
       );
       const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
 
-      console.log('Opp:', oppName, '| Stage raw:', stageName, '| Stage label:', stageInfo.label);
+      console.log('Opp:', oppName, '| Stage:', stageName, '| Label:', stageInfo.label);
 
       return {
         id: opp.id,
