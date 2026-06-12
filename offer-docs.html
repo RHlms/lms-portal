@@ -28,7 +28,6 @@
       min-height: 100vh;
       padding-bottom: 80px;
     }
-
     .header {
       background: rgba(255,255,255,0.97);
       border-bottom: 1px solid var(--navy-3);
@@ -41,7 +40,6 @@
       backdrop-filter: blur(12px);
     }
     .logo img { height: 80px; width: auto; border-radius: 6px; }
-
     .progress-strip {
       background: #2d637d;
       color: #fff;
@@ -52,9 +50,7 @@
       padding: 8px 16px;
       letter-spacing: 0.5px;
     }
-
     .main { max-width: 720px; margin: 0 auto; padding: 32px 20px 0; }
-
     .state-screen { text-align: center; padding: 80px 20px; }
     .spinner {
       width: 40px; height: 40px;
@@ -67,7 +63,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .state-screen h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
     .state-screen p  { font-size:14px; color:var(--muted); line-height:1.6; }
-
     .intro-card {
       background: #fff;
       border: 2px solid var(--teal);
@@ -108,8 +103,6 @@
     .file-ref-label { font-size:11px; font-weight:700; font-family:'Montserrat',sans-serif; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px; }
     .file-ref-value { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:var(--navy); }
     .intro-note { font-size:13px; color:var(--muted); line-height:1.6; }
-    .intro-note strong { color:var(--navy); }
-
     .upload-card {
       background: #fff;
       border: 1.5px solid var(--teal-border);
@@ -142,11 +135,7 @@
       gap: 10px;
     }
     .doc-icon { font-size: 18px; }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
     .upload-status {
       font-family: 'Montserrat', sans-serif;
       font-size: 11px;
@@ -157,7 +146,6 @@
     }
     .status-pending { background: rgba(0,168,198,0.12); color: var(--teal); }
     .status-done    { background: var(--success-dim); color: var(--success); }
-
     .toggle-btn {
       font-size: 11px;
       font-family: 'Montserrat', sans-serif;
@@ -176,9 +164,7 @@
     .toggle-btn.unmark { border-color: var(--dim); color: var(--dim); }
     .toggle-btn.unmark:hover { background: rgba(122,154,181,0.1); }
     .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
     .upload-card-body { padding: 18px 22px; }
-
     .upload-zone {
       border: 2px dashed var(--navy-3);
       border-radius: 10px;
@@ -200,11 +186,36 @@
     .upload-zone-icon  { font-size: 28px; margin-bottom: 8px; }
     .upload-zone-label { font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700; color:var(--muted); margin-bottom:4px; }
     .upload-zone-sub   { font-size:11px; color:var(--dim); }
-
     .upload-progress { display:none; margin-top:12px; font-size:13px; color:var(--muted); text-align:center; }
     .upload-success  { display:none; margin-top:12px; background:var(--success-dim); border:1px solid rgba(34,197,94,0.3); border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; color:var(--success); text-align:center; }
     .upload-error    { display:none; margin-top:12px; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; font-size:13px; color:var(--danger); text-align:center; }
-
+    .misc-card {
+      background: #fff;
+      border: 1.5px solid var(--teal-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,168,198,0.07);
+    }
+    .misc-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      background: var(--teal-dim);
+      border-bottom: 1px solid var(--teal-border);
+    }
+    .misc-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .misc-card-body { padding: 18px 22px; }
+    .misc-card-desc { font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.5; }
     .summary-card {
       background: #fff;
       border: 2px solid var(--teal);
@@ -215,9 +226,7 @@
     }
     .summary-card h3 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:16px; color:var(--navy); margin-bottom:6px; }
     .summary-card p  { font-size:13px; color:var(--muted); line-height:1.7; }
-
     .footer { text-align:center; margin-top:48px; font-size:12px; color:var(--dim); line-height:1.7; }
-
     @media (max-width:480px) {
       .main { padding:20px 14px 0; }
       .upload-card-body { padding:14px; }
@@ -235,18 +244,15 @@
 <div class="progress-strip">OFFER DOCUMENT UPLOAD — PLEASE SUBMIT ALL REQUIRED DOCUMENTS</div>
 
 <main class="main" id="app">
-
   <div class="state-screen" id="loading-state">
     <div class="spinner"></div>
     <h2>Loading your upload portal…</h2>
     <p>Retrieving your file information securely.</p>
   </div>
-
   <div class="state-screen" id="error-state" style="display:none">
     <h2>Link Not Found</h2>
     <p>This link may be invalid or expired.<br/>Contact us at <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a></p>
   </div>
-
   <div id="docs-content" style="display:none">
     <div class="intro-card">
       <div class="intro-header">
@@ -261,12 +267,42 @@
             <div class="file-ref-value" id="file-ref-display">—</div>
           </div>
         </div>
-        <div style="background:#fff3cd;border:1.5px solid #f0a500;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;"><span style="font-size:20px;line-height:1">⚠️</span><div><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#7a4f00;margin-bottom:4px;">SUBMIT DOCUMENTS SEPARATELY</div><div style="font-size:13px;color:#7a4f00;line-height:1.5;">Do not combine documents into one PDF. Each document must be uploaded as its own separate file.</div></div></div>
+        <div style="background:#fff3cd;border:1.5px solid #f0a500;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:20px;line-height:1">⚠️</span>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#7a4f00;margin-bottom:4px;">SUBMIT DOCUMENTS SEPARATELY</div>
+            <div style="font-size:13px;color:#7a4f00;line-height:1.5;">Do not combine documents into one PDF. Each document must be uploaded as its own separate file.</div>
+          </div>
+        </div>
         <p class="intro-note">Each file is logged to your file immediately upon upload. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>
       </div>
     </div>
 
     <div id="upload-list"></div>
+
+    <div class="misc-card">
+      <div class="misc-card-header">
+        <div class="misc-card-title">
+          <span>📎</span> Misc. Addenda
+        </div>
+        <div class="header-right">
+          <span class="upload-status status-pending" id="status-misc">PENDING</span>
+          <button class="toggle-btn mark" id="toggle-misc" onclick="handleMiscToggle()">Mark received</button>
+        </div>
+      </div>
+      <div class="misc-card-body">
+        <p class="misc-card-desc">Upload any additional documents or addenda not listed above. Multiple files can be uploaded here.</p>
+        <div class="upload-zone" id="zone-misc">
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple onchange="handleMiscUpload(this)"/>
+          <div class="upload-zone-icon">📎</div>
+          <div class="upload-zone-label">Click to upload or drag and drop</div>
+          <div class="upload-zone-sub">Multiple files allowed — PDF, JPG, PNG, DOC, DOCX — Max 20MB each</div>
+        </div>
+        <div class="upload-progress" id="progress-misc">⏳ Uploading…</div>
+        <div class="upload-success" id="success-misc"></div>
+        <div class="upload-error" id="error-misc"></div>
+      </div>
+    </div>
 
     <div class="summary-card">
       <h3>Questions or Issues?</h3>
@@ -291,11 +327,10 @@
     { id: 'buyer_disclosure',  label: 'LMS Buyer Disclosure',                   icon: '📑', required: true },
     { id: 'ss_addendum_la',    label: 'SS Addendum to Listing Agreement',       icon: '📝', required: true },
     { id: 'proof_of_funds',    label: 'Buyer Proof of Funds / Approval Letter', icon: '💰', required: true },
-    { id: 'misc_addenda',      label: 'Misc. Addenda',                          icon: '📎', required: false },
   ];
 
-  let oppId        = null;
-  let docStatus    = {};
+  let oppId = null;
+  let docStatus = {};
   let staffUnlocked = false;
 
   async function hashPin(pin) {
@@ -343,6 +378,10 @@
       document.getElementById('loading-state').style.display  = 'none';
       document.getElementById('docs-content').style.display   = 'block';
       renderUploadCards();
+
+      if (docStatus['misc_addenda']) {
+        applyMiscStatus(true);
+      }
     } catch (e) {
       showError();
     }
@@ -383,7 +422,7 @@
               <div class="upload-zone-sub">PDF, JPG, PNG, DOC, DOCX — Max 20MB</div>
             </div>
             <div class="upload-progress" id="progress-${doc.id}">⏳ Uploading…</div>
-            <div class="upload-success"  id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
+            <div class="upload-success" id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
               ${received ? '✅ Document received and logged to your file.' : ''}
             </div>
             <div class="upload-error" id="error-${doc.id}"></div>
@@ -397,7 +436,6 @@
     const current = docStatus[docId] ?? false;
     const next    = !current;
     btn.disabled  = true;
-
     try {
       const res  = await fetch('/api/offer-checklist', {
         method:  'POST',
@@ -406,14 +444,60 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Update failed');
-
       docStatus[docId] = next;
       applyStatus(docId, next);
     } catch (err) {
-      console.error('Toggle failed:', err.message);
       alert('Could not update status. Please try again.');
     } finally {
       btn.disabled = false;
+    }
+  }
+
+  async function handleMiscToggle() {
+    const btn     = document.getElementById('toggle-misc');
+    const current = docStatus['misc_addenda'] ?? false;
+    const next    = !current;
+    btn.disabled  = true;
+    try {
+      const res  = await fetch('/api/offer-checklist', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ opp_id: oppId, item_id: 'misc_addenda', received: next })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Update failed');
+      docStatus['misc_addenda'] = next;
+      applyMiscStatus(next);
+    } catch (err) {
+      alert('Could not update status. Please try again.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function applyMiscStatus(received) {
+    const status  = document.getElementById('status-misc');
+    const toggle  = document.getElementById('toggle-misc');
+    const zone    = document.getElementById('zone-misc');
+    const success = document.getElementById('success-misc');
+    if (received) {
+      status.textContent    = 'RECEIVED';
+      status.className      = 'upload-status status-done';
+      toggle.textContent    = 'Unmark';
+      toggle.className      = 'toggle-btn unmark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'none';
+      success.textContent   = '✅ Documents received and logged to your file.';
+      success.style.display = 'block';
+    } else {
+      status.textContent    = 'PENDING';
+      status.className      = 'upload-status status-pending';
+      toggle.textContent    = 'Mark received';
+      toggle.className      = 'toggle-btn mark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'block';
+      success.textContent   = '';
+      success.style.display = 'none';
     }
   }
 
@@ -423,7 +507,6 @@
     const toggle  = document.getElementById(`toggle-${docId}`);
     const zone    = document.getElementById(`zone-${docId}`);
     const success = document.getElementById(`success-${docId}`);
-
     if (received) {
       card.classList.add('done');
       status.textContent    = 'RECEIVED';
@@ -450,34 +533,60 @@
   async function handleUpload(docId, input) {
     const file = input.files[0];
     if (!file) return;
-
     const zone     = document.getElementById(`zone-${docId}`);
     const progress = document.getElementById(`progress-${docId}`);
     const success  = document.getElementById(`success-${docId}`);
     const error    = document.getElementById(`error-${docId}`);
-
     success.style.display  = 'none';
     error.style.display    = 'none';
     zone.style.display     = 'none';
     progress.style.display = 'block';
-
     const formData = new FormData();
     formData.append('opp_id',  oppId);
     formData.append('item_id', docId);
     formData.append('file',    file);
-
     try {
       const res  = await fetch('/api/offer-upload', { method: 'POST', body: formData });
       const data = await res.json();
-
       progress.style.display = 'none';
-
       if (data.success) {
         docStatus[docId] = true;
         applyStatus(docId, true);
       } else {
         throw new Error(data.error || 'Upload failed');
       }
+    } catch (err) {
+      progress.style.display = 'none';
+      zone.style.display     = 'block';
+      error.textContent      = `❌ ${err.message} — Please try again or email documents@shortsalestart.com`;
+      error.style.display    = 'block';
+    }
+  }
+
+  async function handleMiscUpload(input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+    const zone     = document.getElementById('zone-misc');
+    const progress = document.getElementById('progress-misc');
+    const success  = document.getElementById('success-misc');
+    const error    = document.getElementById('error-misc');
+    success.style.display  = 'none';
+    error.style.display    = 'none';
+    zone.style.display     = 'none';
+    progress.style.display = 'block';
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('opp_id',  oppId);
+        formData.append('item_id', 'misc_addenda');
+        formData.append('file',    file);
+        const res  = await fetch('/api/offer-upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Upload failed');
+      }
+      progress.style.display = 'none';
+      docStatus['misc_addenda'] = true;
+      applyMiscStatus(true);
     } catch (err) {
       progress.style.display = 'none';
       zone.style.display     = 'block';
