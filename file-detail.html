@@ -95,16 +95,16 @@ function pillOrBtn(received, label, href) {
 
 function renderOfferPanel(d, num) {
   const isOne = num === 1;
-  const oifReceived     = isOne ? d.oifReceived     : d.oif2Received;
-  const docsReceived    = isOne ? d.offerDocsReceived : d.offerDocs2Received;
-  const miscReceived    = isOne ? d.offer1MiscReceived : d.offer2MiscReceived;
-  const oifUrl          = isOne
+  const oifReceived  = isOne ? d.oifReceived      : d.oif2Received;
+  const docsReceived = isOne ? d.offerDocsReceived : d.offerDocs2Received;
+  const miscReceived = isOne ? d.offer1MiscReceived : d.offer2MiscReceived;
+  const oifUrl  = isOne
     ? `https://documents.shortsalestart.com/offer/${oppId}`
     : `https://documents.shortsalestart.com/offer/${oppId}?offer=2`;
-  const docsUrl         = isOne
+  const docsUrl = isOne
     ? `https://documents.shortsalestart.com/offer-docs/${oppId}`
     : `https://documents.shortsalestart.com/offer-docs-2/${oppId}`;
-  const miscUrl         = isOne
+  const miscUrl = isOne
     ? `https://documents.shortsalestart.com/offer-docs/${oppId}`
     : `https://documents.shortsalestart.com/offer-docs-2/${oppId}`;
 
@@ -135,11 +135,11 @@ function renderOfferPanel(d, num) {
 function renderBuyer(d, num) {
   const isOne = num === 1;
   const ba = {
-    name:      isOne ? d.ba1Name      : d.ba2Name,
-    brokerage: isOne ? d.ba1Brokerage : d.ba2Brokerage,
-    phone:     isOne ? d.ba1Phone     : d.ba2Phone,
-    email:     isOne ? d.ba1Email     : d.ba2Email,
-    bName:     isOne ? d.buyer1Name   : d.buyer2Name,
+    name:      isOne ? d.ba1Name       : d.ba2Name,
+    brokerage: isOne ? d.ba1Brokerage  : d.ba2Brokerage,
+    phone:     isOne ? d.ba1Phone      : d.ba2Phone,
+    email:     isOne ? d.ba1Email      : d.ba2Email,
+    bName:     isOne ? d.buyer1Name    : d.buyer2Name,
     contact:   isOne ? d.buyer1Contact : d.buyer2Contact,
     financing: isOne ? d.buyer1Financing : d.buyer2Financing
   };
@@ -283,12 +283,9 @@ function render(d) {
       <div class="section-header">
         <span class="section-title">Section 6 &mdash; Buyer / Buyer Agent</span>
       </div>
-      <div class="toggle-bar">
-        <button class="toggle-btn active" onclick="switchBuyer(1,this)">Buyer 1</button>
-        <button class="toggle-btn" onclick="switchBuyer(2,this)">Buyer 2</button>
-      </div>
-      <div id="buyerPanel1">${renderBuyer(window._fd, 1)}</div>
-      <div id="buyerPanel2" style="display:none">${renderBuyer(window._fd, 2)}</div>
+      ${renderBuyer(window._fd, 1)}
+      <div class="divider"></div>
+      ${renderBuyer(window._fd, 2)}
     </div>
 
     <div class="section">
@@ -336,13 +333,6 @@ function switchOffer(num) {
   document.getElementById('offerPanel2').style.display = num === 2 ? 'block' : 'none';
   document.getElementById('offerTab1').classList.toggle('active', num === 1);
   document.getElementById('offerTab2').classList.toggle('active', num === 2);
-}
-
-function switchBuyer(num, btn) {
-  document.getElementById('buyerPanel1').style.display = num === 1 ? 'block' : 'none';
-  document.getElementById('buyerPanel2').style.display = num === 2 ? 'block' : 'none';
-  btn.closest('.toggle-bar').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
 }
 
 function switchBPO(num, btn) {
