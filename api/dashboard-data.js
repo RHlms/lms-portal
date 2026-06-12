@@ -40,17 +40,21 @@ function getStageInfo(stageName, stageId) {
   return { label: 'In Progress', status: 'active' };
 }
 
-// Extract a field value from a GHL customFields array by key name(s)
-// Handles all known GHL response formats: value, fieldValue, fieldValueArray
-function getFieldValue(fields, ...keys) {
-  const field = fields.find(f =>
-    keys.some(k =>
-      f.key === k ||
-      f.fieldKey === `contact.${k}` ||
-      f.fieldKey === `opportunity.${k}` ||
-      f.fieldKey === k
-    )
-  );
+// Extract value from GHL customFields array — matches by field ID, key, or fieldKey
+// Handles all GHL response formats: value, fieldValue, fieldValueArray
+function getFieldValue(fields, { id, keys } = {}) {
+  const field = fields.find(f => {
+    if (id && f.id === id) return true;
+    if (keys) {
+      return keys.some(k =>
+        f.key === k ||
+        f.fieldKey === `contact.${k}` ||
+        f.fieldKey === `opportunity.${k}` ||
+        f.fieldKey === k
+      );
+    }
+    return false;
+  });
   if (!field) return null;
   return field.value ?? field.fieldValue ?? field.fieldValueArray?.[0] ?? null;
 }
@@ -194,7 +198,7 @@ export default async function handler(req, res) {
     // Log opp custom field keys from first opp to help debug portal URL field name
     if (allOpps.length > 0) {
       const sampleFields = allOpps[0].customFields || [];
-      console.log('Sample opp custom field keys:', sampleFields.map(f => f.key || f.fieldKey).join(', '));
+      console.log('Sample opp custom field keys:', sampleFields.map(f => `${f.id}=${f.key||f.fieldKey}`).join(', '));
     }
 
     const BATCH_SIZE = 5;
@@ -220,16 +224,23 @@ export default async function handler(req, res) {
         const seller = sellerData.contact || sellerData;
         const sellerFields = seller.customFields || [];
 
-        const submitterEmail = getFieldValue(sellerFields, 'fs_submitter_email') || '';
+        // Match fs_submitter_email by field ID (most reliable) AND key name as fallback
+        const submitterEmail = getFieldValue(sellerFields, {
+          id: FS_SUBMITTER_EMAIL_FIELD_ID,
+          keys: ['fs_submitter_email']
+        }) || '';
+
+        console.log(`Opp: ${opp.name} | submitter: ${submitterEmail} | agent: ${agentEmail}`);
+
         if (submitterEmail.toLowerCase() !== agentEmail) return null;
 
         // Pull portal URL from the opportunity's own custom fields
         // Field key is seller_portal_link (set by workflow Update Opportunity node)
         const oppFields = opp.customFields || [];
-        const portalUrl = getFieldValue(oppFields, 'seller_portal_link', 'portal_url');
+        const portalUrl = getFieldValue(oppFields, { keys: ['seller_portal_link', 'portal_url'] });
 
         console.log(`Matched opp: ${opp.name} | Portal URL: ${portalUrl}`);
-        console.log(`  Opp field keys: ${oppFields.map(f => f.key || f.fieldKey).join(', ')}`);
+        console.log(`  Opp field keys: ${oppFields.map(f => `${f.id}=${f.key||f.fieldKey}`).join(', ')}`);
 
         return { ...opp, _portalUrl: portalUrl };
       }));
