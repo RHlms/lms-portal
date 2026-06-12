@@ -33,6 +33,9 @@
   .toggle-bar { display: flex; margin-bottom: 16px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; width: fit-content; }
   .toggle-btn { padding: 6px 20px; font-size: 13px; font-weight: 600; border: none; background: #f4f4f4; color: #888; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all .15s; }
   .toggle-btn.active { background: #2d637d; color: #fff; }
+  .toggle-bar-large { display: flex; margin-bottom: 18px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; width: 100%; }
+  .toggle-btn-large { flex: 1; padding: 10px 20px; font-size: 13px; font-weight: 700; border: none; background: #f4f4f4; color: #888; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all .15s; text-transform: uppercase; letter-spacing: .05em; }
+  .toggle-btn-large.active { background: #2d637d; color: #fff; }
   .loading { text-align: center; padding: 3rem; color: #888; font-size: 15px; }
   .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #2d637d; text-decoration: none; font-weight: 600; margin-bottom: 1rem; font-family: 'Montserrat', sans-serif; }
   .back-link:hover { text-decoration: underline; }
@@ -48,7 +51,7 @@
 </head>
 <body>
 <div class="page-wrap">
-  <a href="javascript:history.back()" class="back-link">&#8592; Back to Dashboard</a>
+  <a href="https://documents.shortsalestart.com/dashboard" class="back-link">&#8592; Back to Dashboard</a>
   <div id="loadingState" class="loading">Loading file...</div>
   <div id="fileDetail" style="display:none"></div>
 </div>
@@ -56,7 +59,7 @@
 const oppId = window.location.pathname.split('/file-detail/')[1]?.split('?')[0];
 
 function v(val) {
-  return (val && String(val).trim()) ? String(val).trim() : null;
+  return (val && String(val).trim() && String(val).trim().toLowerCase() !== 'n/a') ? String(val).trim() : null;
 }
 
 function field(label, value) {
@@ -81,15 +84,63 @@ function intakeStatus(d) {
   return '<span class="status-pill status-incomplete">Action Required</span>';
 }
 
+function pillOrBtn(received, label, href) {
+  return received
+    ? `<span class="status-pill status-complete">Complete</span>`
+    : `<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+         <span class="status-pill status-incomplete">Incomplete</span>
+         <a href="${href}" target="_blank" class="portal-action-btn teal">${label}</a>
+       </div>`;
+}
+
+function renderOfferPanel(d, num) {
+  const isOne = num === 1;
+  const oifReceived     = isOne ? d.oifReceived     : d.oif2Received;
+  const docsReceived    = isOne ? d.offerDocsReceived : d.offerDocs2Received;
+  const miscReceived    = isOne ? d.offer1MiscReceived : d.offer2MiscReceived;
+  const oifUrl          = isOne
+    ? `https://documents.shortsalestart.com/offer/${oppId}`
+    : `https://documents.shortsalestart.com/offer/${oppId}?offer=2`;
+  const docsUrl         = isOne
+    ? `https://documents.shortsalestart.com/offer-docs/${oppId}`
+    : `https://documents.shortsalestart.com/offer-docs-2/${oppId}`;
+  const miscUrl         = isOne
+    ? `https://documents.shortsalestart.com/offer-docs/${oppId}`
+    : `https://documents.shortsalestart.com/offer-docs-2/${oppId}`;
+
+  return `
+    <div class="portal-action" style="margin-bottom:10px">
+      <div>
+        <div class="field-label" style="margin-bottom:2px">Offer Intake Form</div>
+        <span class="portal-action-text">Submit offer intake details</span>
+      </div>
+      ${pillOrBtn(oifReceived, 'Open →', oifUrl)}
+    </div>
+    <div class="portal-action" style="margin-bottom:10px">
+      <div>
+        <div class="field-label" style="margin-bottom:2px">Offer Documents</div>
+        <span class="portal-action-text">Upload contract & supporting docs</span>
+      </div>
+      ${pillOrBtn(docsReceived, 'Upload →', docsUrl)}
+    </div>
+    <div class="portal-action" style="margin-bottom:0">
+      <div>
+        <div class="field-label" style="margin-bottom:2px">Misc. Addenda</div>
+        <span class="portal-action-text">Upload any additional documents</span>
+      </div>
+      ${pillOrBtn(miscReceived, 'Upload →', miscUrl)}
+    </div>`;
+}
+
 function renderBuyer(d, num) {
   const isOne = num === 1;
   const ba = {
-    name: isOne ? d.ba1Name : d.ba2Name,
+    name:      isOne ? d.ba1Name      : d.ba2Name,
     brokerage: isOne ? d.ba1Brokerage : d.ba2Brokerage,
-    phone: isOne ? d.ba1Phone : d.ba2Phone,
-    email: isOne ? d.ba1Email : d.ba2Email,
-    bName: isOne ? d.buyer1Name : d.buyer2Name,
-    contact: isOne ? d.buyer1Contact : d.buyer2Contact,
+    phone:     isOne ? d.ba1Phone     : d.ba2Phone,
+    email:     isOne ? d.ba1Email     : d.ba2Email,
+    bName:     isOne ? d.buyer1Name   : d.buyer2Name,
+    contact:   isOne ? d.buyer1Contact : d.buyer2Contact,
     financing: isOne ? d.buyer1Financing : d.buyer2Financing
   };
   return `
@@ -110,7 +161,7 @@ function renderBuyer(d, num) {
 }
 
 function renderBPO(d, num) {
-  const date = num === 1 ? d.bpo1Date : d.bpo2Date;
+  const date   = num === 1 ? d.bpo1Date   : d.bpo2Date;
   const amount = num === 1 ? d.bpo1Amount : d.bpo2Amount;
   return `
     <div class="field-grid">
@@ -156,30 +207,12 @@ function render(d) {
       <div class="section-header">
         <span class="section-title">Section 2 &mdash; Listing Agent Offer Intake</span>
       </div>
-      <div class="portal-action" style="margin-bottom:10px">
-        <div>
-          <div class="field-label" style="margin-bottom:2px">Offer Intake Form</div>
-          <span class="portal-action-text">Submit offer intake details</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          ${d.oifReceived
-            ? `<span class="status-pill status-complete">Complete</span>`
-            : `<span class="status-pill status-incomplete">Incomplete</span><a href="https://documents.shortsalestart.com/offer/${oppId}" target="_blank" class="portal-action-btn teal">Open →</a>`
-          }
-        </div>
+      <div class="toggle-bar-large">
+        <button class="toggle-btn-large active" id="offerTab1" onclick="switchOffer(1)">Offer #1</button>
+        <button class="toggle-btn-large" id="offerTab2" onclick="switchOffer(2)">Offer #2</button>
       </div>
-      <div class="portal-action" style="margin-bottom:0">
-        <div>
-          <div class="field-label" style="margin-bottom:2px">Offer Documents</div>
-          <span class="portal-action-text">Upload contract & supporting docs</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          ${d.offerDocsReceived
-            ? `<span class="status-pill status-complete">Complete</span>`
-            : `<span class="status-pill status-incomplete">Incomplete</span><a href="https://documents.shortsalestart.com/offer-docs/${oppId}" target="_blank" class="portal-action-btn teal">Upload →</a>`
-          }
-        </div>
-      </div>
+      <div id="offerPanel1">${renderOfferPanel(window._fd, 1)}</div>
+      <div id="offerPanel2" style="display:none">${renderOfferPanel(window._fd, 2)}</div>
     </div>
 
     <div class="section">
@@ -296,6 +329,13 @@ function render(d) {
         </div>
       </div>
     </div>`;
+}
+
+function switchOffer(num) {
+  document.getElementById('offerPanel1').style.display = num === 1 ? 'block' : 'none';
+  document.getElementById('offerPanel2').style.display = num === 2 ? 'block' : 'none';
+  document.getElementById('offerTab1').classList.toggle('active', num === 1);
+  document.getElementById('offerTab2').classList.toggle('active', num === 2);
 }
 
 function switchBuyer(num, btn) {
