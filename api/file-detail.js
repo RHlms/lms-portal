@@ -1,21 +1,60 @@
 const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
+const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
+
+const STAGE_MAP = {
+  '1 - START':                        'Seller Intake',
+  '2 - SELLER INTAKE - PORTAL':       'Seller Intake',
+  '3 - SELLER INTAKE — CHASE':        'Seller Intake',
+  '4 - SELLER INTAKE — FILE REVIEW':  'Seller Intake',
+  '🔴 RESET STAGE🔴':                 'On Hold',
+  '5 - 3PA ⚠️':                       'Third-Party Authorization',
+  '6 - 3PA ✅ (50)':                  'Third-Party Authorization',
+  '7 - NO BUYER ⚠️':                  'Buyer Needed',
+  '8 - BUYER ✅ - OIF ⚠️':            'Offer Intake',
+  '9 - OIF ✅':                       'Offer Intake',
+  'CLOSED-W':                         'Closed — Won',
+  'CLOSED-L':                         'Closed — Lost',
+};
+
+async function resolveStageName(stageId) {
+  if (!stageId) return 'In Progress';
+  try {
+    const res = await fetch(
+      `${GHL_API_BASE}/opportunities/pipelines?locationId=${GHL_LOCATION_ID}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    if (!res.ok) return 'In Progress';
+    const data = await res.json();
+    for (const pipeline of (data.pipelines || [])) {
+      for (const stage of (pipeline.stages || [])) {
+        if (stage.id === stageId) {
+          return STAGE_MAP[stage.name] || stage.name || 'In Progress';
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Stage resolve error:', e.message);
+  }
+  return 'In Progress';
+}
 
 const FIELD_IDS = {
-  // Header
   propertyAddress:      'Atcucc8y9Hf9ArNApUZk',
   county:               'yAAomstPf9mwehTfeuOu',
   fileStartDate:        '7jBDrzimFPUtoW0i1VWW',
   sellerPortalLink:     'V86O0Pm9e3h22WOqwAtZ',
-
-  // Section 1 — Seller Intake checkboxes
   saSignedField:        'zz7h15qZtuFQaaO0RxXb',
   sifSubmitted:         'niQheTBXre1INzFVcJuE',
   thirdPartyReceived:   'QhhsOFjxPwR3OaSwMf9z',
   mortgageReceived:     'dEjpisP9oE4vEJ6N6pAb',
-
-  // Section 2 — Seller Info
   sellerName:           'WSR9Cpsfxqm2CVDdZ9lI',
   sellerPhone:          '0byvyfgrnqdxDOcYMF2n',
   sellerEmail:          'hTRjaMlGHBQD6WTOSGu0',
@@ -23,8 +62,6 @@ const FIELD_IDS = {
   coBorrowerName:       'lsBEl4AhOR08zO8l0Zy8',
   coBorrowerPhone:      'j5VJkYW3uMevhWnLgd7r',
   coBorrowerEmail:      'dEhUs64tRyCtxyGJLUFw',
-
-  // Section 3 — Creditors
   lender1Name:          'lhmdlGuwy70Ken1Kykqw',
   lender1Balance:       'pUDqC9WupJL1t5UG5pa6',
   lender2Name:          'DNzdneHpFqHyb2XIWCXA',
@@ -36,14 +73,10 @@ const FIELD_IDS = {
   hoa2Balance:          'owy3mu8I37KYBf2KgLmB',
   hoa3Name:             '9UcGhLnhW3u3ewpbxUhV',
   hoa3Balance:          'KrrZJ32NpPMeJCkTVyLy',
-
-  // Section 4 — Listing Agent
   laName:               'jlHmRaAYG7VTFuBgWa2H',
   laBrokerage:          'AlzCMYGaCpxHbMiwhKUD',
   laPhone:              'ioS9DjqTjnWZR1yNbaV6',
   laEmail:              'v5DAv0lvEkltWdJaXL83',
-
-  // Section 5 — Buyer Agent 1
   ba1Name:              'onOszXR3tEcwDkS9O8CL',
   ba1Brokerage:         'cCEriXPIe4UyqMNsgsb9',
   ba1Phone:             'owYOQ1Vvf1h9utEVbzN2',
@@ -51,8 +84,6 @@ const FIELD_IDS = {
   buyer1Name:           'DolRINj2IZIibipmWnSu',
   buyer1Contact:        'VqmpRbTlmBBnpzypiUZS',
   buyer1Financing:      'F9GaZqk6ShdyWgSEG1zC',
-
-  // Section 5 — Buyer Agent 2
   ba2Name:              'hjWX6pmjRuo16NnZaMAt',
   ba2Brokerage:         '0Miv48c7NvosYsygg757',
   ba2Phone:             'NTWs3Lb4VBExoETBtVws',
@@ -60,14 +91,10 @@ const FIELD_IDS = {
   buyer2Name:           'nphcEWGHjhcc5Zsy8r1B',
   buyer2Contact:        'eeEEKD6huxHJ7r7OGo8d',
   buyer2Financing:      'OCwADXhV6rphC7GGkoye',
-
-  // Section 6 — BPO
   bpo1Date:             '8RDEH9loJ5GWT2R335w3',
   bpo1Amount:           'VrB2e426VGJS4Mzovxj6',
   bpo2Date:             'A765x4pRUuPUKKWbCU3K',
   bpo2Amount:           '0ZweMSpZLvGS5LLhA5L6',
-
-  // Section 7 — Closing Info
   titleCompany:         'gGhn9hBkPCiXsBOLWTLS',
   titleAgent:           'Kr35FZgNGOpSnkykgCQ3',
   titlePhone:           'cQ2mfa2LWYuMKSoJMZQw',
@@ -123,9 +150,11 @@ export default async function handler(req, res) {
       ? Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
       : null;
 
+    const stageName = await resolveStageName(opp.pipelineStageId);
+
     const data = {
       oppName:              opp.name || '',
-      stageName:            opp.pipelineStageId || null,
+      stageName,
       daysActive,
       propertyAddress:      getById(fields, FIELD_IDS.propertyAddress),
       county:               getById(fields, FIELD_IDS.county),
