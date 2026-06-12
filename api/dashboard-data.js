@@ -137,7 +137,6 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
-    // For each opp fetch seller contact and match by fs_submitter_email field ID
     const oppChecks = await Promise.all(allOpps.map(async opp => {
       const sellerContactId = opp.contact?.id;
       if (!sellerContactId) return null;
@@ -166,8 +165,6 @@ export default async function handler(req, res) {
         ? (submitterField.value ?? submitterField.fieldValue ?? '').toLowerCase()
         : '';
 
-      console.log(`Opp: ${opp.name} | Submitter: ${submitterEmail}`);
-
       if (submitterEmail === agentEmail) return opp;
       return null;
     }));
@@ -176,6 +173,8 @@ export default async function handler(req, res) {
     console.log(`Matched ${opportunities.length} opps for agent ${agentEmail}`);
 
     const files = opportunities.map(opp => {
+      console.log('pipelineStage full:', JSON.stringify(opp.pipelineStage));
+
       const stageName = opp.pipelineStage?.name || '';
       const stageInfo = getStageInfo(stageName);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
