@@ -161,14 +161,20 @@ function render(d) {
           <div class="field-label" style="margin-bottom:2px">Offer Intake Form</div>
           <span class="portal-action-text">Submit offer intake details</span>
         </div>
-        <a href="https://documents.shortsalestart.com/offer/${oppId}" target="_blank" class="portal-action-btn teal">Open →</a>
+        ${d.oifReceived
+          ? `<span class="status-pill status-complete">Complete</span>`
+          : `<a href="https://documents.shortsalestart.com/offer/${oppId}" target="_blank" class="portal-action-btn teal">Open →</a>`
+        }
       </div>
       <div class="portal-action" style="margin-bottom:0">
         <div>
           <div class="field-label" style="margin-bottom:2px">Offer Documents</div>
           <span class="portal-action-text">Upload contract & supporting docs</span>
         </div>
-        <a href="https://documents.shortsalestart.com/offer-docs/${oppId}" target="_blank" class="portal-action-btn teal">Upload →</a>
+        ${d.offerDocsReceived
+          ? `<span class="status-pill status-complete">Complete</span>`
+          : `<a href="https://documents.shortsalestart.com/offer-docs/${oppId}" target="_blank" class="portal-action-btn teal">Upload →</a>`
+        }
       </div>
     </div>
 
