@@ -7,6 +7,10 @@ const INTAKE_PIPELINE_ID = 'Zkblq5FENcSyXWKX5jZw';
 const WORKING_PIPELINE_ID = 'I3jlj4eYesOL3niHBXD6';
 const FS_SUBMITTER_EMAIL_FIELD_ID = '41En9NacCj60yb7ykcTV';
 
+const STAGE_ID_MAP = {
+  '51ff778c-a7ca-4af5-8840-45e5c9fdaabe': { label: 'Seller Intake', status: 'active' }
+};
+
 const STAGE_MAP = {
   '1 - START':                        { label: 'Seller Intake', status: 'active' },
   '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake', status: 'active' },
@@ -20,11 +24,6 @@ const STAGE_MAP = {
   '9 - OIF ✅':                       { label: 'Offer Intake', status: 'active' },
   'CLOSED-W':                         { label: 'Closed — Won', status: 'closed-won' },
   'CLOSED-L':                         { label: 'Closed — Lost', status: 'closed-lost' }
-};
-
-// Hardcode the one stage ID we know, rest will be filled from API
-const STAGE_ID_MAP = {
-  '51ff778c-a7ca-4af5-8840-45e5c9fdaabe': { label: 'Seller Intake', status: 'active' }
 };
 
 function getStageInfo(stageName, stageId) {
@@ -58,8 +57,7 @@ async function fetchStageIdMap() {
       const pData = await pRes.json();
       const pipelines = pData.pipelines || [];
       pipelines.forEach(pipeline => {
-        const stages = pipeline.stages || [];
-        stages.forEach(s => {
+        (pipeline.stages || []).forEach(s => {
           if (s.id && s.name) {
             stageIdMap[s.id] = getStageInfo(s.name);
           }
@@ -67,8 +65,7 @@ async function fetchStageIdMap() {
       });
       console.log('Stage ID map built with', Object.keys(stageIdMap).length, 'stages');
     } else {
-      const errData = await pRes.json();
-      console.error('Pipeline fetch failed:', pRes.status, JSON.stringify(errData));
+      console.error('Pipeline fetch failed:', pRes.status);
     }
   } catch (e) {
     console.error('Stage map fetch error:', e.message);
@@ -212,8 +209,20 @@ export default async function handler(req, res) {
           ? (submitterField.value ?? submitterField.fieldValue ?? '').toLowerCase()
           : '';
 
-        if (submitterEmail === agentEmail) return opp;
-        return null;
+        if (submitterEmail !== agentEmail) return null;
+
+        // Grab portal URL from seller contact while we have it
+        const portalField = sellerFields.find(f =>
+          f.key === 'portal_url' ||
+          f.fieldKey === 'contact.portal_url'
+        );
+        const portalUrl = portalField
+          ? (portalField.value ?? portalField.fieldValue ?? null)
+          : null;
+
+        console.log(`Matched opp: ${opp.name} | Portal URL: ${portalUrl}`);
+
+        return { ...opp, _portalUrl: portalUrl };
       }));
 
       results.filter(Boolean).forEach(opp => matchedOpps.push(opp));
@@ -237,14 +246,9 @@ export default async function handler(req, res) {
         address = oppName.split(' - ')[0].trim();
       }
 
-      const oppFields = opp.customFields || [];
-      const portalField = oppFields.find(f =>
-        f.key === 'seller_portal_link' ||
-        f.fieldKey === 'opportunity.seller_portal_link'
-      );
-      const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
+      const portalUrl = opp._portalUrl || null;
 
-      console.log('File:', address, '| StageId:', stageId, '| Label:', stageInfo.label);
+      console.log('File:', address, '| StageId:', stageId, '| Label:', stageInfo.label, '| Portal:', portalUrl);
 
       return {
         id: opp.id,
