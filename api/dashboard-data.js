@@ -137,6 +137,7 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
+    // Filter to opps belonging to this agent
     const oppChecks = await Promise.all(allOpps.map(async opp => {
       const sellerContactId = opp.contact?.id;
       if (!sellerContactId) return null;
@@ -169,13 +170,26 @@ export default async function handler(req, res) {
       return null;
     }));
 
-    const opportunities = oppChecks.filter(Boolean);
-    console.log(`Matched ${opportunities.length} opps for agent ${agentEmail}`);
+    const matchedOpps = oppChecks.filter(Boolean);
+    console.log(`Matched ${matchedOpps.length} opps for agent ${agentEmail}`);
 
-    const files = opportunities.map(opp => {
+    // Fetch full opp details for each matched opp to get pipelineStage
+    const fullOpps = await Promise.all(matchedOpps.map(opp =>
+      fetch(`${GHL_API_BASE}/opportunities/${opp.id}`, {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.opportunity || d)
+    ));
+
+    const files = fullOpps.filter(Boolean).map(opp => {
       console.log('pipelineStage full:', JSON.stringify(opp.pipelineStage));
 
-      const stageName = opp.pipelineStage?.name || '';
+      const stageName = opp.pipelineStage?.name || opp.pipelineStage?.id || '';
       const stageInfo = getStageInfo(stageName);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
