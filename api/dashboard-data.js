@@ -5,6 +5,7 @@ const GHL_API_VERSION = '2021-07-28';
 
 const INTAKE_PIPELINE_ID = 'Zkblq5FENcSyXWKX5jZw';
 const WORKING_PIPELINE_ID = 'I3jlj4eYesOL3niHBXD6';
+const FS_SUBMITTER_EMAIL_FIELD_ID = '41En9NacCj60yb7ykcTV';
 
 const STAGE_MAP = {
   '1 - START':                        { label: 'Seller Intake', status: 'active' },
@@ -63,9 +64,9 @@ export default async function handler(req, res) {
     const customFields = contact.customFields || [];
 
     const tokenField = customFields.find(f =>
+      f.id === 'f2pXGEfkPAQ5y1anxDvJ' ||
       f.key === 'magic_link_token' ||
-      f.fieldKey === 'contact.magic_link_token' ||
-      f.id === 'f2pXGEfkPAQ5y1anxDvJ'
+      f.fieldKey === 'contact.magic_link_token'
     );
 
     const storedToken = tokenField
@@ -77,9 +78,9 @@ export default async function handler(req, res) {
     }
 
     const expiryField = customFields.find(f =>
+      f.id === 'vMe7FP4EofPYZ0nu1FhO' ||
       f.key === 'portal_login_expiry' ||
-      f.fieldKey === 'contact.portal_login_expiry' ||
-      f.id === 'vMe7FP4EofPYZ0nu1FhO'
+      f.fieldKey === 'contact.portal_login_expiry'
     );
     const expiry = expiryField
       ? parseInt(expiryField.value ?? expiryField.fieldValue ?? '0')
@@ -136,23 +137,7 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
-    // For the first opp only — log raw seller fields to find fs_submitter_email field ID
-    if (allOpps.length > 0) {
-      const firstOpp = allOpps[0];
-      const firstSellerRes = await fetch(`${GHL_API_BASE}/contacts/${firstOpp.contact?.id}`, {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': GHL_API_VERSION,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (firstSellerRes.ok) {
-        const firstSellerData = await firstSellerRes.json();
-        const firstSeller = firstSellerData.contact || firstSellerData;
-        console.log('FIRST SELLER RAW FIELDS:', JSON.stringify(firstSeller.customFields?.map(f => ({ id: f.id, key: f.key, fieldKey: f.fieldKey, value: f.value }))));
-      }
-    }
-
+    // For each opp fetch seller contact and match by fs_submitter_email field ID
     const oppChecks = await Promise.all(allOpps.map(async opp => {
       const sellerContactId = opp.contact?.id;
       if (!sellerContactId) return null;
@@ -172,6 +157,7 @@ export default async function handler(req, res) {
       const sellerFields = seller.customFields || [];
 
       const submitterField = sellerFields.find(f =>
+        f.id === FS_SUBMITTER_EMAIL_FIELD_ID ||
         f.key === 'fs_submitter_email' ||
         f.fieldKey === 'contact.fs_submitter_email'
       );
@@ -179,6 +165,8 @@ export default async function handler(req, res) {
       const submitterEmail = submitterField
         ? (submitterField.value ?? submitterField.fieldValue ?? '').toLowerCase()
         : '';
+
+      console.log(`Opp: ${opp.name} | Submitter: ${submitterEmail}`);
 
       if (submitterEmail === agentEmail) return opp;
       return null;
@@ -208,6 +196,8 @@ export default async function handler(req, res) {
         f.fieldKey === 'opportunity.seller_portal_link'
       );
       const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
+
+      console.log('File:', address, '| Stage:', stageName, '| Label:', stageInfo.label);
 
       return {
         id: opp.id,
