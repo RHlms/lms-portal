@@ -22,7 +22,13 @@ const STAGE_MAP = {
   'CLOSED-L':                         { label: 'Closed — Lost', status: 'closed-lost' }
 };
 
-function getStageInfo(stageName) {
+// Hardcode the one stage ID we know, rest will be filled from API
+const STAGE_ID_MAP = {
+  '51ff778c-a7ca-4af5-8840-45e5c9fdaabe': { label: 'Seller Intake', status: 'active' }
+};
+
+function getStageInfo(stageName, stageId) {
+  if (stageId && STAGE_ID_MAP[stageId]) return STAGE_ID_MAP[stageId];
   if (!stageName) return { label: 'In Progress', status: 'active' };
   const match = STAGE_MAP[stageName];
   if (match) return match;
@@ -36,36 +42,34 @@ function getStageInfo(stageName) {
 }
 
 async function fetchStageIdMap() {
-  const stageIdMap = {};
+  const stageIdMap = { ...STAGE_ID_MAP };
   try {
-    const [intakePipelineRes, workingPipelineRes] = await Promise.all([
-      fetch(`${GHL_API_BASE}/opportunities/pipelines/${INTAKE_PIPELINE_ID}`, {
+    const pRes = await fetch(
+      `${GHL_API_BASE}/opportunities/pipelines?locationId=${GHL_LOCATION_ID}`,
+      {
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
           'Version': GHL_API_VERSION,
           'Content-Type': 'application/json'
         }
-      }),
-      fetch(`${GHL_API_BASE}/opportunities/pipelines/${WORKING_PIPELINE_ID}`, {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': GHL_API_VERSION,
-          'Content-Type': 'application/json'
-        }
-      })
-    ]);
-
-    for (const pRes of [intakePipelineRes, workingPipelineRes]) {
-      if (pRes.ok) {
-        const pData = await pRes.json();
-        const pipeline = pData.pipeline || pData;
+      }
+    );
+    if (pRes.ok) {
+      const pData = await pRes.json();
+      const pipelines = pData.pipelines || [];
+      pipelines.forEach(pipeline => {
         const stages = pipeline.stages || [];
         stages.forEach(s => {
-          if (s.id && s.name) stageIdMap[s.id] = s.name;
+          if (s.id && s.name) {
+            stageIdMap[s.id] = getStageInfo(s.name);
+          }
         });
-      }
+      });
+      console.log('Stage ID map built with', Object.keys(stageIdMap).length, 'stages');
+    } else {
+      const errData = await pRes.json();
+      console.error('Pipeline fetch failed:', pRes.status, JSON.stringify(errData));
     }
-    console.log('Stage ID map:', JSON.stringify(stageIdMap));
   } catch (e) {
     console.error('Stage map fetch error:', e.message);
   }
@@ -145,7 +149,6 @@ export default async function handler(req, res) {
     const agentEmail = (contact.email || '').toLowerCase();
     console.log('Agent email:', agentEmail);
 
-    // Fetch pipeline stage ID map + all opps in parallel
     const [stageIdMap, intakeRes, workingRes] = await Promise.all([
       fetchStageIdMap(),
       fetch(`${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${INTAKE_PIPELINE_ID}&limit=100`, {
@@ -176,7 +179,6 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
-    // Filter to agent's opps — batch contact fetches to avoid rate limits
     const BATCH_SIZE = 5;
     const matchedOpps = [];
 
@@ -215,9 +217,6 @@ export default async function handler(req, res) {
       }));
 
       results.filter(Boolean).forEach(opp => matchedOpps.push(opp));
-
-      // Stop early once we have found matches and processed enough batches
-      // (agents typically have 2-3 files, so once found we can stop)
       if (matchedOpps.length > 0 && i > 20) break;
     }
 
@@ -225,8 +224,7 @@ export default async function handler(req, res) {
 
     const files = matchedOpps.map(opp => {
       const stageId = opp.pipelineStageId || '';
-      const stageName = stageIdMap[stageId] || opp.pipelineStage?.name || '';
-      const stageInfo = getStageInfo(stageName);
+      const stageInfo = stageIdMap[stageId] || getStageInfo('', stageId);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       const isClosed = stageInfo.status === 'closed-won' || stageInfo.status === 'closed-lost';
@@ -246,13 +244,13 @@ export default async function handler(req, res) {
       );
       const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
 
-      console.log('File:', address, '| StageId:', stageId, '| StageName:', stageName, '| Label:', stageInfo.label);
+      console.log('File:', address, '| StageId:', stageId, '| Label:', stageInfo.label);
 
       return {
         id: opp.id,
         name: oppName,
         address,
-        stageName,
+        stageName: stageInfo.label,
         stageLabel: stageInfo.label,
         stageStatus: stageInfo.status,
         daysActive,
