@@ -35,6 +35,43 @@ function getStageInfo(stageName) {
   return { label: 'In Progress', status: 'active' };
 }
 
+async function fetchStageIdMap() {
+  const stageIdMap = {};
+  try {
+    const [intakePipelineRes, workingPipelineRes] = await Promise.all([
+      fetch(`${GHL_API_BASE}/opportunities/pipelines/${INTAKE_PIPELINE_ID}`, {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }),
+      fetch(`${GHL_API_BASE}/opportunities/pipelines/${WORKING_PIPELINE_ID}`, {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      })
+    ]);
+
+    for (const pRes of [intakePipelineRes, workingPipelineRes]) {
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        const pipeline = pData.pipeline || pData;
+        const stages = pipeline.stages || [];
+        stages.forEach(s => {
+          if (s.id && s.name) stageIdMap[s.id] = s.name;
+        });
+      }
+    }
+    console.log('Stage ID map:', JSON.stringify(stageIdMap));
+  } catch (e) {
+    console.error('Stage map fetch error:', e.message);
+  }
+  return stageIdMap;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -108,7 +145,9 @@ export default async function handler(req, res) {
     const agentEmail = (contact.email || '').toLowerCase();
     console.log('Agent email:', agentEmail);
 
-    const [intakeRes, workingRes] = await Promise.all([
+    // Fetch pipeline stage ID map + all opps in parallel
+    const [stageIdMap, intakeRes, workingRes] = await Promise.all([
+      fetchStageIdMap(),
       fetch(`${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&pipeline_id=${INTAKE_PIPELINE_ID}&limit=100`, {
         headers: {
           'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -137,66 +176,56 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
-    const oppChecks = await Promise.all(allOpps.map(async opp => {
-      const sellerContactId = opp.contact?.id;
-      if (!sellerContactId) return null;
+    // Filter to agent's opps — batch contact fetches to avoid rate limits
+    const BATCH_SIZE = 5;
+    const matchedOpps = [];
 
-      const sellerRes = await fetch(`${GHL_API_BASE}/contacts/${sellerContactId}`, {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': GHL_API_VERSION,
-          'Content-Type': 'application/json'
-        }
-      });
+    for (let i = 0; i < allOpps.length; i += BATCH_SIZE) {
+      const batch = allOpps.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(batch.map(async opp => {
+        const sellerContactId = opp.contact?.id;
+        if (!sellerContactId) return null;
 
-      if (!sellerRes.ok) return null;
-
-      const sellerData = await sellerRes.json();
-      const seller = sellerData.contact || sellerData;
-      const sellerFields = seller.customFields || [];
-
-      const submitterField = sellerFields.find(f =>
-        f.id === FS_SUBMITTER_EMAIL_FIELD_ID ||
-        f.key === 'fs_submitter_email' ||
-        f.fieldKey === 'contact.fs_submitter_email'
-      );
-
-      const submitterEmail = submitterField
-        ? (submitterField.value ?? submitterField.fieldValue ?? '').toLowerCase()
-        : '';
-
-      if (submitterEmail === agentEmail) return opp;
-      return null;
-    }));
-
-    const matchedOpps = oppChecks.filter(Boolean);
-    console.log(`Matched ${matchedOpps.length} opps for agent ${agentEmail}`);
-
-    // Fetch full opp details to get pipelineStage
-    const fullOpps = await Promise.all(matchedOpps.map(async opp => {
-      try {
-        const r = await fetch(`${GHL_API_BASE}/opportunities/${opp.id}`, {
+        const sellerRes = await fetch(`${GHL_API_BASE}/contacts/${sellerContactId}`, {
           headers: {
             'Authorization': `Bearer ${GHL_API_KEY}`,
             'Version': GHL_API_VERSION,
             'Content-Type': 'application/json'
           }
         });
-        const d = await r.json();
-        console.log('Full opp fetch status:', r.status, '| keys:', Object.keys(d).join(','));
-        // GHL returns { opportunity: {...} } or just the opp directly
-        return d.opportunity || d;
-      } catch (e) {
-        console.error('Full opp fetch error:', e.message);
-        return opp; // fall back to search result
-      }
-    }));
 
-    const files = fullOpps.filter(Boolean).map(opp => {
-      console.log('pipelineStage:', JSON.stringify(opp.pipelineStage));
-      console.log('pipelineStageId:', opp.pipelineStageId);
+        if (!sellerRes.ok) return null;
 
-      const stageName = opp.pipelineStage?.name || opp.pipelineStageId || '';
+        const sellerData = await sellerRes.json();
+        const seller = sellerData.contact || sellerData;
+        const sellerFields = seller.customFields || [];
+
+        const submitterField = sellerFields.find(f =>
+          f.id === FS_SUBMITTER_EMAIL_FIELD_ID ||
+          f.key === 'fs_submitter_email' ||
+          f.fieldKey === 'contact.fs_submitter_email'
+        );
+
+        const submitterEmail = submitterField
+          ? (submitterField.value ?? submitterField.fieldValue ?? '').toLowerCase()
+          : '';
+
+        if (submitterEmail === agentEmail) return opp;
+        return null;
+      }));
+
+      results.filter(Boolean).forEach(opp => matchedOpps.push(opp));
+
+      // Stop early once we have found matches and processed enough batches
+      // (agents typically have 2-3 files, so once found we can stop)
+      if (matchedOpps.length > 0 && i > 20) break;
+    }
+
+    console.log(`Matched ${matchedOpps.length} opps for agent ${agentEmail}`);
+
+    const files = matchedOpps.map(opp => {
+      const stageId = opp.pipelineStageId || '';
+      const stageName = stageIdMap[stageId] || opp.pipelineStage?.name || '';
       const stageInfo = getStageInfo(stageName);
       const createdAt = opp.createdAt ? new Date(opp.createdAt) : new Date();
       const daysActive = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
@@ -217,7 +246,7 @@ export default async function handler(req, res) {
       );
       const portalUrl = portalField ? (portalField.value ?? portalField.fieldValue ?? null) : null;
 
-      console.log('File:', address, '| Stage:', stageName, '| Label:', stageInfo.label);
+      console.log('File:', address, '| StageId:', stageId, '| StageName:', stageName, '| Label:', stageInfo.label);
 
       return {
         id: opp.id,
