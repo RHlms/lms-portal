@@ -9,7 +9,7 @@
     { "src": "/offer/(.*)",              "dest": "/offer.html" },
     { "src": "/offer-docs/(.*)",         "dest": "/offer-docs.html" },
     { "src": "/file-start",              "dest": "/file-start.html" },
-    { "src": "/file-detail/(.*)",        "dest": "/public/file-detail.html" },
+    { "src": "/file-detail/(.*)",        "dest": "/file-detail.html" },
     { "src": "/api/file-start-submit",   "dest": "/api/file-start-submit.js" },
     { "src": "/api/send-magic-link",     "dest": "/api/send-magic-link.js" },
     { "src": "/api/dashboard-data",      "dest": "/api/dashboard-data.js" },
