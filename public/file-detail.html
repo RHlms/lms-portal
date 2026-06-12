@@ -1,1 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File Detail — LMS Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { background: #f4f4f4; font-family: 'Open Sans', sans-serif; margin: 0; padding: 0; color: #0d2033; }
+  .page-wrap { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
+  .hero { background: #2d637d; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+  .hero-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .badge-active { background: #00A8C6; color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .badge-stage { background: rgba(255,255,255,0.18); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+  .badge-day { font-size: 12px; color: rgba(255,255,255,0.6); margin-left: auto; }
+  .hero-address { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; }
+  .hero-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-meta span { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .hero-meta strong { color: rgba(255,255,255,0.95); }
+
+  .section { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+  .section-title { font-size: 11px; font-weight: 700; color: #2d637d; text-transform: uppercase; letter-spacing: .8px; font-family: 'Montserrat', sans-serif; }
+  .status-pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .status-complete { background: #e6f7f0; color: #1a7a50; }
+  .status-incomplete { background: #fff3e0; color: #cc5500; }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+  .field { display: flex; flex-direction: column; gap: 2px; }
+  .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: #888; font-weight: 600; }
+  .field-value { font-size: 14px; color: #0d2033; }
+  .field-value.empty { color: #bbb; font-style: italic; }
+
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #0d2033; }
+  .check-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+  .check-icon.yes { background: #e6f7f0; color: #1a7a50; }
+  .check-icon.no { background: #f4f4f4; border: 1.5px solid #ddd; }
+
+  .divider { height: 1px; background: #f0f0f0; margin: 14px 0; }
+  .subsection { font-size: 11px; font-weight: 700; color: #2d637d; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px; font-family: 'Montserrat', sans-serif; }
+
+  .toggle-bar { display: flex; margin-bottom: 16px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; width: fit-content; }
+  .toggle-btn { padding: 6px 20px; font-size: 13px; font-weight: 600; border: none; background: #f4f4f4; color: #888; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all .15s; }
+  .toggle-btn.active { background: #2d637d; color: #fff; }
+
+  .loading { text-align: center; padding: 3rem; color: #888; font-size: 15px; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #2d637d; text-decoration: none; font-weight: 600; margin-bottom: 1rem; font-family: 'Montserrat', sans-serif; }
+  .back-link:hover { text-decoration: underline; }
+  .radio-yes { color: #1a7a50; font-weight: 600; font-size: 14px; }
+  .radio-no { color: #cc5500; font-weight: 600; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <a href="javascript:history.back()" class="back-link">&#8592; Back to Dashboard</a>
+  <div id="loadingState" class="loading">Loading file...</div>
+  <div id="fileDetail" style="display:none"></div>
+</div>
+
+<script>
+const oppId = window.location.pathname.split('/file-detail/')[1]?.split('?')[0];
+
+function v(val) {
+  return (val && String(val).trim()) ? String(val).trim() : null;
+}
+
+function field(label, value) {
+  const d = v(value);
+  return `<div class="field">
+    <span class="field-label">${label}</span>
+    <span class="field-value${d ? '' : ' empty'}">${d || '—'}</span>
+  </div>`;
+}
+
+function checkRow(label, checked) {
+  return `<div class="check-row">
+    <div class="check-icon ${checked ? 'yes' : 'no'}">${checked ? '&#10003;' : ''}</div>
+    <span>${label}</span>
+  </div>`;
+}
+
+function radioDisplay(value) {
+  if (!value) return '<span class="field-value empty">—</span>';
+  const val = value.toLowerCase();
+  if (val === 'yes') return '<span class="radio-yes">Yes</span>';
+  if (val === 'no') return '<span class="radio-no">No</span>';
+  return `<span class="field-value">${value}</span>`;
+}
+
+function intakeStatus(d) {
+  const all = d.saSignedField && d.sifSubmitted && d.thirdPartyReceived && d.mortgageReceived;
+  const none = !d.saSignedField && !d.sifSubmitted && !d.thirdPartyReceived && !d.mortgageReceived;
+  if (all) return '<span class="status-pill status-complete">Complete</span>';
+  if (none) return '<span class="status-pill status-incomplete">Not Started</span>';
+  return '<span class="status-pill status-incomplete">In Progress</span>';
+}
+
+function renderBuyer(d, num) {
+  const isOne = num === 1;
+  const ba = {
+    name: isOne ? d.ba1Name : d.ba2Name,
+    brokerage: isOne ? d.ba1Brokerage : d.ba2Brokerage,
+    phone: isOne ? d.ba1Phone : d.ba2Phone,
+    email: isOne ? d.ba1Email : d.ba2Email,
+    bName: isOne ? d.buyer1Name : d.buyer2Name,
+    contact: isOne ? d.buyer1Contact : d.buyer2Contact,
+    bPhone: isOne ? d.buyer1Phone : d.buyer2Phone,
+    bEmail: isOne ? d.buyer1Email : d.buyer2Email,
+    financing: isOne ? d.buyer1Financing : null
+  };
+  return `
+    <div class="subsection">Buyer Agent ${num}</div>
+    <div class="field-grid" style="margin-bottom:14px">
+      ${field('Name', ba.name)}
+      ${field('Brokerage', ba.brokerage)}
+      ${field('Phone', ba.phone)}
+      ${field('Email', ba.email)}
+    </div>
+    <div class="divider"></div>
+    <div class="subsection">Buyer ${num}</div>
+    <div class="field-grid">
+      ${field('Name', ba.bName)}
+      ${field('Contact Name', ba.contact)}
+      ${field('Phone', ba.bPhone)}
+      ${field('Email', ba.bEmail)}
+      ${isOne ? field('Financing Type', ba.financing) : ''}
+    </div>`;
+}
+
+function renderBPO(d, num) {
+  const date = num === 1 ? d.bpo1Date : d.bpo2Date;
+  const amount = num === 1 ? d.bpo1Amount : d.bpo2Amount;
+  return `
+    <div class="field-grid">
+      ${field('Date', date)}
+      ${field('Amount', amount ? '$' + amount : null)}
+    </div>`;
+}
+
+function render(d) {
+  const addr = v(d.propertyAddress) || (d.oppName || '').split(' - ')[0];
+  return `
+    <div class="hero">
+      <div class="hero-badges">
+        <span class="badge-active">Active</span>
+        <span class="badge-stage">${v(d.stageName) || 'In Progress'}</span>
+        ${d.daysActive !== null ? `<span class="badge-day">Day ${d.daysActive}</span>` : ''}
+      </div>
+      <div class="hero-address">${addr}</div>
+      <div class="hero-meta">
+        ${d.county ? `<span><strong>${d.county} County</strong></span>` : ''}
+        ${d.sellerName ? `<span>Seller: <strong>${d.sellerName}</strong></span>` : ''}
+        ${d.fileStartDate ? `<span>File opened: <strong>${d.fileStartDate}</strong></span>` : ''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 1 &mdash; Seller Intake</span>
+        ${intakeStatus(d)}
+      </div>
+      <div class="check-grid">
+        ${checkRow('Service Agreement Signed', d.saSignedField)}
+        ${checkRow('Seller Intake Form Submitted', d.sifSubmitted)}
+        ${checkRow('Third-Party Authorization Received', d.thirdPartyReceived)}
+        ${checkRow('Mortgage Statement Received', d.mortgageReceived)}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 2 &mdash; Seller Info</span>
+      </div>
+      <div class="subsection">Primary Borrower</div>
+      <div class="field-grid" style="margin-bottom:14px">
+        ${field('Name', d.sellerName)}
+        ${field('Phone', d.sellerPhone)}
+        ${field('Email', d.sellerEmail)}
+        ${field('Mailing Address', d.sellerMailingAddress)}
+      </div>
+      <div class="divider"></div>
+      <div class="subsection">Co-Borrower</div>
+      <div class="field-grid">
+        ${field('Name', d.coBorrowerName)}
+        ${field('Phone', d.coBorrowerPhone)}
+        ${field('Email', d.coBorrowerEmail)}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 3 &mdash; Creditors</span>
+      </div>
+      <div class="subsection">Lender / Servicer #1</div>
+      <div class="field-grid" style="margin-bottom:14px">
+        ${field('Name', d.lender1Name)}
+        ${field('Estimated Balance', d.lender1Balance ? '$' + d.lender1Balance : null)}
+      </div>
+      <div class="divider"></div>
+      <div class="subsection">Lender / Servicer #2</div>
+      <div class="field-grid" style="margin-bottom:14px">
+        ${field('Name', d.lender2Name)}
+        ${field('Estimated Balance', d.lender2Balance ? '$' + d.lender2Balance : null)}
+      </div>
+      <div class="divider"></div>
+      <div class="subsection">HOA</div>
+      <div style="margin-bottom:10px">
+        <div class="field-label" style="margin-bottom:4px">Home Owner's Association</div>
+        ${radioDisplay(d.hoaYesNo)}
+      </div>
+      ${d.hoaYesNo && d.hoaYesNo.toLowerCase() === 'yes' ? `
+      <div class="field-grid">
+        ${field('HOA #1 Name', d.hoa1Name)}
+        ${field('HOA #1 Balance', d.hoa1Balance ? '$' + d.hoa1Balance : null)}
+        ${field('HOA #2 Name', d.hoa2Name)}
+        ${field('HOA #2 Balance', d.hoa2Balance ? '$' + d.hoa2Balance : null)}
+        ${field('HOA #3 Name', d.hoa3Name)}
+        ${field('HOA #3 Balance', d.hoa3Balance ? '$' + d.hoa3Balance : null)}
+      </div>` : ''}
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 4 &mdash; Listing Agent</span>
+      </div>
+      <div class="field-grid">
+        ${field('Name', d.laName)}
+        ${field('Brokerage', d.laBrokerage)}
+        ${field('Phone', d.laPhone)}
+        ${field('Email', d.laEmail)}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 5 &mdash; Buyer / Buyer Agent</span>
+      </div>
+      <div class="toggle-bar">
+        <button class="toggle-btn active" onclick="switchBuyer(1,this)">Buyer 1</button>
+        <button class="toggle-btn" onclick="switchBuyer(2,this)">Buyer 2</button>
+      </div>
+      <div id="buyerPanel1">${renderBuyer(window._fd, 1)}</div>
+      <div id="buyerPanel2" style="display:none">${renderBuyer(window._fd, 2)}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 6 &mdash; BPO</span>
+      </div>
+      <div class="toggle-bar">
+        <button class="toggle-btn active" onclick="switchBPO(1,this)">BPO #1</button>
+        <button class="toggle-btn" onclick="switchBPO(2,this)">BPO #2</button>
+      </div>
+      <div id="bpoPanel1">${renderBPO(window._fd, 1)}</div>
+      <div id="bpoPanel2" style="display:none">${renderBPO(window._fd, 2)}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 7 &mdash; Closing Info</span>
+      </div>
+      <div class="subsection">Title Company</div>
+      <div class="field-grid" style="margin-bottom:14px">
+        ${field('Company', d.titleCompany)}
+        ${field('Agent', d.titleAgent)}
+        ${field('Phone', d.titlePhone)}
+        ${field('Email', d.titleEmail)}
+      </div>
+      <div class="divider"></div>
+      <div class="subsection">Approval</div>
+      <div class="field-grid">
+        ${field('Close Date', d.closeDate)}
+        ${field('Relocation Assistance Amount', d.relocationAmount ? '$' + d.relocationAmount : null)}
+        <div class="field">
+          <span class="field-label">Deficiency Waived</span>
+          ${radioDisplay(d.deficiencyWaived)}
+        </div>
+        <div class="field">
+          <span class="field-label">Relocation Assistance Awarded</span>
+          ${radioDisplay(d.relocationAwarded)}
+        </div>
+      </div>
+    </div>`;
+}
+
+function switchBuyer(num, btn) {
+  document.getElementById('buyerPanel1').style.display = num === 1 ? 'block' : 'none';
+  document.getElementById('buyerPanel2').style.display = num === 2 ? 'block' : 'none';
+  btn.closest('.toggle-bar').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function switchBPO(num, btn) {
+  document.getElementById('bpoPanel1').style.display = num === 1 ? 'block' : 'none';
+  document.getElementById('bpoPanel2').style.display = num === 2 ? 'block' : 'none';
+  btn.closest('.toggle-bar').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function load() {
+  if (!oppId) {
+    document.getElementById('loadingState').textContent = 'No file ID provided.';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/file-detail?id=${oppId}`);
+    const json = await res.json();
+    if (!json.success) {
+      document.getElementById('loadingState').textContent = 'File not found.';
+      return;
+    }
+    window._fd = json.data;
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('fileDetail').style.display = 'block';
+    document.getElementById('fileDetail').innerHTML = render(json.data);
+  } catch (err) {
+    document.getElementById('loadingState').textContent = 'Error loading file. Please try again.';
+    console.error(err);
+  }
+}
+
+load();
+</script>
+</body>
+</html>
