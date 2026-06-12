@@ -1,275 +1,468 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offer Documents #2 — LMS Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{background:#f0f4f7;font-family:'Open Sans',sans-serif;color:#1a2e3d;min-height:100vh;}
-  .header{background:#2d637d;padding:14px 24px;display:flex;align-items:center;}
-  .header img{height:36px;width:auto;}
-  .page-wrap{max-width:600px;margin:0 auto;padding:2rem 1rem 4rem;}
-  .hero{background:#2d637d;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
-  .hero-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
-  .hero-title{font-size:20px;font-weight:700;color:#fff;font-family:'Montserrat',sans-serif;margin-bottom:2px;}
-  .hero-sub{font-size:13px;color:rgba(255,255,255,0.7);}
-  .card{background:#fff;border:1px solid #d1dde8;border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
-  .card-title{font-size:12px;font-weight:700;color:#2d637d;text-transform:uppercase;letter-spacing:.7px;font-family:'Montserrat',sans-serif;margin-bottom:1rem;padding-bottom:10px;border-bottom:1px solid #f0f0f0;}
-  .doc-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #f5f5f5;}
-  .doc-row:last-child{border-bottom:none;padding-bottom:0;}
-  .doc-row:first-of-type{padding-top:0;}
-  .doc-check{width:20px;height:20px;border-radius:4px;border:2px solid #d1dde8;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
-  .doc-check.checked{background:#2d637d;border-color:#2d637d;}
-  .doc-check svg{display:none;}
-  .doc-check.checked svg{display:block;}
-  .doc-info{flex:1;}
-  .doc-name{font-size:14px;font-weight:600;color:#1a2e3d;margin-bottom:2px;}
-  .doc-desc{font-size:12px;color:#6b8299;}
-  .upload-zone{border:2px dashed #d1dde8;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-top:10px;background:#fafcfe;}
-  .upload-zone:hover,.upload-zone.drag{border-color:#2d637d;background:#eef4f8;}
-  .upload-zone input{display:none;}
-  .upload-icon{font-size:24px;margin-bottom:6px;}
-  .upload-text{font-size:13px;font-weight:600;color:#2d637d;margin-bottom:2px;font-family:'Montserrat',sans-serif;}
-  .upload-sub{font-size:12px;color:#6b8299;}
-  .file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-  .file-item{display:flex;align-items:center;gap:8px;background:#f0f4f7;border-radius:6px;padding:8px 12px;font-size:13px;}
-  .file-item-name{flex:1;color:#1a2e3d;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .file-remove{color:#cc5500;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;}
-  .submit-btn{width:100%;background:#cc5500;color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:14px;border:none;border-radius:8px;cursor:pointer;transition:background .2s;margin-top:8px;}
-  .submit-btn:hover{background:#aa4400;}
-  .submit-btn:disabled{opacity:0.5;cursor:default;}
-  .success-wrap{text-align:center;padding:3rem 1rem;}
-  .success-icon{font-size:48px;margin-bottom:16px;}
-  .success-title{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:#1a2e3d;margin-bottom:8px;}
-  .success-sub{font-size:15px;color:#4a6a85;}
-  .loading{text-align:center;padding:3rem;color:#6b8299;font-size:15px;}
-  .pin-gate{max-width:400px;margin:80px auto;text-align:center;padding:0 20px;}
-  .pin-card{background:#fff;border-radius:12px;padding:2rem;border:1px solid #d1dde8;}
-  .pin-icon{font-size:36px;margin-bottom:12px;}
-  .pin-title{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:800;color:#1a2e3d;margin-bottom:8px;}
-  .pin-sub{font-size:14px;color:#4a6a85;margin-bottom:20px;}
-  .pin-input{width:100%;border:2px solid #d1dde8;border-radius:8px;padding:12px;font-size:18px;text-align:center;letter-spacing:8px;font-family:'Montserrat',sans-serif;font-weight:700;outline:none;margin-bottom:12px;}
-  .pin-input:focus{border-color:#2d637d;}
-  .pin-btn{width:100%;background:#2d637d;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:12px;border:none;border-radius:8px;cursor:pointer;}
-  .pin-error{color:#cc5500;font-size:13px;margin-top:8px;display:none;}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS — Offer Document Upload #2</title>
+  <link rel="apple-touch-icon" href="/lms-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal:        #00A8C6;
+      --teal-dim:    rgba(0,168,198,0.10);
+      --teal-border: rgba(0,168,198,0.25);
+      --navy:        #0B1F3A;
+      --navy-3:      #d1dde8;
+      --muted:       #4a6a85;
+      --dim:         #7a9ab5;
+      --success:     #22c55e;
+      --success-dim: rgba(34,197,94,0.12);
+      --danger:      #ef4444;
+      --radius:      14px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #d3d9db;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--navy);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    .header {
+      background: rgba(255,255,255,0.97);
+      border-bottom: 1px solid var(--navy-3);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .logo img { height: 80px; width: auto; border-radius: 6px; }
+    .progress-strip {
+      background: #2d637d;
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px 16px;
+      letter-spacing: 0.5px;
+    }
+    .main { max-width: 720px; margin: 0 auto; padding: 32px 20px 0; }
+    .state-screen { text-align: center; padding: 80px 20px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--navy-3);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-screen h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
+    .state-screen p  { font-size:14px; color:var(--muted); line-height:1.6; }
+    .intro-card {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.12);
+    }
+    .intro-header {
+      background: #2d637d;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .intro-header h1 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:20px; color:#fff; }
+    .intro-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .intro-body { padding: 20px 28px; }
+    .file-ref {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .file-ref-label { font-size:11px; font-weight:700; font-family:'Montserrat',sans-serif; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px; }
+    .file-ref-value { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:var(--navy); }
+    .intro-note { font-size:13px; color:var(--muted); line-height:1.6; }
+    .upload-card {
+      background: #fff;
+      border: 1.5px solid var(--teal-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,168,198,0.07);
+      transition: border-color 0.2s;
+    }
+    .upload-card.done { border-color: var(--success); }
+    .upload-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      background: var(--teal-dim);
+      border-bottom: 1px solid var(--teal-border);
+    }
+    .upload-card.done .upload-card-header {
+      background: var(--success-dim);
+      border-bottom-color: rgba(34,197,94,0.2);
+    }
+    .upload-doc-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .upload-status {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+    }
+    .status-pending { background: rgba(0,168,198,0.12); color: var(--teal); }
+    .status-done    { background: var(--success-dim); color: var(--success); }
+    .toggle-btn {
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: none;
+    }
+    .toggle-btn.mark   { border-color: var(--success); color: var(--success); }
+    .toggle-btn.mark:hover   { background: var(--success-dim); }
+    .toggle-btn.unmark { border-color: var(--dim); color: var(--dim); }
+    .toggle-btn.unmark:hover { background: rgba(122,154,181,0.1); }
+    .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upload-card-body { padding: 18px 22px; }
+    .upload-zone {
+      border: 2px dashed var(--navy-3);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover { border-color: var(--teal); background: var(--teal-dim); }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-zone-icon  { font-size: 28px; margin-bottom: 8px; }
+    .upload-zone-label { font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700; color:var(--muted); margin-bottom:4px; }
+    .upload-zone-sub   { font-size:11px; color:var(--dim); }
+    .upload-progress { display:none; margin-top:12px; font-size:13px; color:var(--muted); text-align:center; }
+    .upload-success  { display:none; margin-top:12px; background:var(--success-dim); border:1px solid rgba(34,197,94,0.3); border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; color:var(--success); text-align:center; }
+    .upload-error    { display:none; margin-top:12px; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; font-size:13px; color:var(--danger); text-align:center; }
+    .summary-card {
+      background: #fff;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-top: 24px;
+      box-shadow: 0 4px 20px rgba(0,168,198,0.12);
+    }
+    .summary-card h3 { font-family:'Montserrat',sans-serif; font-weight:800; font-size:16px; color:var(--navy); margin-bottom:6px; }
+    .summary-card p  { font-size:13px; color:var(--muted); line-height:1.7; }
+    .footer { text-align:center; margin-top:48px; font-size:12px; color:var(--dim); line-height:1.7; }
+    @media (max-width:480px) {
+      .main { padding:20px 14px 0; }
+      .upload-card-body { padding:14px; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/697b8a464d56837a5ab2bc1b.png" alt="LMS"/>
-</div>
-
-<div id="pinGate" class="pin-gate" style="display:none;">
-  <div class="pin-card">
-    <div class="pin-icon">🔐</div>
-    <div class="pin-title">Staff Access Only</div>
-    <div class="pin-sub">Enter your PIN to mark documents received.</div>
-    <input type="password" class="pin-input" id="pinInput" maxlength="4" placeholder="••••"/>
-    <button class="pin-btn" onclick="checkPin()">Continue</button>
-    <div class="pin-error" id="pinError">Incorrect PIN. Please try again.</div>
+<header class="header">
+  <div class="logo">
+    <img src="/logo.png" alt="LMS — Loan Mitigation Services"/>
   </div>
-</div>
+</header>
 
-<div id="loadingState" class="loading">Loading...</div>
-<div id="mainContent" style="display:none;"></div>
-<div id="successState" style="display:none;">
-  <div class="success-wrap">
-    <div class="success-icon">✅</div>
-    <div class="success-title">Documents Uploaded!</div>
-    <div class="success-sub">Your offer documents have been received. The LMS team will be in touch shortly.</div>
+<div class="progress-strip">OFFER DOCUMENT UPLOAD — BUYER #2 — PLEASE SUBMIT ALL REQUIRED DOCUMENTS</div>
+
+<main class="main" id="app">
+  <div class="state-screen" id="loading-state">
+    <div class="spinner"></div>
+    <h2>Loading your upload portal…</h2>
+    <p>Retrieving your file information securely.</p>
   </div>
-</div>
-
-<script>
-const STAFF_PIN = '4567';
-const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
-const GHL_API_KEY = 'pit-ef3edd31-9163-4c64-9e18-62633fb931fe';
-
-const oppId = window.location.pathname.split('/offer-docs-2/')[1]?.split('?')[0];
-
-const DOCS = [
-  { id: 'asis_contract',    name: 'As-Is Contract',                        desc: 'Fully executed As-Is Residential Contract' },
-  { id: 'ss_addendum',      name: 'SS Addendum to As-Is Contract',         desc: 'Short Sale Addendum to the As-Is Contract' },
-  { id: 'buyer_pof',        name: 'Buyer #2 Proof of Funds / Pre-Approval',desc: 'Bank statement, pre-approval letter, or proof of funds' },
-  { id: 'mls_sheet',        name: 'Updated MLS Sheet',                      desc: 'Current MLS listing printout' },
-  { id: 'misc_addenda',     name: 'Misc. Addenda',                          desc: 'Any additional documents or addenda' },
-];
-
-let selectedFiles = [];
-let checkedDocs = new Set();
-let staffUnlocked = false;
-let markReceivedMode = false;
-
-function checkPin() {
-  const pin = document.getElementById('pinInput').value;
-  if (pin === STAFF_PIN) {
-    staffUnlocked = true;
-    markReceivedMode = true;
-    document.getElementById('pinGate').style.display = 'none';
-    renderMain();
-  } else {
-    document.getElementById('pinError').style.display = 'block';
-    document.getElementById('pinInput').value = '';
-  }
-}
-
-function toggleDoc(id) {
-  if (checkedDocs.has(id)) checkedDocs.delete(id);
-  else checkedDocs.add(id);
-  renderMain();
-}
-
-function renderMain() {
-  const wrap = document.getElementById('mainContent');
-  const docsHtml = DOCS.map(doc => `
-    <div class="doc-row">
-      ${markReceivedMode
-        ? `<div class="doc-check ${checkedDocs.has(doc.id) ? 'checked' : ''}" onclick="toggleDoc('${doc.id}')">
-             <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-               <path d="M1 5l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-             </svg>
-           </div>`
-        : ''
-      }
-      <div class="doc-info">
-        <div class="doc-name">${doc.name}</div>
-        <div class="doc-desc">${doc.desc}</div>
+  <div class="state-screen" id="error-state" style="display:none">
+    <h2>Link Not Found</h2>
+    <p>This link may be invalid or expired.<br/>Contact us at <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a></p>
+  </div>
+  <div id="docs-content" style="display:none">
+    <div class="intro-card">
+      <div class="intro-header">
+        <h1>OFFER DOCUMENTS — BUYER #2</h1>
+        <div class="intro-badge">SECURE</div>
+      </div>
+      <div class="intro-body">
+        <div class="file-ref">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <div>
+            <div class="file-ref-label">Short Sale File</div>
+            <div class="file-ref-value" id="file-ref-display">—</div>
+          </div>
+        </div>
+        <div style="background:#fff3cd;border:1.5px solid #f0a500;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:20px;line-height:1">⚠️</span>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#7a4f00;margin-bottom:4px;">SUBMIT DOCUMENTS SEPARATELY</div>
+            <div style="font-size:13px;color:#7a4f00;line-height:1.5;">Do not combine documents into one PDF. Each document must be uploaded as its own separate file.</div>
+          </div>
+        </div>
+        <p class="intro-note">Each file is logged to your file immediately upon upload. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max 20MB per file.</p>
       </div>
     </div>
-  `).join('');
+    <div id="upload-list"></div>
+    <div class="summary-card">
+      <h3>Questions or Issues?</h3>
+      <p>If you have trouble uploading or need to send documents another way, email them directly to <a href="mailto:documents@shortsalestart.com" style="color:var(--teal)">documents@shortsalestart.com</a> with the property address in the subject line. Our team will log them to your file manually.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 Loan Mitigation Services LLC &nbsp;|&nbsp; shortsalestart.com<br/>
+      Your documents are private and used for LMS internal processing only.<br/>
+      Questions? <a href="mailto:documents@shortsalestart.com" style="color:var(--teal);text-decoration:none">documents@shortsalestart.com</a><br/><br/>
+      <a href="#" onclick="promptStaffPin();return false;" style="color:var(--dim);font-size:11px;text-decoration:none;">Staff Access</a>
+    </div>
+  </div>
+</main>
 
-  const fileListHtml = selectedFiles.length > 0
-    ? `<div class="file-list">${selectedFiles.map((f, i) => `
-        <div class="file-item">
-          <span>📄</span>
-          <span class="file-item-name">${f.name}</span>
-          <span class="file-remove" onclick="removeFile(${i})">✕</span>
-        </div>`).join('')}</div>`
-    : '';
+<script>
+  const DOCS = [
+    { id: 'asis_contract', label: 'As-Is Contract',                         icon: '✍️', required: true },
+    { id: 'ss_addendum',   label: 'SS Addendum to As-Is Contract',          icon: '📄', required: true },
+    { id: 'buyer_pof',     label: 'Buyer #2 Proof of Funds / Pre-Approval', icon: '💰', required: true },
+    { id: 'mls_sheet',     label: 'Updated MLS Sheet',                      icon: '🏠', required: true },
+    { id: 'misc_addenda',  label: 'Misc. Addenda',                          icon: '📎', required: false },
+  ];
 
-  wrap.innerHTML = `
-    <div class="page-wrap">
-      <div class="hero">
-        <div class="hero-label">Offer Documents — Buyer #2</div>
-        <div class="hero-title">Upload Offer Documents</div>
-        <div class="hero-sub">Please upload all required documents for Buyer #2.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Required Documents</div>
-        ${docsHtml}
-      </div>
-      <div class="card">
-        <div class="card-title">Upload Files</div>
-        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-          ondragover="event.preventDefault();this.classList.add('drag')"
-          ondragleave="this.classList.remove('drag')"
-          ondrop="handleDrop(event)">
-          <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFiles(this.files)"/>
-          <div class="upload-icon">📎</div>
-          <div class="upload-text">Click to upload or drag & drop</div>
-          <div class="upload-sub">PDF, Word, or image files</div>
-        </div>
-        ${fileListHtml}
-      </div>
-      ${markReceivedMode ? `
-      <div class="card">
-        <div class="card-title">Mark as Received</div>
-        <p style="font-size:13px;color:#4a6a85;margin-bottom:14px;">Check the documents above that have been received, then click to update the file.</p>
-        <button class="submit-btn" style="background:#2d637d;" onclick="markReceived()">Update File Record</button>
-      </div>` : ''}
-      <button class="submit-btn" id="submitBtn" onclick="submitDocs()" ${selectedFiles.length === 0 ? 'disabled' : ''}>
-        Submit Documents
-      </button>
-      ${!markReceivedMode ? `<p style="text-align:center;margin-top:12px;font-size:12px;color:#6b8299;">
-        Staff: <a href="#" onclick="showPinGate()" style="color:#2d637d;font-weight:600;">Mark Received</a>
-      </p>` : ''}
-    </div>`;
-}
+  let oppId = null;
+  let docStatus = {};
+  let staffUnlocked = false;
 
-function showPinGate() {
-  document.getElementById('pinGate').style.display = 'flex';
-  document.getElementById('pinGate').style.flexDirection = 'column';
-  document.getElementById('mainContent').style.display = 'none';
-}
+  async function hashPin(pin) {
+    const msgBuffer  = new TextEncoder().encode(pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
-function handleFiles(files) {
-  selectedFiles = [...selectedFiles, ...Array.from(files)];
-  renderMain();
-}
-
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('uploadZone').classList.remove('drag');
-  handleFiles(e.dataTransfer.files);
-}
-
-function removeFile(index) {
-  selectedFiles.splice(index, 1);
-  renderMain();
-}
-
-async function submitDocs() {
-  if (!selectedFiles.length) return;
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Uploading...';
-
-  try {
-    for (const file of selectedFiles) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('opportunityId', oppId);
-      formData.append('locationId', GHL_LOCATION_ID);
-
-      await fetch(`https://services.leadconnectorhq.com/opportunities/${oppId}/notes`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${GHL_API_KEY}`, 'Version': '2021-07-28' },
-        body: JSON.stringify({ body: `Offer Docs #2 uploaded: ${file.name}`, userId: '' })
+  async function promptStaffPin() {
+    const pin = prompt('Staff PIN:');
+    if (!pin) return;
+    const hashed  = await hashPin(pin);
+    const correct = await hashPin('4567');
+    if (hashed === correct) {
+      staffUnlocked = true;
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.style.display = 'inline-flex';
       });
     }
-    document.getElementById('mainContent').style.display = 'none';
-    document.getElementById('successState').style.display = 'block';
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = 'Submit Documents';
-    alert('Upload failed. Please try again.');
   }
-}
 
-async function markReceived() {
-  try {
-    const updates = {};
-    if (checkedDocs.has('asis_contract'))  updates['offer_docs_asis_contract_2']   = ['Yes'];
-    if (checkedDocs.has('ss_addendum'))    updates['offer_docs_ss_addendum_2']      = ['Yes'];
-    if (checkedDocs.has('buyer_pof'))      updates['offer_docs_buyer_pof_2']        = ['Yes'];
-    if (checkedDocs.has('mls_sheet'))      updates['offer_docs_mls_sheet_2']        = ['Yes'];
-    if (checkedDocs.has('misc_addenda'))   updates['fd_offer_2_misc_addenda_received'] = ['Yes'];
-
-    await fetch(`/api/update-opportunity`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oppId, fields: updates })
-    });
-    alert('File record updated.');
-  } catch (err) {
-    alert('Update failed. Please try again.');
+  function getOppId() {
+    const parts = window.location.pathname.split('/');
+    const idx   = parts.indexOf('offer-docs-2');
+    return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : null;
   }
-}
 
-async function init() {
-  if (!oppId) {
-    document.getElementById('loadingState').textContent = 'No file ID provided.';
-    return;
+  async function init() {
+    oppId = getOppId();
+    if (!oppId) { showError(); return; }
+
+    try {
+      const [dataRes, statusRes] = await Promise.all([
+        fetch(`/api/offer-data?opp_id=${oppId}`),
+        fetch(`/api/offer-checklist-2?opp_id=${oppId}`)
+      ]);
+
+      if (!dataRes.ok) throw new Error('not found');
+
+      const data = await dataRes.json();
+      docStatus  = statusRes.ok ? (await statusRes.json()).status ?? {} : {};
+
+      document.getElementById('file-ref-display').textContent = data.oif_subject_property_address || data.fs_subject_street_address || oppId;
+      document.getElementById('loading-state').style.display  = 'none';
+      document.getElementById('docs-content').style.display   = 'block';
+      renderUploadCards();
+    } catch (e) {
+      showError();
+    }
   }
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('mainContent').style.display = 'block';
-  renderMain();
-}
 
-init();
+  function showError() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('error-state').style.display   = 'block';
+  }
+
+  function renderUploadCards() {
+    const container = document.getElementById('upload-list');
+    container.innerHTML = DOCS.map(doc => {
+      const received = !!docStatus[doc.id];
+      return `
+        <div class="upload-card ${received ? 'done' : ''}" id="card-${doc.id}">
+          <div class="upload-card-header">
+            <div class="upload-doc-name">
+              <span>${doc.icon}</span>
+              ${doc.label}${doc.required ? ' <span style="color:var(--danger);font-size:12px">*</span>' : ''}
+            </div>
+            <div class="header-right">
+              <span class="upload-status ${received ? 'status-done' : 'status-pending'}" id="status-${doc.id}">
+                ${received ? 'RECEIVED' : 'PENDING'}
+              </span>
+              <button class="toggle-btn ${received ? 'unmark' : 'mark'}"
+                      id="toggle-${doc.id}"
+                      onclick="handleToggle('${doc.id}')">
+                ${received ? 'Unmark' : 'Mark received'}
+              </button>
+            </div>
+          </div>
+          <div class="upload-card-body">
+            <div class="upload-zone" id="zone-${doc.id}" ${received ? 'style="display:none"' : ''}>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" ${doc.id === 'misc_addenda' ? 'multiple' : ''} onchange="handleUpload('${doc.id}', this)"/>
+              <div class="upload-zone-icon">📤</div>
+              <div class="upload-zone-label">Click to upload or drag and drop</div>
+              <div class="upload-zone-sub">PDF, JPG, PNG, DOC, DOCX — Max 20MB${doc.id === 'misc_addenda' ? ' — Multiple files allowed' : ''}</div>
+            </div>
+            <div class="upload-progress" id="progress-${doc.id}">⏳ Uploading…</div>
+            <div class="upload-success" id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
+              ${received ? '✅ Document received and logged to your file.' : ''}
+            </div>
+            <div class="upload-error" id="error-${doc.id}"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function handleToggle(docId) {
+    const btn     = document.getElementById(`toggle-${docId}`);
+    const current = docStatus[docId] ?? false;
+    const next    = !current;
+    btn.disabled  = true;
+
+    try {
+      const res  = await fetch('/api/offer-checklist-2', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ opp_id: oppId, item_id: docId, received: next })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Update failed');
+
+      docStatus[docId] = next;
+      applyStatus(docId, next);
+    } catch (err) {
+      console.error('Toggle failed:', err.message);
+      alert('Could not update status. Please try again.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function applyStatus(docId, received) {
+    const card    = document.getElementById(`card-${docId}`);
+    const status  = document.getElementById(`status-${docId}`);
+    const toggle  = document.getElementById(`toggle-${docId}`);
+    const zone    = document.getElementById(`zone-${docId}`);
+    const success = document.getElementById(`success-${docId}`);
+
+    if (received) {
+      card.classList.add('done');
+      status.textContent    = 'RECEIVED';
+      status.className      = 'upload-status status-done';
+      toggle.textContent    = 'Unmark';
+      toggle.className      = 'toggle-btn unmark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'none';
+      success.textContent   = '✅ Document received and logged to your file.';
+      success.style.display = 'block';
+    } else {
+      card.classList.remove('done');
+      status.textContent    = 'PENDING';
+      status.className      = 'upload-status status-pending';
+      toggle.textContent    = 'Mark received';
+      toggle.className      = 'toggle-btn mark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'block';
+      success.textContent   = '';
+      success.style.display = 'none';
+    }
+  }
+
+  async function handleUpload(docId, input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+
+    const zone     = document.getElementById(`zone-${docId}`);
+    const progress = document.getElementById(`progress-${docId}`);
+    const success  = document.getElementById(`success-${docId}`);
+    const error    = document.getElementById(`error-${docId}`);
+
+    success.style.display  = 'none';
+    error.style.display    = 'none';
+    zone.style.display     = 'none';
+    progress.style.display = 'block';
+
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('opp_id',  oppId);
+        formData.append('item_id', docId);
+        formData.append('file',    file);
+
+        const res  = await fetch('/api/offer-upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Upload failed');
+      }
+
+      progress.style.display = 'none';
+      docStatus[docId] = true;
+      applyStatus(docId, true);
+    } catch (err) {
+      progress.style.display = 'none';
+      zone.style.display     = 'block';
+      error.textContent      = `❌ ${err.message} — Please try again or email documents@shortsalestart.com`;
+      error.style.display    = 'block';
+    }
+  }
+
+  init();
 </script>
 </body>
 </html>
