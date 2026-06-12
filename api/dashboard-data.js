@@ -7,6 +7,10 @@ const INTAKE_PIPELINE_ID = 'Zkblq5FENcSyXWKX5jZw';
 const WORKING_PIPELINE_ID = 'I3jlj4eYesOL3niHBXD6';
 const FS_SUBMITTER_EMAIL_FIELD_ID = '41En9NacCj60yb7ykcTV';
 
+// Opportunity-level custom field ID for seller_portal_link
+// Set to null until confirmed from logs — will fall back to URL scan
+const SELLER_PORTAL_LINK_FIELD_ID = null;
+
 const STAGE_ID_MAP = {
   '51ff778c-a7ca-4af5-8840-45e5c9fdaabe': { label: 'Seller Intake', status: 'active' }
 };
@@ -40,8 +44,7 @@ function getStageInfo(stageName, stageId) {
   return { label: 'In Progress', status: 'active' };
 }
 
-// Extract value from GHL customFields array — matches by field ID, key, or fieldKey
-// Handles all GHL response formats: value, fieldValue, fieldValueArray
+// Extract value from GHL customFields array by field ID (primary) or key names (fallback)
 function getFieldValue(fields, { id, keys } = {}) {
   const field = fields.find(f => {
     if (id && f.id === id) return true;
@@ -57,6 +60,18 @@ function getFieldValue(fields, { id, keys } = {}) {
   });
   if (!field) return null;
   return field.value ?? field.fieldValue ?? field.fieldValueArray?.[0] ?? null;
+}
+
+// Scan all fields for a value that looks like the portal URL
+function findPortalUrlByValue(fields) {
+  for (const f of fields) {
+    const val = f.value ?? f.fieldValue ?? f.fieldValueArray?.[0] ?? null;
+    if (val && typeof val === 'string' && val.includes('documents.shortsalestart.com/file/')) {
+      console.log(`Found portal URL in field ID: ${f.id} => ${val}`);
+      return val;
+    }
+  }
+  return null;
 }
 
 async function fetchStageIdMap() {
@@ -195,12 +210,6 @@ export default async function handler(req, res) {
 
     console.log(`Total opps in both pipelines: ${allOpps.length}`);
 
-    // Log opp custom field keys from first opp to help debug portal URL field name
-    if (allOpps.length > 0) {
-      const sampleFields = allOpps[0].customFields || [];
-      console.log('Sample opp custom field keys:', sampleFields.map(f => `${f.id}=${f.key||f.fieldKey}`).join(', '));
-    }
-
     const BATCH_SIZE = 5;
     const matchedOpps = [];
 
@@ -224,23 +233,30 @@ export default async function handler(req, res) {
         const seller = sellerData.contact || sellerData;
         const sellerFields = seller.customFields || [];
 
-        // Match fs_submitter_email by field ID (most reliable) AND key name as fallback
         const submitterEmail = getFieldValue(sellerFields, {
           id: FS_SUBMITTER_EMAIL_FIELD_ID,
           keys: ['fs_submitter_email']
         }) || '';
 
-        console.log(`Opp: ${opp.name} | submitter: ${submitterEmail} | agent: ${agentEmail}`);
-
         if (submitterEmail.toLowerCase() !== agentEmail) return null;
 
-        // Pull portal URL from the opportunity's own custom fields
-        // Field key is seller_portal_link (set by workflow Update Opportunity node)
+        // Pull portal URL from opp custom fields
+        // Try by known field ID first, then scan all field values for portal URL pattern
         const oppFields = opp.customFields || [];
-        const portalUrl = getFieldValue(oppFields, { keys: ['seller_portal_link', 'portal_url'] });
+        let portalUrl = SELLER_PORTAL_LINK_FIELD_ID
+          ? getFieldValue(oppFields, { id: SELLER_PORTAL_LINK_FIELD_ID })
+          : null;
 
+        if (!portalUrl) {
+          portalUrl = findPortalUrlByValue(oppFields);
+        }
+
+        // Dump all non-null field values on matched opp to identify field IDs
         console.log(`Matched opp: ${opp.name} | Portal URL: ${portalUrl}`);
-        console.log(`  Opp field keys: ${oppFields.map(f => `${f.id}=${f.key||f.fieldKey}`).join(', ')}`);
+        oppFields.forEach(f => {
+          const val = f.value ?? f.fieldValue ?? f.fieldValueArray?.[0] ?? null;
+          if (val) console.log(`  Field ${f.id}: ${val}`);
+        });
 
         return { ...opp, _portalUrl: portalUrl };
       }));
@@ -263,12 +279,12 @@ export default async function handler(req, res) {
       if (oppName.includes('—')) {
         address = oppName.split('—')[0].trim();
       } else if (oppName.includes(' - ')) {
-        address = oppName.split(' - ')[0].trim();
+        address = oppName.split(' - ')[0].trim()
       }
 
       const portalUrl = opp._portalUrl || null;
 
-      console.log('File:', address, '| StageId:', stageId, '| Label:', stageInfo.label, '| Portal:', portalUrl);
+      console.log('File:', address, '| Label:', stageInfo.label, '| Portal:', portalUrl);
 
       return {
         id: opp.id,
