@@ -219,8 +219,7 @@ function renderActiveFiles(files) {
         <div class="file-stage-label">Current Stage</div>
         <div class="file-stage-badge ${getBadgeClass(f.stageStatus)}">${f.stageStatus === 'warning' ? '⚠️ ' : f.stageStatus === 'success' ? '✅ ' : '📋 '}${f.stageLabel}</div>
         <div class="file-btns">
-          ${f.portalUrl ? `<a href="${f.portalUrl}" class="file-btn-primary">View File</a>` : '<span class="file-btn-primary" style="opacity:0.4;cursor:default;">View File</span>'}
-      
+<a href="https://documents.shortsalestart.com/file-detail/${f.id}" class="file-btn-primary">View File</a>      
         </div>
       </div>
     </div>
