@@ -82,12 +82,18 @@ html,body{min-height:100vh;background:var(--gray-bg);font-family:var(--fb);color
 .empty-state p{font-size:15px;color:var(--gray-text);margin-bottom:20px;}
 .quick-actions{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-mid);padding:20px;margin-bottom:16px;}
 .quick-actions-title{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--gray-text);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;}
-.quick-btns{display:flex;gap:10px;flex-wrap:wrap;}
-.quick-btn{display:inline-block;font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:10px 18px;border-radius:7px;text-decoration:none;transition:background 0.2s;}
+.quick-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.quick-btn{display:inline-flex;align-items:center;font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:10px 18px;border-radius:7px;text-decoration:none;transition:all 0.2s;}
 .quick-btn-orange{background:var(--orange);color:var(--white);}
 .quick-btn-orange:hover{background:#aa4400;}
 .quick-btn-outline{background:var(--gray-bg);color:var(--teal);border:1px solid var(--gray-mid);}
 .quick-btn-outline:hover{background:var(--gray-mid);}
+.quick-btn-shorty{background:linear-gradient(135deg,#1e4a5e,#00A8C6);color:var(--white);border:none;box-shadow:0 3px 12px rgba(0,168,198,0.3);padding:6px 18px 6px 6px;gap:10px;}
+.quick-btn-shorty:hover{box-shadow:0 4px 16px rgba(0,168,198,0.5);transform:translateY(-1px);color:var(--white);}
+.shorty-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.5);flex-shrink:0;}
+.shorty-label{display:flex;flex-direction:column;line-height:1.2;}
+.shorty-label-sub{font-size:9px;font-weight:600;opacity:0.8;letter-spacing:0.04em;text-transform:uppercase;}
+.shorty-label-main{font-size:13px;font-weight:800;letter-spacing:0.03em;}
 .dash-footer{border-top:1px solid var(--gray-mid);padding-top:16px;text-align:center;}
 .dash-footer p{font-size:12px;color:var(--gray-text);margin:0 0 4px;}
 .dash-footer a{color:var(--teal);font-weight:600;text-decoration:none;}
@@ -147,11 +153,17 @@ html,body{min-height:100vh;background:var(--gray-bg);font-family:var(--fb);color
       <div class="quick-actions">
         <div class="quick-actions-title">Quick Actions</div>
         <div class="quick-btns">
-  <a href="https://documents.shortsalestart.com/file-start" target="_blank" class="quick-btn quick-btn-orange">+ Start New File</a>
-  <a href="https://shortsalestart.com/#schedule" target="_blank" class="quick-btn quick-btn-outline">📅 Schedule Consult</a>
-  <a href="tel:8884604111" class="quick-btn quick-btn-outline">📞 (888) 460-4111</a>
-  <a href="tel:3862593009" class="quick-btn quick-btn-outline">🤖 Talk to Shorty</a>
-</div>
+          <a href="https://documents.shortsalestart.com/file-start" target="_blank" class="quick-btn quick-btn-orange">+ Start New File</a>
+          <a href="https://shortsalestart.com/#schedule" target="_blank" class="quick-btn quick-btn-outline">📅 Schedule Consult</a>
+          <a href="tel:8884604111" class="quick-btn quick-btn-outline">📞 (888) 460-4111</a>
+          <a href="tel:3862593009" class="quick-btn quick-btn-shorty">
+            <img src="https://assets.cdn.filesafe.space/SmS67ZUDphr7uhGrsQGm/media/6a22e5ceda24932f12259825.png" class="shorty-avatar" alt="Shorty"/>
+            <span class="shorty-label">
+              <span class="shorty-label-sub">Questions? Call</span>
+              <span class="shorty-label-main">Talk to Shorty</span>
+            </span>
+          </a>
+        </div>
       </div>
     </div>
     <div id="closedPanel" style="display:none;">
@@ -220,7 +232,7 @@ function renderActiveFiles(files) {
         <div class="file-stage-label">Current Stage</div>
         <div class="file-stage-badge ${getBadgeClass(f.stageStatus)}">${f.stageStatus === 'warning' ? '⚠️ ' : f.stageStatus === 'success' ? '✅ ' : '📋 '}${f.stageLabel}</div>
         <div class="file-btns">
-<a href="https://documents.shortsalestart.com/file-detail/${f.id}" class="file-btn-primary">View File</a>      
+          <a href="https://documents.shortsalestart.com/file-detail/${f.id}" class="file-btn-primary">View File</a>
         </div>
       </div>
     </div>
