@@ -220,7 +220,7 @@ function renderActiveFiles(files) {
         <div class="file-stage-badge ${getBadgeClass(f.stageStatus)}">${f.stageStatus === 'warning' ? '⚠️ ' : f.stageStatus === 'success' ? '✅ ' : '📋 '}${f.stageLabel}</div>
         <div class="file-btns">
           ${f.portalUrl ? `<a href="${f.portalUrl}" class="file-btn-primary">View File</a>` : '<span class="file-btn-primary" style="opacity:0.4;cursor:default;">View File</span>'}
-          ${f.portalUrl ? `<a href="${f.portalUrl}" class="file-btn-secondary">Docs</a>` : ''}
+      
         </div>
       </div>
     </div>
