@@ -154,7 +154,27 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 2 &mdash; Seller Info</span>
+        <span class="section-title">Section 2 &mdash; Listing Agent Offer Intake</span>
+      </div>
+      <div class="portal-action" style="margin-bottom:10px">
+        <div>
+          <div class="field-label" style="margin-bottom:2px">Offer Intake Form</div>
+          <span class="portal-action-text">Submit buyer offer details</span>
+        </div>
+        <a href="https://documents.shortsalestart.com/offer/${oppId}" target="_blank" class="portal-action-btn teal">Open →</a>
+      </div>
+      <div class="portal-action" style="margin-bottom:0">
+        <div>
+          <div class="field-label" style="margin-bottom:2px">Offer Documents</div>
+          <span class="portal-action-text">Upload contract & supporting docs</span>
+        </div>
+        <a href="https://documents.shortsalestart.com/offer-docs/${oppId}" target="_blank" class="portal-action-btn teal">Upload →</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Section 3 &mdash; Seller Info</span>
       </div>
       <div class="subsection">Primary Borrower</div>
       <div class="field-grid" style="margin-bottom:14px">
@@ -174,7 +194,7 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 3 &mdash; Creditors</span>
+        <span class="section-title">Section 4 &mdash; Creditors</span>
       </div>
       <div class="subsection">Lender / Servicer #1</div>
       <div class="field-grid" style="margin-bottom:14px">
@@ -206,7 +226,7 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 4 &mdash; Listing Agent</span>
+        <span class="section-title">Section 5 &mdash; Listing Agent</span>
       </div>
       <div class="field-grid">
         ${field('Name', d.laName)}
@@ -218,21 +238,7 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 5 &mdash; Buyer / Buyer Agent</span>
-      </div>
-      <div class="portal-action" style="margin-bottom:16px">
-        <div>
-          <div class="field-label" style="margin-bottom:2px">Offer Intake Form</div>
-          <span class="portal-action-text">Submit buyer offer details</span>
-        </div>
-        <a href="https://documents.shortsalestart.com/offer/${oppId}" target="_blank" class="portal-action-btn teal">Open →</a>
-      </div>
-      <div class="portal-action" style="margin-bottom:16px">
-        <div>
-          <div class="field-label" style="margin-bottom:2px">Offer Documents</div>
-          <span class="portal-action-text">Upload contract & supporting docs</span>
-        </div>
-        <a href="https://documents.shortsalestart.com/offer-docs/${oppId}" target="_blank" class="portal-action-btn teal">Upload →</a>
+        <span class="section-title">Section 6 &mdash; Buyer / Buyer Agent</span>
       </div>
       <div class="toggle-bar">
         <button class="toggle-btn active" onclick="switchBuyer(1,this)">Buyer 1</button>
@@ -244,7 +250,7 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 6 &mdash; BPO</span>
+        <span class="section-title">Section 7 &mdash; BPO</span>
       </div>
       <div class="toggle-bar">
         <button class="toggle-btn active" onclick="switchBPO(1,this)">BPO #1</button>
@@ -256,7 +262,7 @@ function render(d) {
 
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Section 7 &mdash; Closing Info</span>
+        <span class="section-title">Section 8 &mdash; Closing Info</span>
       </div>
       <div class="subsection">Title Company</div>
       <div class="field-grid" style="margin-bottom:14px">
