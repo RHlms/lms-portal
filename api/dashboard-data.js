@@ -4,45 +4,33 @@ const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
 
 const STAGE_MAP = {
-  '1 - START': { label: 'Getting Started', status: 'active' },
-  '2 - SELLER SERVICE AGREEMENT': { label: 'Service Agreement', status: 'active' },
-  '3 - SELLER INTAKE': { label: 'Seller Intake', status: 'active' },
-  '4 - S/I/F DOCS MISSING': { label: 'Action Needed', status: 'warning' },
-  '5 - 3PA': { label: 'Authorization Pending', status: 'active' },
-  '6 - LENDER AUTHORIZATION': { label: 'Lender Authorization', status: 'active' },
-  '7 - BUYER NEEDED': { label: 'Buyer Needed', status: 'warning' },
-  '8 - OFFER INTAKE': { label: 'Offer Received', status: 'active' },
-  '9 - OIF MISSING': { label: 'Action Needed', status: 'warning' },
-  '10 - OFFER INTAKE (Missing OIF)': { label: 'Action Needed', status: 'warning' },
-  '11 - PACKAGE COMPLETE': { label: 'Package Complete', status: 'active' },
-  '12 - SATISFIED': { label: 'Ready for Lender', status: 'active' },
-  '1 - START - PACKAGE WORKING': { label: 'Package Working', status: 'active' },
-  '2 - BUYER #2 NEEDED': { label: 'New Buyer Needed', status: 'warning' },
-  '3 - START - BUYER #2': { label: 'New Buyer Intake', status: 'active' },
-  '4 - PACKAGE SENT': { label: 'Package Sent', status: 'active' },
-  '5 - PACKAGE - BPO': { label: 'Awaiting BPO', status: 'active' },
-  '6 - BPO - IN REVIEW': { label: 'Lender Review', status: 'active' },
-  '7 - NEGOTIATIONS': { label: 'Negotiations', status: 'active' },
-  '8 - VALUE DISPUTE': { label: 'Value Dispute', status: 'warning' },
-  '9 - APPROVAL LETTER': { label: 'Approved!', status: 'success' },
-  '10 - CLOSE PENDING': { label: 'Close Pending', status: 'success' },
-  '11 - CLOSED-W': { label: 'Closed — Won', status: 'closed-won' },
-  'CLOSED-W': { label: 'Closed — Won', status: 'closed-won' },
-  'CLOSED-L': { label: 'Closed — Lost', status: 'closed-lost' },
-  'RESET': { label: 'On Hold', status: 'warning' }
+  // INTAKE pipeline
+  '1 - START':                        { label: 'Seller Intake', status: 'active' },
+  '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake', status: 'active' },
+  '3 - SELLER INTAKE — CHASE':        { label: 'Seller Intake', status: 'warning' },
+  '4 - SELLER INTAKE — FILE REVIEW':  { label: 'Seller Intake', status: 'active' },
+  '🔴 RESET STAGE🔴':                 { label: 'On Hold', status: 'warning' },
+  '5 - 3PA ⚠️':                       { label: 'Third-Party Authorization', status: 'active' },
+  '6 - 3PA ✅ (50)':                  { label: 'Third-Party Authorization', status: 'active' },
+  '7 - NO BUYER ⚠️':                  { label: 'Buyer Needed', status: 'warning' },
+  '8 - BUYER ✅ - OIF ⚠️':            { label: 'Offer Intake', status: 'active' },
+  '9 - OIF ✅':                       { label: 'Offer Intake', status: 'active' },
+  // WORKING pipeline — placeholder until next week
+  'CLOSED-W':                         { label: 'Closed — Won', status: 'closed-won' },
+  'CLOSED-L':                         { label: 'Closed — Lost', status: 'closed-lost' }
 };
 
 function getStageInfo(stageName) {
   if (!stageName) return { label: 'In Progress', status: 'active' };
   const match = STAGE_MAP[stageName];
   if (match) return match;
-  if (stageName.toLowerCase().includes('closed') && stageName.toLowerCase().includes('w')) {
+  if (stageName.toLowerCase().includes('closed-w') || (stageName.toLowerCase().includes('closed') && stageName.toLowerCase().includes('w'))) {
     return { label: 'Closed — Won', status: 'closed-won' };
   }
   if (stageName.toLowerCase().includes('closed')) {
     return { label: 'Closed — Lost', status: 'closed-lost' };
   }
-  return { label: stageName, status: 'active' };
+  return { label: 'In Progress', status: 'active' };
 }
 
 export default async function handler(req, res) {
@@ -75,26 +63,18 @@ export default async function handler(req, res) {
     const contact = contactData.contact || contactData;
     const customFields = contact.customFields || [];
 
-    console.log('Token from URL:', token);
-    console.log('All custom field keys:', JSON.stringify(customFields.map(f => ({ key: f.key, fieldKey: f.fieldKey, id: f.id, value: f.value, fieldValue: f.fieldValue }))));
-
     const tokenField = customFields.find(f =>
       f.key === 'magic_link_token' ||
       f.fieldKey === 'contact.magic_link_token' ||
       f.id === 'f2pXGEfkPAQ5y1anxDvJ'
     );
 
-    console.log('Token field found:', JSON.stringify(tokenField));
-
     const storedToken = tokenField
       ? (tokenField.value ?? tokenField.fieldValue ?? tokenField.fieldValueArray?.[0] ?? '')
       : '';
 
-    console.log('Stored token:', storedToken);
-    console.log('Tokens match:', storedToken === token);
-
     if (!storedToken || storedToken !== token) {
-      return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.', debug: { storedToken: storedToken?.substring(0, 8), tokenStart: token?.substring(0, 8) } });
+      return res.status(401).json({ error: 'Invalid or expired link. Please request a new one.' });
     }
 
     const expiryField = customFields.find(f =>
@@ -106,12 +86,11 @@ export default async function handler(req, res) {
       ? parseInt(expiryField.value ?? expiryField.fieldValue ?? '0')
       : 0;
 
-    console.log('Expiry:', expiry, 'Now:', Date.now(), 'Expired:', Date.now() > expiry);
-
     if (!expiry || Date.now() > expiry) {
       return res.status(401).json({ error: 'This link has expired. Please request a new one.' });
     }
 
+    // Clear the token (single use)
     await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
@@ -127,6 +106,7 @@ export default async function handler(req, res) {
       })
     });
 
+    // Fetch opportunities for this contact
     const oppsRes = await fetch(
       `${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${contactId}&limit=50`,
       {
@@ -144,6 +124,7 @@ export default async function handler(req, res) {
       opportunities = oppsData.opportunities || [];
     }
 
+    // If agent — also search by fs_submitter_email
     const submitterEmailField = customFields.find(f =>
       f.key === 'fs_submitter_email' || f.fieldKey === 'contact.fs_submitter_email'
     );
@@ -179,6 +160,7 @@ export default async function handler(req, res) {
       }
     }
 
+    // Format files
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || opp.status || '';
       const stageInfo = getStageInfo(stageName);
