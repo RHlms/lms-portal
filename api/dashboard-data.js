@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Fetch the logged-in contact by ID
+    // Step 1: Fetch logged-in contact by ID
     const contactRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}`, {
       headers: {
         'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -109,40 +109,41 @@ export default async function handler(req, res) {
       })
     });
 
-    // Step 5: Get agent email
     const agentEmail = contact.email || '';
     console.log('Agent email:', agentEmail);
 
-    // Step 6: Search for all seller contacts submitted by this agent
-    const sellerSearchRes = await fetch(`${GHL_API_BASE}/contacts/search`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GHL_API_KEY}`,
-        'Version': GHL_API_VERSION,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        locationId: GHL_LOCATION_ID,
-        filters: [{ field: 'fs_submitter_email', operator: 'eq', value: agentEmail }],
-        pageLimit: 100
-      })
-    });
+    // Step 5: Search all contacts matching agent email (catches fs_submitter_email)
+    const sellerSearchRes = await fetch(
+      `${GHL_API_BASE}/contacts/?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(agentEmail)}&limit=100`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': GHL_API_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
     let sellerContactIds = [];
 
     if (sellerSearchRes.ok) {
       const sellerData = await sellerSearchRes.json();
       const sellers = sellerData.contacts || [];
-      sellerContactIds = sellers.map(s => s.id);
-      console.log(`Found ${sellers.length} seller contacts for agent ${agentEmail}`);
+      // Exclude the agent's own contact — we only want seller contacts
+      const sellerOnly = sellers.filter(s => s.id !== contactId && s.email !== agentEmail);
+      sellerContactIds = sellerOnly.map(s => s.id);
+      console.log(`Found ${sellerOnly.length} seller contacts for agent ${agentEmail}:`, sellerContactIds);
+    } else {
+      const errData = await sellerSearchRes.json();
+      console.error('Seller search failed:', JSON.stringify(errData));
     }
 
-    // Always include the logged-in contact's own opps too
+    // Always include the logged-in contact ID as fallback
     if (!sellerContactIds.includes(contactId)) {
       sellerContactIds.push(contactId);
     }
 
-    // Step 7: Fetch opps for each seller contact from INTAKE + WORKING pipelines
+    // Step 6: Fetch opps for each seller contact
     const oppPromises = sellerContactIds.map(cid =>
       fetch(`${GHL_API_BASE}/opportunities/search?location_id=${GHL_LOCATION_ID}&contact_id=${cid}&limit=50`, {
         headers: {
@@ -150,8 +151,9 @@ export default async function handler(req, res) {
           'Version': GHL_API_VERSION,
           'Content-Type': 'application/json'
         }
-      }).then(r => r.ok ? r.json() : { opportunities: [] })
-        .then(d => d.opportunities || [])
+      })
+      .then(r => r.ok ? r.json() : { opportunities: [] })
+      .then(d => d.opportunities || [])
     );
 
     const oppResults = await Promise.all(oppPromises);
@@ -165,7 +167,7 @@ export default async function handler(req, res) {
 
     console.log(`Found ${opportunities.length} pipeline opps across ${sellerContactIds.length} contacts`);
 
-    // Step 8: Format files
+    // Step 7: Format files
     const files = opportunities.map(opp => {
       const stageName = opp.pipelineStage?.name || '';
       const stageInfo = getStageInfo(stageName);
