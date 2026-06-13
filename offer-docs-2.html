@@ -134,6 +134,7 @@
       align-items: center;
       gap: 10px;
     }
+    .doc-icon { font-size: 18px; }
     .header-right { display: flex; align-items: center; gap: 10px; }
     .upload-status {
       font-family: 'Montserrat', sans-serif;
@@ -299,8 +300,8 @@
         </div>
         <div class="upload-progress" id="progress-misc">⏳ Uploading…</div>
         <div class="upload-success" id="success-misc"></div>
-<div id="misc-file-list" style="margin-top:8px;"></div>
-<div class="upload-error" id="error-misc"></div>
+        <div id="misc-file-list" style="margin-top:8px;"></div>
+        <div class="upload-error" id="error-misc"></div>
       </div>
     </div>
 
@@ -372,7 +373,7 @@
       document.getElementById('loading-state').style.display  = 'none';
       document.getElementById('docs-content').style.display   = 'block';
       renderUploadCards();
-      if (docStatus['misc_addenda']) applyMiscStatus(true);
+      if (docStatus['o2_misc_addenda']) applyMiscStatus(true);
     } catch (e) {
       showError();
     }
@@ -391,7 +392,7 @@
         <div class="upload-card ${received ? 'done' : ''}" id="card-${doc.id}">
           <div class="upload-card-header">
             <div class="upload-doc-name">
-              <span>${doc.icon}</span>
+              <span class="doc-icon">${doc.icon}</span>
               ${doc.label}${doc.required ? ' <span style="color:var(--danger);font-size:12px">*</span>' : ''}
             </div>
             <div class="header-right">
@@ -416,10 +417,24 @@
             <div class="upload-success" id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
               ${received ? '✅ Document received and logged to your file.' : ''}
             </div>
+            <div id="file-name-${doc.id}" style="display:${received ? 'flex' : 'none'};align-items:center;justify-content:space-between;margin-top:8px;padding:6px 10px;background:#f0f4f7;border-radius:6px;font-size:12px;color:#4a6a85;">
+              <span id="file-name-text-${doc.id}">📎 Previously uploaded</span>
+              <a href="#" onclick="replaceFile('${doc.id}');return false;" style="font-size:11px;color:#00A8C6;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:12px;">Replace →</a>
+            </div>
             <div class="upload-error" id="error-${doc.id}"></div>
           </div>
         </div>`;
     }).join('');
+  }
+
+  function replaceFile(docId) {
+    const zone    = document.getElementById(`zone-${docId}`);
+    const success = document.getElementById(`success-${docId}`);
+    const fnRow   = document.getElementById(`file-name-${docId}`);
+    zone.style.display    = 'block';
+    success.style.display = 'none';
+    if (fnRow) fnRow.style.display = 'none';
+    zone.querySelector('input[type="file"]').click();
   }
 
   async function handleToggle(docId) {
@@ -446,52 +461,23 @@
 
   async function handleMiscToggle() {
     const btn     = document.getElementById('toggle-misc');
-    const current = docStatus['misc_addenda'] ?? false;
+    const current = docStatus['o2_misc_addenda'] ?? false;
     const next    = !current;
     btn.disabled  = true;
     try {
       const res  = await fetch('/api/offer-checklist-2', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ opp_id: oppId, item_id: 'misc_addenda', received: next })
+        body:    JSON.stringify({ opp_id: oppId, item_id: 'o2_misc_addenda', received: next })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Update failed');
-      docStatus['misc_addenda'] = next;
+      docStatus['o2_misc_addenda'] = next;
       applyMiscStatus(next);
     } catch (err) {
       alert('Could not update status. Please try again.');
     } finally {
       btn.disabled = false;
-    }
-  }
-
-  function applyStatus(docId, received) {
-    const card    = document.getElementById(`card-${docId}`);
-    const status  = document.getElementById(`status-${docId}`);
-    const toggle  = document.getElementById(`toggle-${docId}`);
-    const zone    = document.getElementById(`zone-${docId}`);
-    const success = document.getElementById(`success-${docId}`);
-    if (received) {
-      card.classList.add('done');
-      status.textContent    = 'RECEIVED';
-      status.className      = 'upload-status status-done';
-      toggle.textContent    = 'Unmark';
-      toggle.className      = 'toggle-btn unmark';
-      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
-      zone.style.display    = 'none';
-      success.textContent   = '✅ Document received and logged to your file.';
-      success.style.display = 'block';
-    } else {
-      card.classList.remove('done');
-      status.textContent    = 'PENDING';
-      status.className      = 'upload-status status-pending';
-      toggle.textContent    = 'Mark received';
-      toggle.className      = 'toggle-btn mark';
-      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
-      zone.style.display    = 'block';
-      success.textContent   = '';
-      success.style.display = 'none';
     }
   }
 
@@ -521,6 +507,38 @@
     }
   }
 
+  function applyStatus(docId, received) {
+    const card    = document.getElementById(`card-${docId}`);
+    const status  = document.getElementById(`status-${docId}`);
+    const toggle  = document.getElementById(`toggle-${docId}`);
+    const zone    = document.getElementById(`zone-${docId}`);
+    const success = document.getElementById(`success-${docId}`);
+    const fnRow   = document.getElementById(`file-name-${docId}`);
+    if (received) {
+      card.classList.add('done');
+      status.textContent    = 'RECEIVED';
+      status.className      = 'upload-status status-done';
+      toggle.textContent    = 'Unmark';
+      toggle.className      = 'toggle-btn unmark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'none';
+      success.textContent   = '✅ Document received and logged to your file.';
+      success.style.display = 'block';
+      if (fnRow) fnRow.style.display = 'flex';
+    } else {
+      card.classList.remove('done');
+      status.textContent    = 'PENDING';
+      status.className      = 'upload-status status-pending';
+      toggle.textContent    = 'Mark received';
+      toggle.className      = 'toggle-btn mark';
+      toggle.style.display  = staffUnlocked ? 'inline-flex' : 'none';
+      zone.style.display    = 'block';
+      success.textContent   = '';
+      success.style.display = 'none';
+      if (fnRow) fnRow.style.display = 'none';
+    }
+  }
+
   async function handleUpload(docId, input) {
     const file = input.files[0];
     if (!file) return;
@@ -543,6 +561,8 @@
       if (data.success) {
         docStatus[docId] = true;
         applyStatus(docId, true);
+        const fnText = document.getElementById(`file-name-text-${docId}`);
+        if (fnText) fnText.textContent = `📎 ${file.name}`;
       } else {
         throw new Error(data.error || 'Upload failed');
       }
@@ -576,18 +596,31 @@
         if (!data.success) throw new Error(data.error || 'Upload failed');
       }
       progress.style.display = 'none';
-      docStatus['misc_addenda'] = true;
+      docStatus['o2_misc_addenda'] = true;
       applyMiscStatus(true);
-      
       const fileList = document.getElementById('misc-file-list');
       for (const file of files) {
         const entry = document.createElement('div');
-        entry.style.cssText = 'font-size:12px;color:#4a6a85;padding:4px 0;border-bottom:1px solid #e0e0e0;';
-        entry.textContent = `📎 ${file.name}`;
+        entry.style.cssText = 'font-size:12px;color:#4a6a85;padding:4px 0;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = `📎 ${file.name}`;
+        const removeBtn = document.createElement('a');
+        removeBtn.href = '#';
+        removeBtn.textContent = 'Remove';
+        removeBtn.style.cssText = 'font-size:11px;color:#ef4444;font-weight:700;text-decoration:none;margin-left:12px;';
+        removeBtn.onclick = function(e) {
+          e.preventDefault();
+          entry.remove();
+          const remaining = document.getElementById('misc-file-list').children.length;
+          if (remaining === 0) {
+            handleMiscToggle();
+          }
+        };
+        entry.appendChild(nameSpan);
+        entry.appendChild(removeBtn);
         fileList.appendChild(entry);
       }
     } catch (err) {
-
       progress.style.display = 'none';
       zone.style.display     = 'block';
       error.textContent      = `❌ ${err.message} — Please try again or email documents@shortsalestart.com`;
