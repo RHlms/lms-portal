@@ -53,6 +53,7 @@ const FIELD_IDS = {
   sellerPortalLink:         'V86O0Pm9e3h22WOqwAtZ',
   // Seller Intake — PORTAL auto-fields
   saSignedField:            'BrrAzBKKBxVpCC8Mjfwq',
+  saSigningUrl:             '2Gng5T7DP4LILdBC1bqT',
   sifSubmitted:             'MckauNwB5BGaXFfRvPwV',
   thirdPartyReceived:       'ZiwfQIuYrvj16FTQc56r',
   mortgageReceived:         'u5FQud7QCYWALMvQumjK',
@@ -177,6 +178,7 @@ export default async function handler(req, res) {
       fileStartDate:        getById(fields, FIELD_IDS.fileStartDate),
       sellerPortalLink:     getById(fields, FIELD_IDS.sellerPortalLink),
       saSignedField:        isChecked(fields, FIELD_IDS.saSignedField),
+      saSigningUrl:         getById(fields, FIELD_IDS.saSigningUrl),
       sifSubmitted:         isChecked(fields, FIELD_IDS.sifSubmitted),
       thirdPartyReceived:   isChecked(fields, FIELD_IDS.thirdPartyReceived),
       mortgageReceived:     isChecked(fields, FIELD_IDS.mortgageReceived),
