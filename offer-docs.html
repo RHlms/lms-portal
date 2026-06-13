@@ -426,10 +426,24 @@
             <div class="upload-success" id="success-${doc.id}" ${received ? 'style="display:block"' : ''}>
               ${received ? '✅ Document received and logged to your file.' : ''}
             </div>
+            <div id="file-name-${doc.id}" style="display:${received ? 'flex' : 'none'};align-items:center;justify-content:space-between;margin-top:8px;padding:6px 10px;background:#f0f4f7;border-radius:6px;font-size:12px;color:#4a6a85;">
+              <span id="file-name-text-${doc.id}">📎 Previously uploaded</span>
+              <a href="#" onclick="replaceFile('${doc.id}');return false;" style="font-size:11px;color:#00A8C6;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:12px;">Replace →</a>
+            </div>
             <div class="upload-error" id="error-${doc.id}"></div>
           </div>
         </div>`;
     }).join('');
+  }
+
+  function replaceFile(docId) {
+    const zone    = document.getElementById(`zone-${docId}`);
+    const success = document.getElementById(`success-${docId}`);
+    const fnRow   = document.getElementById(`file-name-${docId}`);
+    zone.style.display    = 'block';
+    success.style.display = 'none';
+    if (fnRow) fnRow.style.display = 'none';
+    zone.querySelector('input[type="file"]').click();
   }
 
   async function handleToggle(docId) {
@@ -508,6 +522,7 @@
     const toggle  = document.getElementById(`toggle-${docId}`);
     const zone    = document.getElementById(`zone-${docId}`);
     const success = document.getElementById(`success-${docId}`);
+    const fnRow   = document.getElementById(`file-name-${docId}`);
     if (received) {
       card.classList.add('done');
       status.textContent    = 'RECEIVED';
@@ -518,6 +533,7 @@
       zone.style.display    = 'none';
       success.textContent   = '✅ Document received and logged to your file.';
       success.style.display = 'block';
+      if (fnRow) fnRow.style.display = 'flex';
     } else {
       card.classList.remove('done');
       status.textContent    = 'PENDING';
@@ -528,6 +544,7 @@
       zone.style.display    = 'block';
       success.textContent   = '';
       success.style.display = 'none';
+      if (fnRow) fnRow.style.display = 'none';
     }
   }
 
@@ -553,6 +570,8 @@
       if (data.success) {
         docStatus[docId] = true;
         applyStatus(docId, true);
+        const fnText = document.getElementById(`file-name-text-${docId}`);
+        if (fnText) fnText.textContent = `📎 ${file.name}`;
       } else {
         throw new Error(data.error || 'Upload failed');
       }
@@ -591,8 +610,23 @@
       const fileList = document.getElementById('misc-file-list');
       for (const file of files) {
         const entry = document.createElement('div');
-        entry.style.cssText = 'font-size:12px;color:#4a6a85;padding:4px 0;border-bottom:1px solid #e0e0e0;';
-        entry.textContent = `📎 ${file.name}`;
+        entry.style.cssText = 'font-size:12px;color:#4a6a85;padding:4px 0;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = `📎 ${file.name}`;
+        const removeBtn = document.createElement('a');
+        removeBtn.href = '#';
+        removeBtn.textContent = 'Remove';
+        removeBtn.style.cssText = 'font-size:11px;color:#ef4444;font-weight:700;text-decoration:none;margin-left:12px;';
+        removeBtn.onclick = function(e) {
+          e.preventDefault();
+          entry.remove();
+          const remaining = document.getElementById('misc-file-list').children.length;
+          if (remaining === 0) {
+            handleMiscToggle();
+          }
+        };
+        entry.appendChild(nameSpan);
+        entry.appendChild(removeBtn);
         fileList.appendChild(entry);
       }
     } catch (err) {
