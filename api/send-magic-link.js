@@ -12,7 +12,6 @@ export default async function handler(req, res) {
   }
 
   const { email, contactId } = req.body;
-
   if (!email && !contactId) {
     return res.status(400).json({ error: 'Email or contact ID required' });
   }
@@ -37,7 +36,6 @@ export default async function handler(req, res) {
       });
 
       const searchData = await searchRes.json();
-
       if (!searchRes.ok) {
         console.error('GHL search error:', searchData);
         return res.status(400).json({ error: 'Could not verify email address.', detail: searchData });
@@ -47,6 +45,7 @@ export default async function handler(req, res) {
       if (contacts.length === 0) {
         return res.status(200).json({ success: true, message: 'If that email is on file, a login link has been sent.' });
       }
+
       resolvedContactId = contacts[0].id;
     }
 
@@ -68,9 +67,9 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         customFields: [
-          { key: 'magic_link_token', field_value: token },
-          { key: 'portal_login_expiry', field_value: String(expires) },
-          { key: 'magic_link_url', field_value: magicLink }
+          { key: 'magic_link_token', value: token },
+          { key: 'portal_login_expiry', value: String(expires) },
+          { key: 'magic_link_url', value: magicLink }
         ]
       })
     });
@@ -81,7 +80,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to store login token.', detail: updateData });
     }
 
-    // Step 5: Enroll contact directly into magic link workflow
+    // Step 5: Enroll contact into magic link workflow
     const workflowRes = await fetch(`${GHL_API_BASE}/contacts/${resolvedContactId}/workflow/${MAGIC_LINK_WORKFLOW_ID}`, {
       method: 'POST',
       headers: {
