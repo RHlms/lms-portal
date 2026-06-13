@@ -578,7 +578,16 @@
       progress.style.display = 'none';
       docStatus['misc_addenda'] = true;
       applyMiscStatus(true);
+      
+      const fileList = document.getElementById('misc-file-list');
+      for (const file of files) {
+        const entry = document.createElement('div');
+        entry.style.cssText = 'font-size:12px;color:#4a6a85;padding:4px 0;border-bottom:1px solid #e0e0e0;';
+        entry.textContent = `📎 ${file.name}`;
+        fileList.appendChild(entry);
+      }
     } catch (err) {
+
       progress.style.display = 'none';
       zone.style.display     = 'block';
       error.textContent      = `❌ ${err.message} — Please try again or email documents@shortsalestart.com`;
