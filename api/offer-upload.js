@@ -7,13 +7,22 @@ export const config = { api: { bodyParser: false } };
 const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
 
 const DOC_TYPES = {
-  listing_agreement:  { label: 'Listing Agreement',                      field: 'offer_docs_listing_agreement' },
-  ss_addendum_asis:   { label: 'SS Addendum to As-Is Contract',          field: 'offer_docs_ss_addendum' },
-  mls_sheet:          { label: 'MLS Sheet',                              field: 'offer_docs_mls_sheet' },
-  asis_contract:      { label: 'As-Is Contract',                         field: 'offer_docs_asis_contract' },
-  buyer_disclosure:   { label: 'LMS Buyer Disclosure',                   field: 'offer_docs_lms_buyer_disclosure' },
-  ss_addendum_la:     { label: 'SS Addendum to Listing Agreement',       field: 'offer_docs_ss_addendum_to_listing_agreement' },
-  proof_of_funds:     { label: 'Buyer Proof of Funds / Approval Letter', field: 'offer_docs_buyer_proof_of_fundsapproval_letter' },
+  // Offer #1
+  listing_agreement:  { label: 'Listing Agreement',                           field: 'offer_docs_listing_agreement' },
+  ss_addendum_asis:   { label: 'SS Addendum to As-Is Contract',               field: 'offer_docs_ss_addendum' },
+  mls_sheet:          { label: 'MLS Sheet',                                   field: 'offer_docs_mls_sheet' },
+  asis_contract:      { label: 'As-Is Contract',                              field: 'offer_docs_asis_contract' },
+  buyer_disclosure:   { label: 'LMS Buyer Disclosure',                        field: 'offer_docs_lms_buyer_disclosure' },
+  ss_addendum_la:     { label: 'SS Addendum to Listing Agreement',            field: 'offer_docs_ss_addendum_to_listing_agreement' },
+  proof_of_funds:     { label: 'Buyer Proof of Funds / Approval Letter',      field: 'offer_docs_buyer_proof_of_fundsapproval_letter' },
+  misc_addenda:       { label: 'Misc. Addenda',                               field: null },
+  // Offer #2
+  o2_asis_contract:    { label: 'Offer #2 — As-Is Contract',                  field: 'offer_docs_2_asis_contract' },
+  o2_ss_addendum:      { label: 'Offer #2 — SS Addendum to As-Is Contract',   field: 'offer_docs_2_ss_addendum_to_asis_contract' },
+  o2_buyer_pof:        { label: 'Offer #2 — Buyer Proof of Funds',            field: 'offer_docs_2_buyer_proof_of_fundsapproval_letter' },
+  o2_mls_sheet:        { label: 'Offer #2 — MLS Sheet',                       field: 'offer_docs_2_mls_sheet' },
+  o2_buyer_disclosure: { label: 'Offer #2 — LMS Buyer Disclosure',            field: 'offer_docs_2_lms_buyer_disclosure' },
+  o2_misc_addenda:     { label: 'Offer #2 — Misc. Addenda',                   field: 'offer_docs_2_misc_addenda' },
 };
 
 const GHL_HEADERS = (apiKey) => ({
