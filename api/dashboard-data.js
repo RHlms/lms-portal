@@ -12,18 +12,32 @@ const STAGE_ID_MAP = {
 };
 
 const STAGE_MAP = {
-  '1 - START':                        { label: 'Seller Intake', status: 'active' },
-  '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake', status: 'active' },
-  '3 - SELLER INTAKE — CHASE':        { label: 'Seller Intake', status: 'warning' },
-  '4 - SELLER INTAKE — FILE REVIEW':  { label: 'Seller Intake', status: 'active' },
-  '🔴 RESET STAGE🔴':                 { label: 'On Hold', status: 'warning' },
-  '5 - 3PA ⚠️':                       { label: 'Third-Party Authorization', status: 'active' },
-  '6 - 3PA ✅ (50)':                  { label: 'Third-Party Authorization', status: 'active' },
-  '7 - NO BUYER ⚠️':                  { label: 'Buyer Needed', status: 'warning' },
-  '8 - BUYER ✅ - OIF ⚠️':            { label: 'Offer Intake', status: 'active' },
-  '9 - OIF ✅':                       { label: 'Offer Intake', status: 'active' },
-  'CLOSED-W':                         { label: 'Closed — Won', status: 'closed-won' },
-  'CLOSED-L':                         { label: 'Closed — Lost', status: 'closed-lost' }
+  // INTAKE
+  '1 - START':                        { label: 'Seller Intake',   status: 'active' },
+  '2 - SELLER INTAKE - PORTAL':       { label: 'Seller Intake',   status: 'active' },
+  '3 - SELLER INTAKE — CHASE':        { label: 'Seller Intake',   status: 'warning' },
+  '4 - SELLER INTAKE — FILE REVIEW':  { label: 'Seller Intake',   status: 'active' },
+  '5 - 3PA ⚠️':                       { label: 'Seller Intake',   status: 'warning' },
+  '6 - 3PA ✅ (50)':                  { label: 'Seller Intake',   status: 'active' },
+  '7 - NO BUYER ⚠️':                  { label: 'Buyer Needed',    status: 'warning' },
+  '8 - BUYER ✅ - OIF ⚠️':            { label: 'Lender Package',  status: 'active' },
+  '9 - OIF ✅':                       { label: 'Lender Package',  status: 'active' },
+  '🔴 RESET STAGE🔴':                 { label: 'On Hold',         status: 'warning' },
+  // WORKING
+  '1 - START - PACKAGE WORKING':      { label: 'Lender Package',  status: 'active' },
+  '2 - BUYER #2 NEEDED':              { label: 'Buyer Needed',    status: 'warning' },
+  '3 - START - BUYER #2':             { label: 'Buyer Needed',    status: 'active' },
+  '4 - BUYER #2 OIF MISSING':         { label: 'Buyer Needed',    status: 'warning' },
+  '5 - PACKAGE SENT ⚠️':             { label: 'Lender Review',   status: 'warning' },
+  '6 - PACKAGE ✅ - BPO':            { label: 'Lender Review',   status: 'active' },
+  '7 - BPO ✅':                       { label: 'Lender Review',   status: 'active' },
+  '8 - INVESTOR REVIEW ⚠️':          { label: 'Lender Review',   status: 'warning' },
+  '9 - NEGOTIATIONS ⚠️':             { label: 'Negotiations',    status: 'warning' },
+  '10 - VALUE DISPUTE ⚠️':           { label: 'Value Dispute',   status: 'warning' },
+  '11 - APPROVAL LETTER ✅':          { label: 'Approved',        status: 'active' },
+  '12 - CLOSE PENDING ⚠️':           { label: 'Closed',          status: 'active' },
+  'CLOSED-W':                         { label: 'Closed — Won',    status: 'closed-won' },
+  'CLOSED-L':                         { label: 'Closed — Lost',   status: 'closed-lost' },
 };
 
 function getStageInfo(stageName, stageId) {
