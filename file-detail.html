@@ -196,10 +196,15 @@ function render(d) {
       </div>
       ${intakeComplete
         ? `<p style="font-size:14px;color:#1a7a50;font-weight:600;">All seller documents received. No action needed.</p>`
-        : `<div class="portal-action">
+       : `<div class="portal-action" style="margin-bottom:10px">
              <span class="portal-action-text">One or more seller documents are outstanding. Direct your seller to their portal to complete submission.</span>
              <a href="https://documents.shortsalestart.com/file/${oppId}" target="_blank" class="portal-action-btn">Open Seller Portal →</a>
-           </div>`
+           </div>
+           ${!d.saSignedField && d.saSigningUrl ? `
+           <div class="portal-action">
+             <span class="portal-action-text">Service Agreement is pending signature. Share this link directly with your seller.</span>
+             <a href="${d.saSigningUrl}" target="_blank" class="portal-action-btn teal">Sign Service Agreement →</a>
+           </div>` : ''}`
       }
     </div>
 
