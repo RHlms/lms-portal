@@ -568,7 +568,7 @@
       for (const file of files) {
         const formData = new FormData();
         formData.append('opp_id',  oppId);
-        formData.append('item_id', 'misc_addenda');
+        formData.append('item_id', 'o2_misc_addenda');
         formData.append('file',    file);
         const res  = await fetch('/api/offer-upload', { method: 'POST', body: formData });
         const data = await res.json();
