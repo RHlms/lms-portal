@@ -4,18 +4,32 @@ const GHL_API_VERSION = '2021-07-28';
 const GHL_LOCATION_ID = 'SmS67ZUDphr7uhGrsQGm';
 
 const STAGE_MAP = {
+  // INTAKE
   '1 - START':                        'Seller Intake',
   '2 - SELLER INTAKE - PORTAL':       'Seller Intake',
   '3 - SELLER INTAKE — CHASE':        'Seller Intake',
   '4 - SELLER INTAKE — FILE REVIEW':  'Seller Intake',
-  '🔴 RESET STAGE🔴':                 'On Hold',
-  '5 - 3PA ⚠️':                       'Third-Party Authorization',
-  '6 - 3PA ✅ (50)':                  'Third-Party Authorization',
+  '5 - 3PA ⚠️':                       'Seller Intake',
+  '6 - 3PA ✅ (50)':                  'Seller Intake',
   '7 - NO BUYER ⚠️':                  'Buyer Needed',
-  '8 - BUYER ✅ - OIF ⚠️':            'Offer Intake',
-  '9 - OIF ✅':                       'Offer Intake',
-  'CLOSED-W':                         'Closed — Won',
-  'CLOSED-L':                         'Closed — Lost',
+  '8 - BUYER ✅ - OIF ⚠️':            'Lender Package',
+  '9 - OIF ✅':                       'Lender Package',
+  '🔴 RESET STAGE🔴':                 'On Hold',
+  // WORKING
+  '1 - START - PACKAGE WORKING':      'Lender Package',
+  '2 - BUYER #2 NEEDED':              'Buyer Needed',
+  '3 - START - BUYER #2':             'Buyer Needed',
+  '4 - BUYER #2 OIF MISSING':         'Buyer Needed',
+  '5 - PACKAGE SENT ⚠️':             'Lender Review',
+  '6 - PACKAGE ✅ - BPO':            'Lender Review',
+  '7 - BPO ✅':                       'Lender Review',
+  '8 - INVESTOR REVIEW ⚠️':          'Lender Review',
+  '9 - NEGOTIATIONS ⚠️':             'Negotiations',
+  '10 - VALUE DISPUTE ⚠️':           'Value Dispute',
+  '11 - APPROVAL LETTER ✅':          'Approved',
+  '12 - CLOSE PENDING ⚠️':           'Closed',
+  'CLOSED-W':                         'Closed',
+  'CLOSED-L':                         'Closed',
 };
 
 async function resolveStageName(stageId) {
@@ -51,21 +65,17 @@ const FIELD_IDS = {
   county:                   'yAAomstPf9mwehTfeuOu',
   fileStartDate:            '7jBDrzimFPUtoW0i1VWW',
   sellerPortalLink:         'V86O0Pm9e3h22WOqwAtZ',
-  // Seller Intake — PORTAL auto-fields
   saSignedField:            'BrrAzBKKBxVpCC8Mjfwq',
   saSigningUrl:             '2Gng5T7DP4LILdBC1bqT',
   sifSubmitted:             'MckauNwB5BGaXFfRvPwV',
   thirdPartyReceived:       'ZiwfQIuYrvj16FTQc56r',
   mortgageReceived:         'u5FQud7QCYWALMvQumjK',
-  // Offer Intake — Offer #1
   oifReceived:              'gBNsuwAODXx71kYcvxiI',
   offerDocsReceived:        'uoKj4clGpcWypQ38MfeG',
   offer1MiscReceived:       'xlJTju7O45DQN8ySkSNH',
-  // Offer Intake — Offer #2
   oif2Received:             'rUBq1izMQCC1RyCnbB6M',
   offerDocs2Received:       '8mD01wIeZwuImb6Q9Jgt',
   offer2MiscReceived:       '65726TJN09jE99OM5BgB',
-  // Seller Info
   sellerName:               'WSR9Cpsfxqm2CVDdZ9lI',
   sellerPhone:              '0byvyfgrnqdxDOcYMF2n',
   sellerEmail:              'hTRjaMlGHBQD6WTOSGu0',
@@ -73,7 +83,6 @@ const FIELD_IDS = {
   coBorrowerName:           'lsBEl4AhOR08zO8l0Zy8',
   coBorrowerPhone:          'j5VJkYW3uMevhWnLgd7r',
   coBorrowerEmail:          'dEhUs64tRyCtxyGJLUFw',
-  // Creditors
   lender1Name:              'lhmdlGuwy70Ken1Kykqw',
   lender1Balance:           'pUDqC9WupJL1t5UG5pa6',
   lender2Name:              'DNzdneHpFqHyb2XIWCXA',
@@ -85,12 +94,10 @@ const FIELD_IDS = {
   hoa2Balance:              'owy3mu8I37KYBf2KgLmB',
   hoa3Name:                 '9UcGhLnhW3u3ewpbxUhV',
   hoa3Balance:              'KrrZJ32NpPMeJCkTVyLy',
-  // Listing Agent
   laName:                   'jlHmRaAYG7VTFuBgWa2H',
   laBrokerage:              'AlzCMYGaCpxHbMiwhKUD',
   laPhone:                  'ioS9DjqTjnWZR1yNbaV6',
   laEmail:                  'v5DAv0lvEkltWdJaXL83',
-  // Buyer Agent 1
   ba1Name:                  'onOszXR3tEcwDkS9O8CL',
   ba1Brokerage:             'cCEriXPIe4UyqMNsgsb9',
   ba1Phone:                 'owYOQ1Vvf1h9utEVbzN2',
@@ -98,7 +105,6 @@ const FIELD_IDS = {
   buyer1Name:               'DolRINj2IZIibipmWnSu',
   buyer1Contact:            'VqmpRbTlmBBnpzypiUZS',
   buyer1Financing:          'F9GaZqk6ShdyWgSEG1zC',
-  // Buyer Agent 2
   ba2Name:                  'hjWX6pmjRuo16NnZaMAt',
   ba2Brokerage:             '0Miv48c7NvosYsygg757',
   ba2Phone:                 'NTWs3Lb4VBExoETBtVws',
@@ -106,12 +112,10 @@ const FIELD_IDS = {
   buyer2Name:               'nphcEWGHjhcc5Zsy8r1B',
   buyer2Contact:            'eeEEKD6huxHJ7r7OGo8d',
   buyer2Financing:          'OCwADXhV6rphC7GGkoye',
-  // BPO
   bpo1Date:                 '8RDEH9loJ5GWT2R335w3',
   bpo1Amount:               'VrB2e426VGJS4Mzovxj6',
   bpo2Date:                 'A765x4pRUuPUKKWbCU3K',
   bpo2Amount:               '0ZweMSpZLvGS5LLhA5L6',
-  // Closing
   titleCompany:             'gGhn9hBkPCiXsBOLWTLS',
   titleAgent:               'Kr35FZgNGOpSnkykgCQ3',
   titlePhone:               'cQ2mfa2LWYuMKSoJMZQw',
